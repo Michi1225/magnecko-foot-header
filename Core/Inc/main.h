@@ -75,10 +75,10 @@ void Error_Handler(void);
 #define ECAT_IRQ_GPIO_Port GPIOA
 #define ECAT_NCS_Pin GPIO_PIN_4
 #define ECAT_NCS_GPIO_Port GPIOA
-#define ECAT_MISO_Pin GPIO_PIN_5
+#define ECAT_SCK_Pin GPIO_PIN_5
+#define ECAT_SCK_GPIO_Port GPIOA
+#define ECAT_MISO_Pin GPIO_PIN_6
 #define ECAT_MISO_GPIO_Port GPIOA
-#define ECAT_MISOA6_Pin GPIO_PIN_6
-#define ECAT_MISOA6_GPIO_Port GPIOA
 #define ECAT_MOSI_Pin GPIO_PIN_7
 #define ECAT_MOSI_GPIO_Port GPIOA
 #define SYNC0_Pin GPIO_PIN_4
@@ -89,6 +89,10 @@ void Error_Handler(void);
 #define TOF_INT_GPIO_Port GPIOC
 #define TOF_I2C_RST_Pin GPIO_PIN_7
 #define TOF_I2C_RST_GPIO_Port GPIOC
+#define SENS_SDA_Pin GPIO_PIN_9
+#define SENS_SDA_GPIO_Port GPIOC
+#define SENS_SCL_Pin GPIO_PIN_8
+#define SENS_SCL_GPIO_Port GPIOA
 #define TOF_LP_Pin GPIO_PIN_9
 #define TOF_LP_GPIO_Port GPIOA
 #define LDC_INT_Pin GPIO_PIN_10
@@ -101,6 +105,8 @@ void Error_Handler(void);
 #define IMU_NCS_GPIO_Port GPIOA
 #define IMU_SCK_Pin GPIO_PIN_12
 #define IMU_SCK_GPIO_Port GPIOC
+#define IMU_INT_Pin GPIO_PIN_2
+#define IMU_INT_GPIO_Port GPIOD
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 #define IMU_MISO_Pin GPIO_PIN_4
