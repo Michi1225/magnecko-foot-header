@@ -50,17 +50,18 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Libs/BNO086.cpp
     Libs/TMAG5273.cpp
     Libs/VL53L7CH.cpp
-    Platform/platform.c
-    VL53LMZ_ULD_API/src/vl53lmz_api.c
-    VL53LMZ_ULD_API/src/vl53lmz_plugin_infos.c
+    Libs/LDC1614.cpp
+    Drivers/VL53LMZ_ULD_API/Platform/platform.c
+    Drivers/VL53LMZ_ULD_API/src/vl53lmz_api.c
+    Drivers/VL53LMZ_ULD_API/src/vl53lmz_plugin_infos.c
     # Add user sources here
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     Libs
-    Platform
-    VL53LMZ_ULD_API/inc
+    Drivers/VL53LMZ_ULD_API/Platform
+    Drivers/VL53LMZ_ULD_API/inc
     # Add user defined include paths
 )
 
