@@ -47,10 +47,10 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    Libs/BNO086.cpp
-    Libs/TMAG5273.cpp
-    Libs/VL53L7CH.cpp
-    Libs/LDC1614.cpp
+    Libs/Sensors/BNO086.cpp
+    Libs/Sensors/TMAG5273.cpp
+    Libs/Sensors/VL53L7CH.cpp
+    Libs/Sensors/LDC1614.cpp
     Drivers/VL53LMZ_ULD_API/Platform/platform.c
     Drivers/VL53LMZ_ULD_API/src/vl53lmz_api.c
     Drivers/VL53LMZ_ULD_API/src/vl53lmz_plugin_infos.c
@@ -59,7 +59,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    Libs
+    Libs/Sensors
     Drivers/VL53LMZ_ULD_API/Platform
     Drivers/VL53LMZ_ULD_API/inc
     # Add user defined include paths

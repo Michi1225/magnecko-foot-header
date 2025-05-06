@@ -72,7 +72,8 @@ private:
     std::vector<std::pair<uint8_t, uint32_t>> features;
 
 public:
-    void init();
+    BNO086();
+    uint8_t init();
     uint8_t start();
     uint8_t update();
     

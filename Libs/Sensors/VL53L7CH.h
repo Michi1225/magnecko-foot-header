@@ -16,10 +16,12 @@ private:
     float is_ranging = false;
     bool first_start = true;
 public:
+    int data[8][8] = {0};
+
     VL53L7CH();
     int init();
     int start_ranging();
     int stop_ranging();
-    int get_ranging_data(int **data);
+    int get_ranging_data();
 
 };

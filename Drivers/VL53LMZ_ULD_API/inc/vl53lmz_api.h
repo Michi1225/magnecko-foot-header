@@ -405,6 +405,10 @@ union Block_header {
 };
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 uint8_t vl53lmz_is_alive(
 		VL53LMZ_Configuration	*p_dev,
@@ -842,5 +846,9 @@ uint8_t vl53lmz_results_extract_block(
 		uint8_t						*p_data,
 		uint16_t					data_size );
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //VL53LMZ_API_H_

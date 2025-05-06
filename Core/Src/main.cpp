@@ -27,6 +27,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "BNO086.h"
+#include "LDC1614.h"
+#include "TMAG5273.h"
+#include "VL53L7CH.h"
 
 /* USER CODE END Includes */
 
@@ -48,6 +51,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+BNO086 imu;
+LDC1614 ldc;
+TMAG5273 hall0(TMAG5273::A1);
+TMAG5273 hall1(TMAG5273::B1);
+TMAG5273 hall2(TMAG5273::C1);
+TMAG5273 hall3(TMAG5273::D1);
+VL53L7CH tof;
+
 
 /* USER CODE END PV */
 
@@ -100,13 +111,33 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI6_Init();
   /* USER CODE BEGIN 2 */
+  if(imu.init() != 0) Error_Handler();
+  if(ldc.init() != 0) Error_Handler();
+  if(hall0.init() != 0) Error_Handler(); 
+  if(hall1.init() != 0) Error_Handler();
+  if(hall2.init() != 0) Error_Handler();
+  if(hall3.init() != 0) Error_Handler();
+  if(tof.init() != 0) Error_Handler();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  imu.start();
+  tof.start_ranging();
   while (1)
   {
+    imu.update();
+    float f0 = ldc.readData(0);
+    float f1 = ldc.readData(1);
+    float f2 = ldc.readData(2);
+    float f3 = ldc.readData(3);
+    float bx = hall0.read_Bx();
+    float by = hall0.read_By();
+    float bz = hall0.read_Bz();
+    float t = hall0.read_T();
+    int status = tof.get_ranging_data();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -174,6 +205,12 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if(GPIO_Pin == IMU_INT_Pin) {
+    imu.msg_ready = true;
+  }
+}
 
 /* USER CODE END 4 */
 

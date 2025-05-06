@@ -83,7 +83,7 @@ int VL53L7CH::stop_ranging()
     return status;
 }
 
-int VL53L7CH::get_ranging_data(int **data)
+int VL53L7CH::get_ranging_data()
 {
     int status = vl53lmz_get_ranging_data(&this->config, &this->results);
     if (status != 0) return status;
@@ -92,7 +92,7 @@ int VL53L7CH::get_ranging_data(int **data)
     {
         for(int j = 0; j < 8; j++)
         {
-            data[i][j] = this->results.distance_mm[i * 8 + j];
+            this->data[i][j] = this->results.distance_mm[i * 8 + j];
         }
     }
     return 0;

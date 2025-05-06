@@ -1,10 +1,23 @@
 #include "BNO086.h"
 
 
+BNO086::BNO086()
+{
+    this->msg_ready = false;
+    this->seqNum = 0;
+    this->features.clear();
+    this->accel_data = {0, 0, 0, 0, 0, 0, 0};
+    this->gyro_data = {0, 0, 0, 0, 0, 0, 0};
+    this->mag_data = {0, 0, 0, 0, 0, 0, 0};
+    this->lin_accel_data = {0, 0, 0, 0, 0, 0, 0};
+    this->rot_data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    this->grav_data = {0, 0, 0, 0, 0, 0, 0};
+}
+
 /*
  * @brief   Initialize BNO with the correct settings and define the Feature reports. 
  */
-void BNO086::init()
+uint8_t BNO086::init()
 {
     //Set feature reports to be set up
     this->features.push_back(std::make_pair(BNO086_ID_ACCELEROMETER,        BNO086_PERIOD_ACCELEROMETER));
@@ -14,9 +27,6 @@ void BNO086::init()
     // this->features.push_back(std::make_pair(BNO086_ID_LINEAR_ACCELERATION,  BNO086_PERIOD_LINEAR_ACCELERATION));
     // this->features.push_back(std::make_pair(BNO086_ID_GRAVITY,              BNO086_PERIOD_GRAVITY));
 
-
-
-    //NOTE: Maybe we have to wake the BNO?
 
     //Reset BNO
     HAL_NVIC_DisableIRQ(EXTI15_10_IRQn); //Disable HINT_N interrupt
@@ -42,7 +52,7 @@ void BNO086::init()
     this->msg_ready = false;
     uint8_t init[20] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100);
+    uint8_t status = HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100);
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
     //read message from executable
@@ -50,9 +60,10 @@ void BNO086::init()
     this->msg_ready = false;
     uint8_t exec[5] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 1);
+    status |= HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 1);
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
+    return status;
 }
 
 /*

@@ -92,7 +92,9 @@ struct range_common_data_t
 	uint8_t		max_targets_per_zone;	// 8.0
 };
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief This function reads the device id and the revision of the sensor.
@@ -135,6 +137,8 @@ uint8_t vl53lmz_get_fw_version(
 		VL53LMZ_Configuration		 *p_dev,
 		VL53LMZ_FWVersion			 *p_fw_version);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* VL53LMZ_PLUGIN_INFOS_H_ */

@@ -1,5 +1,9 @@
 #include "LDC1614.h"
 
+LDC1614::LDC1614() {
+    // Constructor
+}
+
 uint8_t LDC1614::init() {
 
     uint8_t txData[2];

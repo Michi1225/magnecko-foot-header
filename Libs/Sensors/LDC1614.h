@@ -14,7 +14,7 @@
 #define DATA3_LSB_ADDR 0x07
 #define STATUS_ADDR 0x18
 #define MANUFACTURER_ID_ADDR 0x7E
-#define DEVICE_ID_ADDR 0x7F
+#define LDC_DEVICE_ID_ADDR 0x7F
 
 // read/write
 #define RCOUNT0_ADDR 0x08
@@ -111,8 +111,8 @@ typedef enum {
 } LDC1614_Status;
 
 
-class LDC1614 {
-
+class LDC1614 
+{
 public:
     LDC1614();
     uint8_t init();
