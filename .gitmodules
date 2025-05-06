@@ -1,0 +1,3 @@
+[submodule "Libs/SOES_Wrapper/SOES"]
+	path = Libs/SOES_Wrapper/SOES
+	url = https://github.com/OpenEtherCATsociety/SOES.git
