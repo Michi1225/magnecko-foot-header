@@ -86,6 +86,14 @@ void Error_Handler(void);
 #define SYNC0_GPIO_Port GPIOC
 #define SYNC1_Pin GPIO_PIN_5
 #define SYNC1_GPIO_Port GPIOC
+#define STATUS0_Pin GPIO_PIN_12
+#define STATUS0_GPIO_Port GPIOB
+#define STATUS1_Pin GPIO_PIN_13
+#define STATUS1_GPIO_Port GPIOB
+#define STATUS2_Pin GPIO_PIN_14
+#define STATUS2_GPIO_Port GPIOB
+#define STATUS3_Pin GPIO_PIN_15
+#define STATUS3_GPIO_Port GPIOB
 #define TOF_INT_Pin GPIO_PIN_6
 #define TOF_INT_GPIO_Port GPIOC
 #define TOF_I2C_RST_Pin GPIO_PIN_7
@@ -104,6 +112,8 @@ void Error_Handler(void);
 #define SWCLK_GPIO_Port GPIOA
 #define IMU_NCS_Pin GPIO_PIN_15
 #define IMU_NCS_GPIO_Port GPIOA
+#define DISCHARGE_Pin GPIO_PIN_11
+#define DISCHARGE_GPIO_Port GPIOC
 #define IMU_SCK_Pin GPIO_PIN_12
 #define IMU_SCK_GPIO_Port GPIOC
 #define IMU_INT_Pin GPIO_PIN_2
