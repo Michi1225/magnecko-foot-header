@@ -26,10 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "BNO086.h"
-#include "LDC1614.h"
-#include "TMAG5273.h"
-#include "VL53L7CH.h"
+#include "FootController.h"
 
 /* USER CODE END Includes */
 
@@ -49,16 +46,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PV */
-BNO086 imu;
-LDC1614 ldc;
-TMAG5273 hall0(TMAG5273::A1);
-TMAG5273 hall1(TMAG5273::B1);
-TMAG5273 hall2(TMAG5273::C1);
-TMAG5273 hall3(TMAG5273::D1);
-VL53L7CH tof;
-
+FootController controller = FootController();
 
 /* USER CODE END PV */
 
@@ -111,32 +100,21 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI6_Init();
   /* USER CODE BEGIN 2 */
-  if(imu.init() != 0) Error_Handler();
-  if(ldc.init() != 0) Error_Handler();
-  if(hall0.init() != 0) Error_Handler(); 
-  if(hall1.init() != 0) Error_Handler();
-  if(hall2.init() != 0) Error_Handler();
-  if(hall3.init() != 0) Error_Handler();
-  if(tof.init() != 0) Error_Handler();
+  // if(imu.init() != 0) Error_Handler();
+  // if(ldc.init() != 0) Error_Handler();
+  // if(hall0.init() != 0) Error_Handler(); 
+  // if(hall1.init() != 0) Error_Handler();
+  // if(hall2.init() != 0) Error_Handler();
+  // if(hall3.init() != 0) Error_Handler();
+  // if(tof.init() != 0) Error_Handler();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  imu.start();
-  tof.start_ranging();
   while (1)
   {
-    imu.update();
-    float f0 = ldc.readData(0);
-    float f1 = ldc.readData(1);
-    float f2 = ldc.readData(2);
-    float f3 = ldc.readData(3);
-    float bx = hall0.read_Bx();
-    float by = hall0.read_By();
-    float bz = hall0.read_Bz();
-    float t = hall0.read_T();
-    int status = tof.get_ranging_data();
+
 
     /* USER CODE END WHILE */
 
@@ -173,13 +151,13 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 17;
+  RCC_OscInitStruct.PLL.PLLN = 34;
   RCC_OscInitStruct.PLL.PLLP = 1;
-  RCC_OscInitStruct.PLL.PLLQ = 2;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 1536;
+  RCC_OscInitStruct.PLL.PLLFRACN = 3072;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -192,7 +170,7 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
@@ -208,7 +186,7 @@ void SystemClock_Config(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if(GPIO_Pin == IMU_INT_Pin) {
-    imu.msg_ready = true;
+    controller.imu.msg_ready = true;
   }
 }
 

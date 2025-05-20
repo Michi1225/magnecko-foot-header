@@ -53,7 +53,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Libs/Sensors/TMAG5273.cpp
     Libs/Sensors/VL53L7CH.cpp
     Libs/Sensors/LDC1614.cpp
-    Libs/FSM/fsm.cpp
+    Libs/FSM/FSM.cpp
+    Libs/Controller/FootController.cpp
     Drivers/VL53LMZ_ULD_API/Platform/platform.c
     Drivers/VL53LMZ_ULD_API/src/vl53lmz_api.c
     Drivers/VL53LMZ_ULD_API/src/vl53lmz_plugin_infos.c
@@ -64,8 +65,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     Libs/Sensors
     Libs/FSM
+    Libs/Controller
     Drivers/VL53LMZ_ULD_API/Platform
     Drivers/VL53LMZ_ULD_API/inc
+    Core/Inc
     # Add user defined include paths
 )
 
