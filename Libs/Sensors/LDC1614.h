@@ -1,6 +1,7 @@
 #pragma once
 #include "main.h"
 #include <cstring>
+#include <stdint.h>
 
 
 // read only
@@ -118,4 +119,5 @@ public:
     uint8_t init();
     float readData(uint8_t channel);
     uint16_t readStatus();
+    uint16_t forceEstimation();
 };

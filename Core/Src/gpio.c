@@ -84,17 +84,17 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : CHARGE_DONE_Pin EEPROM_LOADED_Pin */
-  GPIO_InitStruct.Pin = CHARGE_DONE_Pin|EEPROM_LOADED_Pin;
+  /*Configure GPIO pins : CHARGE_DONE_Pin EEPROM_LOADED_Pin LDC_INT_Pin */
+  GPIO_InitStruct.Pin = CHARGE_DONE_Pin|EEPROM_LOADED_Pin|LDC_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ECAT_IRQ_Pin LDC_INT_Pin */
-  GPIO_InitStruct.Pin = ECAT_IRQ_Pin|LDC_INT_Pin;
+  /*Configure GPIO pin : ECAT_IRQ_Pin */
+  GPIO_InitStruct.Pin = ECAT_IRQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(ECAT_IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : ECAT_NCS_Pin TOF_LP_Pin IMU_NCS_Pin */
   GPIO_InitStruct.Pin = ECAT_NCS_Pin|TOF_LP_Pin|IMU_NCS_Pin;
@@ -103,8 +103,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SYNC0_Pin SYNC1_Pin TOF_INT_Pin */
-  GPIO_InitStruct.Pin = SYNC0_Pin|SYNC1_Pin|TOF_INT_Pin;
+  /*Configure GPIO pins : SYNC0_Pin SYNC1_Pin TOF_INT_Pin BUTTON_Pin */
+  GPIO_InitStruct.Pin = SYNC0_Pin|SYNC1_Pin|TOF_INT_Pin|BUTTON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);

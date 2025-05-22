@@ -1,5 +1,16 @@
 #include "LDC1614.h"
 
+
+
+static uint16_t freq_to_Force(float freq)
+{
+    // Convert frequency to force
+    // This is a placeholder function.
+    return (uint16_t)(freq / 1000);
+}
+
+
+
 LDC1614::LDC1614() {
     // Constructor
 }
@@ -142,4 +153,16 @@ uint16_t LDC1614::readStatus() {
     uint16_t status = 0;
     if(HAL_I2C_Mem_Read(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, STATUS_ADDR, 1, (uint8_t *)&status, 2, 100) != HAL_OK) return 0; // Error in reading
     return status;
+}
+
+uint16_t LDC1614::forceEstimation()
+{
+    //get force estimate for each Magnet
+    uint16_t force_0 =  freq_to_Force(readData(0));
+    uint16_t force_1 =  freq_to_Force(readData(1));
+    uint16_t force_2 =  freq_to_Force(readData(2));
+    uint16_t force_3 =  freq_to_Force(readData(3));
+
+    //Total Holding force is the sum of all forces
+    return force_0 + force_1 + force_2 + force_3;
 }

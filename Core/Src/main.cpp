@@ -22,6 +22,7 @@
 #include "i2c.h"
 #include "memorymap.h"
 #include "spi.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -46,6 +47,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
 /* USER CODE BEGIN PV */
 FootController controller = FootController();
 
@@ -99,6 +101,7 @@ int main(void)
   MX_I2C3_Init();
   MX_SPI1_Init();
   MX_SPI6_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
   // if(imu.init() != 0) Error_Handler();
   // if(ldc.init() != 0) Error_Handler();
@@ -187,6 +190,19 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if(GPIO_Pin == IMU_INT_Pin) {
     controller.imu.msg_ready = true;
+  }
+  else if(GPIO_Pin == BUTTON_Pin)
+  {
+      //Handle Button Press
+      //Ignore button press if magnetization is active
+      if(controller.active_magnetization) return; 
+      //Else, start charging capacitors
+      HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+      //Wait for Capacitors to charge
+      while(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)){}
+      //Toggle magnetization with each button press
+      controller.requested_magnetization = !controller.requested_magnetization;
+      controller.magnetize(MAGNETIZATION_TIME);
   }
 }
 

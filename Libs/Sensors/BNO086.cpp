@@ -14,9 +14,7 @@ BNO086::BNO086()
     this->grav_data = {0, 0, 0, 0, 0, 0, 0};
 }
 
-/*
- * @brief   Initialize BNO with the correct settings and define the Feature reports. 
- */
+
 uint8_t BNO086::init()
 {
     //Set feature reports to be set up
@@ -66,10 +64,7 @@ uint8_t BNO086::init()
     return status;
 }
 
-/*
- * @brief   Start feature reports, as defined in init()
- * @retval  HAL Status Code. 0 if all transmissions were successful
- * */
+
 uint8_t BNO086::start()
 {
 
@@ -131,12 +126,7 @@ uint8_t BNO086::start()
 
 }
 
-/*
- * @brief   Updates the sensor values from the SPI interface. 
-            This function should be called as soon as a Interrupt
-            on the BNO interrupt line is detected.
- * @retval  HAL Status Code. 0 if all SPI Receive were successful
- */
+
 uint8_t BNO086::update()
 {
     if(!this->msg_ready) return 1; //No new message available

@@ -60,6 +60,14 @@
 #define MAGNITUDE_RESULT_ADDR 0x1B
 #define DEVICE_STATUS_ADDR 0x1C
 
+#define DEVICE_VERSION 2 // 1 for TMAG5273x1, 2 for TMAG5273x2
+
+#if (DEVICE_VERSION == 1)
+#define MAG_SENSITIVITY 40 // mT/LSB
+#elif (DEVICE_VERSION == 2)
+#define MAG_SENSITIVITY 133 // mT/LSB
+#endif
+
 #define SENS_I2C_HANDLE &hi2c3
 
 
@@ -113,4 +121,12 @@ public:
      * @return temperature value in degree Celsius
      */
     float read_T();
+
+    /**
+     * @brief Estimate the Contact
+     * @return true if contact, false if no contact
+     */
+    bool estimate_contact();
+
+
 };

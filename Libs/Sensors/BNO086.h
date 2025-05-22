@@ -73,8 +73,24 @@ private:
 
 public:
     BNO086();
+
+    /**
+     * @brief   Initialize BNO with the correct settings and define the Feature reports. 
+     */
     uint8_t init();
+
+    /**
+     * @brief   Start feature reports, as defined in init()
+     * @retval  HAL Status Code. 0 if all transmissions were successful
+     */
     uint8_t start();
+
+    /**
+     * @brief   Updates the sensor values from the SPI interface. 
+                This function should be called within 10ms of
+                the BNO interrupt line assert.
+     * @retval  HAL Status Code. 0 if all SPI Receive were successful
+     */
     uint8_t update();
     
     VectorData gyro_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GYROSCOPE};

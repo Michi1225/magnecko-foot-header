@@ -10,14 +10,17 @@ extern "C" {
     #include "ecat_slv.h"
     #include "utypes.h"
     #include "soes_pin_mapping_def.h"
-  }
+ }
+
+#define MAGNETIZATION_TIME 20 //100us
+
 
 class FootController
 {
 private:
 
     //ECAT variables
-    pin_mapping_typedef pin_mapping = {&hspi6, ECAT_NCS_GPIO_Port, ECAT_NCS_Pin, EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin};
+    pin_mapping_typedef pin_mapping = {&hspi1, ECAT_NCS_GPIO_Port, ECAT_NCS_Pin, EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin};
     esc_cfg_t config =
     {
        /* User input to stack */
@@ -76,20 +79,53 @@ private:
     FSM fsm_;
     FSMActions fsmActions_;
 
-    public:
+
+
+
+public:
     //Sensor variables
+    //IMU
     BNO086 imu;
+    //LDC
     LDC1614 ldc;
+    uint16_t force_estimation = 0;
+    //Hall Sensors
     TMAG5273 hall0;
     TMAG5273 hall1;
     TMAG5273 hall2;
     TMAG5273 hall3;
+    uint8_t contact_estimation = 0;
+    //TOF
     VL53L7CH tof;
     
+    //Controller variables
+    bool requested_magnetization = false;   //Requested magnetization state
+    bool status_magnetization = false;      //Status of the magnetization
+    bool active_magnetization = false;      //A magnetization is active
+    bool requested_discharge = false;       //A discharge is requested
+
     FootController();
+
+    /**
+     * @brief Initialize the FootController. If this function fails, Error_Handler() is called.
+     */
     void init();
+
+    /**
+     * @brief Run the EtherCAT communication loop.
+     */
     void runCommunication();
+
+    /**
+     * @brief Run the FootController loop. Here, the FSM is executed and the sensors are updated.
+     */
     void runControl();
+
+    /**
+     * @brief Magnetize or demagnetize the Magnet according to the requested state.
+     * @param time Time in 100us to magnetize the magnet.
+     */
+    void magnetize(uint8_t time);
 
     //FSM actions
     FSMStatus FSM_bg(FSMStatus state, uint16_t& status_word, int8_t& mode);
