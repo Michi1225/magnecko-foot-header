@@ -2,11 +2,11 @@
 
 
 
-static uint16_t freq_to_Force(float freq)
+static uint8_t freq_to_Force(float freq)
 {
     // Convert frequency to force
     // This is a placeholder function.
-    return (uint16_t)(freq / 1000);
+    return (uint8_t)(freq / 1000);
 }
 
 
@@ -155,13 +155,13 @@ uint16_t LDC1614::readStatus() {
     return status;
 }
 
-uint16_t LDC1614::forceEstimation()
+uint8_t LDC1614::forceEstimation()
 {
     //get force estimate for each Magnet
-    uint16_t force_0 =  freq_to_Force(readData(0));
-    uint16_t force_1 =  freq_to_Force(readData(1));
-    uint16_t force_2 =  freq_to_Force(readData(2));
-    uint16_t force_3 =  freq_to_Force(readData(3));
+    uint8_t force_0 =  freq_to_Force(readData(0));
+    uint8_t force_1 =  freq_to_Force(readData(1));
+    uint8_t force_2 =  freq_to_Force(readData(2));
+    uint8_t force_3 =  freq_to_Force(readData(3));
 
     //Total Holding force is the sum of all forces
     return force_0 + force_1 + force_2 + force_3;

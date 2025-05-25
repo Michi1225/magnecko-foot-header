@@ -46,6 +46,13 @@ void FootController::init()
     if(tof.start_ranging() != 0) Error_Handler();
 }
 
+void FootController::runCommunication()
+{
+    //TODO: Copy data from FootController variables to Object Dictionary (implement cb_get_inputs)
+    ecat_slv();
+    //TODO: Copy data from Object Dictionary to FootController variables (implement cb_set_outputs)
+}
+
 void FootController::magnetize(uint8_t time)
 {
     //Set active flag
@@ -61,11 +68,13 @@ void FootController::magnetize(uint8_t time)
     // Select GPIO output
     auto gpio_port = DRV_P_GPIO_Port;
     auto gpio_pin = DRV_P_Pin;
-    if(!this->requested_magnetization)
+    if(!this->requested_magnetization && this->requested_demagnetization)
     {
         gpio_port = DRV_M_GPIO_Port;
         gpio_pin = DRV_M_Pin;
     }
+    //Set Magnetization Status
+    this->status_magnetization = this->requested_magnetization;
 
     //Start Timer
     TIM1->ARR = time * 100; // time in us
@@ -75,25 +84,24 @@ void FootController::magnetize(uint8_t time)
 
 void FootController::runControl()
 {
-    //Magnetization state
-    if(this->requested_magnetization != this->status_magnetization)
-    {
-        //Magnet state has to be changed
-        this->magnetize(MAGNETIZATION_TIME);
-        this->status_magnetization = this->requested_magnetization;
-    }
-    //Charge Capacitors
-    if(!this->active_magnetization) HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
-
-    //Discharge state
-    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, this->requested_discharge ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    this->fsm_.run();
 }
 
 FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    //Handle Sensors
+    //IMU
     imu.update();
-    int status = tof.get_ranging_data();
+    this->rotation_data.quaternion_i = imu.rot_data.quaternion_i;
+    this->rotation_data.quaternion_j = imu.rot_data.quaternion_j;
+    this->rotation_data.quaternion_k = imu.rot_data.quaternion_k;
+    this->rotation_data.quaternion_real = imu.rot_data.quaternion_real;
 
+    //ToF
+    (void)tof.get_ranging_data();
+    //TODO: Compress Ranging data in a meaningful way
+
+    //LDC & Hall Sensors
     if(this->status_magnetization)
     {
         //Perform Contact Estimation
@@ -101,10 +109,11 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
         bool contact_1 = hall1.estimate_contact();
         bool contact_2 = hall2.estimate_contact();
         bool contact_3 = hall3.estimate_contact();
+        // Contact estimation is a bitmap containing the contact estimation for all four magnets
         this->contact_estimation = contact_0 + (contact_1 << 1) + (contact_2 << 2) + (contact_3 << 3);
 
         //Perform Force Estimation
-        this->force_estimation = this->ldc.forceEstimation();
+        this->force_estimation = this->ldc.forceEstimation() * (this->contact_estimation != 0); //Force estimation is only valid, if contact estimation is not 0
     } else 
     {
         //If the magnet is not active, set contact and force estimation to 0
@@ -116,12 +125,12 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
 
 FSMStatus FootController::FSM_notReadyToSwitchOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    this->init();
     return FSMStatus();
 }
 
 FSMStatus FootController::FSM_switchOnDisabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
     return FSMStatus();
 }
 
@@ -132,11 +141,34 @@ FSMStatus FootController::FSM_readyToSwitchOn(FSMStatus state, uint16_t &status_
 
 FSMStatus FootController::FSM_switchedOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)) 
+        HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //If the Caps are not charged, start charging
+    else HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET); //Else stop charging
     return FSMStatus();
 }
 
 FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    //Magnetization state
+    //Handle Magnetization/Demagnetization requests
+    if(this->requested_magnetization && this->requested_demagnetization)
+    {
+        //TODO: Handle faulty input
+    }
+    //Either Mafgnetization or Demagnetization was requested
+    else if(this->requested_magnetization != this->requested_demagnetization)
+    {
+        //Check, if the Caps are charged, and no magnetization is active
+        if(!HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) && !this->active_magnetization)
+        {
+            this->magnetize(MAGNETIZATION_TIME);
+        }
+    }
+    //Charge Capacitors
+    if(!this->active_magnetization) HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+
+    //Discharge state
+    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, this->requested_discharge ? GPIO_PIN_RESET : GPIO_PIN_SET);
     return FSMStatus();
 }
 
@@ -153,22 +185,5 @@ FSMStatus FootController::FSM_faultReactionActive(FSMStatus state, uint16_t &sta
 FSMStatus FootController::FSM_fault(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
     return FSMStatus();
-}
-
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  if (htim == &htim1)
-  {
-    //end switching pereiod
-    HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
-    HAL_TIM_Base_Stop_IT(htim);
-
-    //Start charging Capacitors
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
-  }
-
 }
 

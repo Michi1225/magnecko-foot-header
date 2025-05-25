@@ -49,7 +49,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+_Objects Obj;
 FootController controller = FootController();
+
 
 /* USER CODE END PV */
 
@@ -57,6 +59,40 @@ FootController controller = FootController();
 void SystemClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
+
+/**
+ * This function is called when to get input values
+ */
+void cb_get_inputs()
+{
+  uint16_t control_word = Obj.Control_Word;
+  // //Bit 4 is the Magnetization request 
+  // controller.requested_magnetization = control_word & (1 << 4);
+  // //Bit 5 is the Demagnetization request
+  // controller.requested_demagnetization = control_word & (1 << 5);
+  // //Bit 6 is the Discharge request
+  // controller.requested_discharge = control_word & (1 << 6);
+}
+
+/**
+* This function is called when to set outputs values
+ */
+void cb_set_outputs()
+{
+  
+  Obj.Status_word = controller.fsm_.getStatusWord();
+
+  // Obj.Quaternions[0] = controller.rotation_data.quaternion_i;
+  // Obj.Quaternions[1] = controller.rotation_data.quaternion_j;
+  // Obj.Quaternions[2] = controller.rotation_data.quaternion_k;
+  // Obj.Quaternions[3] = controller.rotation_data.quaternion_real;
+
+  // Obj.Force_estimation = controller.force_estimation;
+  // Obj.Contact_estimation = controller.contact_estimation;
+
+  // Obj.Flags = controller.active_magnetization | 
+  //             (controller.status_magnetization << 1);
+}
 
 /* USER CODE END PFP */
 
@@ -102,14 +138,9 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI6_Init();
   MX_TIM1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  // if(imu.init() != 0) Error_Handler();
-  // if(ldc.init() != 0) Error_Handler();
-  // if(hall0.init() != 0) Error_Handler(); 
-  // if(hall1.init() != 0) Error_Handler();
-  // if(hall2.init() != 0) Error_Handler();
-  // if(hall3.init() != 0) Error_Handler();
-  // if(tof.init() != 0) Error_Handler();
+  controller.init();
 
   /* USER CODE END 2 */
 
@@ -117,7 +148,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+    controller.runCommunication();
 
     /* USER CODE END WHILE */
 
@@ -201,9 +232,32 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
       //Wait for Capacitors to charge
       while(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)){}
       //Toggle magnetization with each button press
-      controller.requested_magnetization = !controller.requested_magnetization;
+      controller.requested_magnetization   =  !controller.status_magnetization;
+      controller.requested_demagnetization =   controller.status_magnetization;
       controller.magnetize(MAGNETIZATION_TIME);
   }
+}
+
+
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim == &htim1)
+  {
+    //end switching pereiod
+    HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
+    HAL_TIM_Base_Stop_IT(htim);
+
+    //Start charging Capacitors
+    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+  }
+  else if (htim == &htim2)
+  {
+    //Update the controller
+    controller.runControl();
+  }
+
 }
 
 /* USER CODE END 4 */

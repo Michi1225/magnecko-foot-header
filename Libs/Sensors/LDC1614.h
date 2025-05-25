@@ -119,5 +119,11 @@ public:
     uint8_t init();
     float readData(uint8_t channel);
     uint16_t readStatus();
-    uint16_t forceEstimation();
+
+    /**
+     * @brief   Force estimation of the force on the sensor.
+     * @retval  Force estimation in N. 0, if Contact estimation is 0.
+     * @note    The resolution of the force estimation is 4N/LSB.
+     */
+    uint8_t forceEstimation();
 };

@@ -14,6 +14,15 @@ extern "C" {
 
 #define MAGNETIZATION_TIME 20 //100us
 
+typedef struct
+{
+    int16_t quaternion_i;
+    int16_t quaternion_j;
+    int16_t quaternion_k;
+    int16_t quaternion_real;
+} RotationData;
+
+
 
 class FootController
 {
@@ -75,20 +84,23 @@ private:
                                       PREOP->SAFEOP will fail.*/
     };
 
-    //FSM variables
-    FSM fsm_;
-    FSMActions fsmActions_;
-
 
 
 
 public:
+
+    //FSM variables
+    FSM fsm_;
+    FSMActions fsmActions_;
+
+    
     //Sensor variables
     //IMU
     BNO086 imu;
+    RotationData rotation_data = {0, 0, 0, 0}; //Quaternion data from IMU
     //LDC
     LDC1614 ldc;
-    uint16_t force_estimation = 0;
+    uint8_t force_estimation = 0;
     //Hall Sensors
     TMAG5273 hall0;
     TMAG5273 hall1;
@@ -100,6 +112,7 @@ public:
     
     //Controller variables
     bool requested_magnetization = false;   //Requested magnetization state
+    bool requested_demagnetization = false; //Requested demagnetization state
     bool status_magnetization = false;      //Status of the magnetization
     bool active_magnetization = false;      //A magnetization is active
     bool requested_discharge = false;       //A discharge is requested
