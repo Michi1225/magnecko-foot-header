@@ -15,6 +15,7 @@
 #include "soes_pin_mapping_def.h"
 #include <string.h>
 #include "stm32h7xx_hal.h"
+#include "main.h"
 
 
 #define MAX_READ_SIZE   128
@@ -51,7 +52,11 @@ static void esc_address (uint16_t address, uint8_t command)
 
    /* Write (and read AL interrupt register) */
    
-   HAL_SPI_TransmitReceive(soes_pin_mapping->hspi, (uint8_t *) data, &ESCvar.ALevent, sizeof (data),100);
+   HAL_StatusTypeDef err = HAL_SPI_TransmitReceive(soes_pin_mapping->hspi, (uint8_t *) data, &ESCvar.ALevent, sizeof (data),100);
+   if(err != HAL_OK)
+   {
+      Error_Handler();
+   }
    
    ESCvar.ALevent = etohs (ESCvar.ALevent);
 }
@@ -76,6 +81,10 @@ void ESC_read (uint16_t address, void *buf, uint16_t len)
     * Read (and write termination bytes).
     */
    HAL_StatusTypeDef err = HAL_SPI_TransmitReceive(soes_pin_mapping->hspi, read_termination + (MAX_READ_SIZE - len), buf, len,100);
+   if(err != HAL_OK)
+   {
+      Error_Handler();
+   }
 
    HAL_GPIO_WritePin(soes_pin_mapping->NCS_port,soes_pin_mapping->NCS_pin, GPIO_PIN_SET);
 }

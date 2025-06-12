@@ -116,12 +116,14 @@ void Error_Handler(void);
 #define IMU_NCS_GPIO_Port GPIOA
 #define BUTTON_Pin GPIO_PIN_10
 #define BUTTON_GPIO_Port GPIOC
+#define BUTTON_EXTI_IRQn EXTI15_10_IRQn
 #define DISCHARGE_Pin GPIO_PIN_11
 #define DISCHARGE_GPIO_Port GPIOC
 #define IMU_SCK_Pin GPIO_PIN_12
 #define IMU_SCK_GPIO_Port GPIOC
 #define IMU_INT_Pin GPIO_PIN_2
 #define IMU_INT_GPIO_Port GPIOD
+#define IMU_INT_EXTI_IRQn EXTI2_IRQn
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 #define IMU_MISO_Pin GPIO_PIN_4

@@ -77,11 +77,18 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = DRV_M_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(DRV_M_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DRV_P_Pin CHARGE_START_Pin TOF_I2C_RST_Pin DISCHARGE_Pin */
-  GPIO_InitStruct.Pin = DRV_P_Pin|CHARGE_START_Pin|TOF_I2C_RST_Pin|DISCHARGE_Pin;
+  /*Configure GPIO pin : DRV_P_Pin */
+  GPIO_InitStruct.Pin = DRV_P_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(DRV_P_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : CHARGE_START_Pin TOF_I2C_RST_Pin DISCHARGE_Pin */
+  GPIO_InitStruct.Pin = CHARGE_START_Pin|TOF_I2C_RST_Pin|DISCHARGE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -106,8 +113,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SYNC0_Pin SYNC1_Pin TOF_INT_Pin BUTTON_Pin */
-  GPIO_InitStruct.Pin = SYNC0_Pin|SYNC1_Pin|TOF_INT_Pin|BUTTON_Pin;
+  /*Configure GPIO pins : SYNC0_Pin SYNC1_Pin TOF_INT_Pin */
+  GPIO_InitStruct.Pin = SYNC0_Pin|SYNC1_Pin|TOF_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -128,11 +135,24 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(TOF_LP_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : BUTTON_Pin */
+  GPIO_InitStruct.Pin = BUTTON_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(BUTTON_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : IMU_INT_Pin */
   GPIO_InitStruct.Pin = IMU_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 

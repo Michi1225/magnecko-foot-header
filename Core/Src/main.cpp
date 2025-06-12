@@ -139,7 +139,9 @@ int main(void)
   MX_SPI6_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
+  while(HAL_GPIO_ReadPin(EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin) == GPIO_PIN_RESET){}
   controller.init();
 
   /* USER CODE END 2 */
@@ -149,7 +151,9 @@ int main(void)
   while (1)
   {
     controller.runCommunication();
-
+    uint8_t data = 0;
+    ESC_read(0x150, (void *) &data, 1);
+    int i = 0;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -224,17 +228,17 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   }
   else if(GPIO_Pin == BUTTON_Pin)
   {
+    if(HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_RESET) //Falling edge
+    {
       //Handle Button Press
-      //Ignore button press if magnetization is active
-      if(controller.active_magnetization) return; 
-      //Else, start charging capacitors
-      HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
-      //Wait for Capacitors to charge
-      while(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)){}
-      //Toggle magnetization with each button press
-      controller.requested_magnetization   =  !controller.status_magnetization;
-      controller.requested_demagnetization =   controller.status_magnetization;
-      controller.magnetize(MAGNETIZATION_TIME);
+      TIM6->CNT = 0; //Reset Timer
+      HAL_TIM_Base_Start_IT(&htim6);
+
+    }
+    else //Falling edge
+    {
+      HAL_TIM_Base_Stop_IT(&htim6);
+    }
   }
 }
 
@@ -248,15 +252,37 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
     HAL_TIM_Base_Stop_IT(htim);
+    controller.active_magnetization = false; //Reset active magnetization flag
 
     //Start charging Capacitors
     HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
   }
-  else if (htim == &htim2)
+  // else if (htim == &htim2)
+  // {
+  //   //Update the controller
+  //   controller.runControl();
+  // }
+  else if (htim == &htim6)
   {
-    //Update the controller
-    controller.runControl();
+    HAL_TIM_Base_Stop_IT(htim);
+    //Handle Button Press
+    //Ignore button press if magnetization is active
+    if(controller.active_magnetization /*|| HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)*/) 
+    {
+      return; //Do nothing if magnetization is active
+    } 
+    HAL_GPIO_TogglePin(STATUS1_GPIO_Port, STATUS1_Pin); //Set Status LED 1
+    //Else, start charging capacitors
+    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+    //Wait for Capacitors to charge
+    // while(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)){}
+
+    //Toggle magnetization with each button press
+    controller.requested_magnetization   =  !controller.status_magnetization;
+    controller.requested_demagnetization =   controller.status_magnetization;
+    controller.magnetize(MAGNETIZATION_TIME);
   }
+  
 
 }
 
@@ -299,9 +325,17 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
+  for(int i = 0; i <= 162; ++i)
+  {
+    if( i != SysTick_IRQn) NVIC_DisableIRQ((IRQn_Type)i); //Disable all interrupts except SysTick
+  }
+  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Error LED
   while (1)
   {
+    // Stay in this loop to indicate an error
+    // You can also add a blinking LED or other error handling here
+    HAL_Delay(200); // Delay to prevent flooding the console
+    HAL_GPIO_TogglePin(STATUS3_GPIO_Port, STATUS3_Pin); //Toggle Error LED
   }
   /* USER CODE END Error_Handler_Debug */
 }

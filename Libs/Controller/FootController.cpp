@@ -16,17 +16,17 @@ FootController::FootController() : fsm_(),
 void FootController::init()
 {
     //FSM initialization
-    fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    fsmActions_.notReadyToSwitchOn_ = std::bind(&FootController::FSM_notReadyToSwitchOn, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    fsmActions_.switchOnDisabled_ = std::bind(&FootController::FSM_switchOnDisabled, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    fsmActions_.readyToSwitchOn_ = std::bind(&FootController::FSM_readyToSwitchOn, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    fsmActions_.switchedOn_ = std::bind(&FootController::FSM_switchedOn, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    fsmActions_.operationEnabled_ = std::bind(&FootController::FSM_operationEnabled, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    fsmActions_.quickStopActive_ = std::bind(&FootController::FSM_quickStopActive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    fsmActions_.faultReactionActive_ = std::bind(&FootController::FSM_faultReactionActive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    fsmActions_.fault_ = std::bind(&FootController::FSM_fault, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.notReadyToSwitchOn_ = std::bind(&FootController::FSM_notReadyToSwitchOn, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.switchOnDisabled_ = std::bind(&FootController::FSM_switchOnDisabled, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.readyToSwitchOn_ = std::bind(&FootController::FSM_readyToSwitchOn, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.switchedOn_ = std::bind(&FootController::FSM_switchedOn, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.operationEnabled_ = std::bind(&FootController::FSM_operationEnabled, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.quickStopActive_ = std::bind(&FootController::FSM_quickStopActive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.faultReactionActive_ = std::bind(&FootController::FSM_faultReactionActive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    this->fsmActions_.fault_ = std::bind(&FootController::FSM_fault, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
-    fsm_.init(fsmActions_);
+    fsm_.init(this->fsmActions_);
 
     //ECAT initialization
     ecat_slv_init(&this->config);
@@ -34,23 +34,21 @@ void FootController::init()
 
     //Sensor initialization
     //TODO: Go to FMS Fault state if init fails
-    if(imu.init() != 0) Error_Handler();
-    if(ldc.init() != 0) Error_Handler();
-    if(hall0.init() != 0) Error_Handler();
-    if(hall1.init() != 0) Error_Handler();
-    if(hall2.init() != 0) Error_Handler();
-    if(hall3.init() != 0) Error_Handler();
-    if(tof.init() != 0) Error_Handler();
+    // if(imu.init() != 0) Error_Handler();
+    // if(ldc.init() != 0) Error_Handler();
+    // if(hall0.init() != 0) Error_Handler();
+    // if(hall1.init() != 0) Error_Handler();
+    // if(hall2.init() != 0) Error_Handler();
+    // if(hall3.init() != 0) Error_Handler();
+    // if(tof.init() != 0) Error_Handler();
 
-    if(imu.start() != 0) Error_Handler();
-    if(tof.start_ranging() != 0) Error_Handler();
+    // if(imu.start() != 0) Error_Handler();
+    // if(tof.start_ranging() != 0) Error_Handler();
 }
 
 void FootController::runCommunication()
 {
-    //TODO: Copy data from FootController variables to Object Dictionary (implement cb_get_inputs)
     ecat_slv();
-    //TODO: Copy data from Object Dictionary to FootController variables (implement cb_set_outputs)
 }
 
 void FootController::magnetize(uint8_t time)
@@ -63,7 +61,7 @@ void FootController::magnetize(uint8_t time)
 
     //Ensure no shoot through occurs
     HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
 
     // Select GPIO output
     auto gpio_port = DRV_P_GPIO_Port;
@@ -120,31 +118,34 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
         this->contact_estimation = 0;
         this->force_estimation = 0;
     }
-    return FSMStatus();
+    return state;
 }
 
 FSMStatus FootController::FSM_notReadyToSwitchOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    return FSMStatus();
+    return state;
 }
 
 FSMStatus FootController::FSM_switchOnDisabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
-    return FSMStatus();
+    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    return state;
 }
 
 FSMStatus FootController::FSM_readyToSwitchOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    return FSMStatus();
+    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
+    return state;
 }
 
 FSMStatus FootController::FSM_switchedOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)) 
+    if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) && !this->active_magnetization) //If the Caps are charged and no magnetization is active
         HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //If the Caps are not charged, start charging
     else HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET); //Else stop charging
-    return FSMStatus();
+    return state;
 }
 
 FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
@@ -169,21 +170,23 @@ FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status
 
     //Discharge state
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, this->requested_discharge ? GPIO_PIN_RESET : GPIO_PIN_SET);
-    return FSMStatus();
+    return state;
 }
 
 FSMStatus FootController::FSM_quickStopActive(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    return FSMStatus();
+    return state;
 }
 
 FSMStatus FootController::FSM_faultReactionActive(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    return FSMStatus();
+    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
+    Error_Handler(); //Handle Fault
+    return state;
 }
 
 FSMStatus FootController::FSM_fault(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    return FSMStatus();
+    return state;
 }
 

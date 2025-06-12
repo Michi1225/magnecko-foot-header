@@ -12,7 +12,7 @@ extern "C" {
     #include "soes_pin_mapping_def.h"
  }
 
-#define MAGNETIZATION_TIME 20 //100us
+#define MAGNETIZATION_TIME 20 //2ms
 
 typedef struct
 {
