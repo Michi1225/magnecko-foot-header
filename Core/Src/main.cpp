@@ -80,7 +80,10 @@ void cb_get_inputs()
 void cb_set_outputs()
 {
   
-  Obj.Status_word = controller.fsm_.getStatusWord();
+  // Obj.Status_word = controller.fsm_.getStatusWord();
+  Obj.Temperatures[0] = controller.imu.accel_data.axis_x;
+  Obj.Temperatures[1] = controller.imu.accel_data.axis_y;
+  Obj.Temperatures[2] = controller.imu.accel_data.axis_z;
 
   // Obj.Quaternions[0] = controller.rotation_data.quaternion_i;
   // Obj.Quaternions[1] = controller.rotation_data.quaternion_j;
@@ -148,12 +151,29 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  if(HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) Error_Handler(); //Start Control Timer
+  HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
   while (1)
   {
     controller.runCommunication();
-    uint8_t data = 0;
-    ESC_read(0x150, (void *) &data, 1);
-    int i = 0;
+    if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) == GPIO_PIN_SET)
+    {
+      HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_RESET);
+      if(HAL_GPIO_ReadPin(CHARGE_START_GPIO_Port, CHARGE_START_Pin) == GPIO_PIN_SET)
+      {
+        if(!controller.active_magnetization)
+        {
+          // HAL_GPIO_TogglePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin);
+          // HAL_Delay(0);
+          // HAL_GPIO_TogglePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin);
+        }
+      }
+    }
+    else
+    {
+      HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET);
+    }
+    HAL_Delay(0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -235,7 +255,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
       HAL_TIM_Base_Start_IT(&htim6);
 
     }
-    else //Falling edge
+    else //Rising edge
     {
       HAL_TIM_Base_Stop_IT(&htim6);
     }
@@ -257,11 +277,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     //Start charging Capacitors
     HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
   }
-  // else if (htim == &htim2)
-  // {
-  //   //Update the controller
-  //   controller.runControl();
-  // }
+  else if (htim == &htim2)
+  {
+    // Update the controller
+    controller.runControl();
+  }
   else if (htim == &htim6)
   {
     HAL_TIM_Base_Stop_IT(htim);
@@ -273,13 +293,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     } 
     HAL_GPIO_TogglePin(STATUS1_GPIO_Port, STATUS1_Pin); //Set Status LED 1
     //Else, start charging capacitors
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //Set Charge Start Pin
+    // HAL_GPIO_TogglePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin);
     //Wait for Capacitors to charge
-    // while(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)){}
+    while(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) == GPIO_PIN_SET){}
+    HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET); //Set Status LED 0
 
     //Toggle magnetization with each button press
-    controller.requested_magnetization   =  !controller.status_magnetization;
     controller.requested_demagnetization =   controller.status_magnetization;
+    controller.requested_magnetization   =  !controller.status_magnetization;
     controller.magnetize(MAGNETIZATION_TIME);
   }
   

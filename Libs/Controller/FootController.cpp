@@ -34,7 +34,7 @@ void FootController::init()
 
     //Sensor initialization
     //TODO: Go to FMS Fault state if init fails
-    // if(imu.init() != 0) Error_Handler();
+    if(imu.init() != 0) Error_Handler();
     // if(ldc.init() != 0) Error_Handler();
     // if(hall0.init() != 0) Error_Handler();
     // if(hall1.init() != 0) Error_Handler();
@@ -42,7 +42,7 @@ void FootController::init()
     // if(hall3.init() != 0) Error_Handler();
     // if(tof.init() != 0) Error_Handler();
 
-    // if(imu.start() != 0) Error_Handler();
+    if(imu.start() != 0) Error_Handler();
     // if(tof.start_ranging() != 0) Error_Handler();
 }
 
@@ -96,28 +96,28 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     this->rotation_data.quaternion_real = imu.rot_data.quaternion_real;
 
     //ToF
-    (void)tof.get_ranging_data();
+    // (void)tof.get_ranging_data();
     //TODO: Compress Ranging data in a meaningful way
 
     //LDC & Hall Sensors
-    if(this->status_magnetization)
-    {
-        //Perform Contact Estimation
-        bool contact_0 = hall0.estimate_contact();
-        bool contact_1 = hall1.estimate_contact();
-        bool contact_2 = hall2.estimate_contact();
-        bool contact_3 = hall3.estimate_contact();
-        // Contact estimation is a bitmap containing the contact estimation for all four magnets
-        this->contact_estimation = contact_0 + (contact_1 << 1) + (contact_2 << 2) + (contact_3 << 3);
+    // if(this->status_magnetization)
+    // {
+    //     //Perform Contact Estimation
+    //     bool contact_0 = hall0.estimate_contact();
+    //     bool contact_1 = hall1.estimate_contact();
+    //     bool contact_2 = hall2.estimate_contact();
+    //     bool contact_3 = hall3.estimate_contact();
+    //     // Contact estimation is a bitmap containing the contact estimation for all four magnets
+    //     this->contact_estimation = contact_0 + (contact_1 << 1) + (contact_2 << 2) + (contact_3 << 3);
 
-        //Perform Force Estimation
-        this->force_estimation = this->ldc.forceEstimation() * (this->contact_estimation != 0); //Force estimation is only valid, if contact estimation is not 0
-    } else 
-    {
-        //If the magnet is not active, set contact and force estimation to 0
-        this->contact_estimation = 0;
-        this->force_estimation = 0;
-    }
+    //     //Perform Force Estimation
+    //     this->force_estimation = this->ldc.forceEstimation() * (this->contact_estimation != 0); //Force estimation is only valid, if contact estimation is not 0
+    // } else 
+    // {
+    //     //If the magnet is not active, set contact and force estimation to 0
+    //     this->contact_estimation = 0;
+    //     this->force_estimation = 0;
+    // }
     return state;
 }
 
@@ -128,15 +128,15 @@ FSMStatus FootController::FSM_notReadyToSwitchOn(FSMStatus state, uint16_t &stat
 
 FSMStatus FootController::FSM_switchOnDisabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
+    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
     return state;
 }
 
 FSMStatus FootController::FSM_readyToSwitchOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
+    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
     return state;
 }
 

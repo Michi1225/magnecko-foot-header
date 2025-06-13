@@ -27,14 +27,14 @@ uint8_t BNO086::init()
 
 
     //Reset BNO
-    HAL_NVIC_DisableIRQ(EXTI15_10_IRQn); //Disable HINT_N interrupt
+    HAL_NVIC_DisableIRQ(EXTI2_IRQn); //Disable HINT_N interrupt
     HAL_GPIO_WritePin(IMU_NRST_GPIO_Port, IMU_NRST_Pin, GPIO_PIN_RESET);
     HAL_Delay(0);
     HAL_GPIO_WritePin(IMU_NRST_GPIO_Port, IMU_NRST_Pin, GPIO_PIN_SET);
 
     //After reset, we have to wait for BNO to assert HINT_N
     while(HAL_GPIO_ReadPin(IMU_INT_GPIO_Port, IMU_INT_Pin) == GPIO_PIN_RESET);
-    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn); //Enable HINT_N interrupt
+    HAL_NVIC_EnableIRQ(EXTI2_IRQn); //Enable HINT_N interrupt
 
 
     //Read advertisemsent
@@ -42,7 +42,7 @@ uint8_t BNO086::init()
     this->msg_ready = false;
     uint8_t advertisement[284] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    HAL_SPI_Receive(BNO086_SPI_HANDLE, advertisement, 284, 10);
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, advertisement, 284, 10) != HAL_OK) Error_Handler();
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
     
     //read initialize response
@@ -50,7 +50,7 @@ uint8_t BNO086::init()
     this->msg_ready = false;
     uint8_t init[20] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    uint8_t status = HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100);
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100) != HAL_OK) Error_Handler();
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
     //read message from executable
@@ -58,10 +58,10 @@ uint8_t BNO086::init()
     this->msg_ready = false;
     uint8_t exec[5] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    status |= HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 1);
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 1) != HAL_OK) Error_Handler();
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
-    return status;
+    return 0;
 }
 
 
