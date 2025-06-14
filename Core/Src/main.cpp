@@ -49,7 +49,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-_Objects Obj;
+_Objects Obj = {};
 FootController controller = FootController();
 
 
@@ -151,23 +151,28 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Status LED to indicate booting
+  HAL_Delay(1000);
+  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_RESET); //Reset Status LED
   if(HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) Error_Handler(); //Start Control Timer
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
   while (1)
   {
     controller.runCommunication();
+
+    //Top up capacitors
     if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) == GPIO_PIN_SET)
     {
       HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_RESET);
-      if(HAL_GPIO_ReadPin(CHARGE_START_GPIO_Port, CHARGE_START_Pin) == GPIO_PIN_SET)
-      {
-        if(!controller.active_magnetization)
-        {
-          // HAL_GPIO_TogglePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin);
-          // HAL_Delay(0);
-          // HAL_GPIO_TogglePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin);
-        }
-      }
+      // if(HAL_GPIO_ReadPin(CHARGE_START_GPIO_Port, CHARGE_START_Pin) == GPIO_PIN_SET)
+      // {
+      //   if(!controller.active_magnetization)
+      //   {
+      //     HAL_GPIO_TogglePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin);
+      //     HAL_Delay(0);
+      //     HAL_GPIO_TogglePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin);
+      //   }
+      // }
     }
     else
     {
@@ -252,12 +257,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
       //Handle Button Press
       TIM6->CNT = 0; //Reset Timer
+      HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
       HAL_TIM_Base_Start_IT(&htim6);
 
     }
     else //Rising edge
     {
       HAL_TIM_Base_Stop_IT(&htim6);
+      HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
     }
   }
 }
@@ -275,7 +282,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     controller.active_magnetization = false; //Reset active magnetization flag
 
     //Start charging Capacitors
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
   }
   else if (htim == &htim2)
   {
@@ -285,19 +292,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   else if (htim == &htim6)
   {
     HAL_TIM_Base_Stop_IT(htim);
+    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
     //Handle Button Press
     //Ignore button press if magnetization is active
-    if(controller.active_magnetization /*|| HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin)*/) 
+    if(controller.active_magnetization) 
     {
       return; //Do nothing if magnetization is active
-    } 
+    }
+    // else if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin))
+    // {
+    //   HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //Set Charge Start Pin
+    //   // return;
+    // }
     HAL_GPIO_TogglePin(STATUS1_GPIO_Port, STATUS1_Pin); //Set Status LED 1
-    //Else, start charging capacitors
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //Set Charge Start Pin
-    // HAL_GPIO_TogglePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin);
     //Wait for Capacitors to charge
-    while(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) == GPIO_PIN_SET){}
-    HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET); //Set Status LED 0
+    // while(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) == GPIO_PIN_SET){}
+    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET); //Reset Charge Start Pin
+    // HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET); //Set Status LED 0
 
     //Toggle magnetization with each button press
     controller.requested_demagnetization =   controller.status_magnetization;

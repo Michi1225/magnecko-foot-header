@@ -57,19 +57,19 @@ void FootController::magnetize(uint8_t time)
     this->active_magnetization = true;
 
     //Disable Charging while magnetizing
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
 
     //Ensure no shoot through occurs
     HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
 
     // Select GPIO output
-    auto gpio_port = DRV_P_GPIO_Port;
-    auto gpio_pin = DRV_P_Pin;
+    auto gpio_port = DRV_M_GPIO_Port;
+    auto gpio_pin = DRV_M_Pin;
     if(!this->requested_magnetization && this->requested_demagnetization)
     {
-        gpio_port = DRV_M_GPIO_Port;
-        gpio_pin = DRV_M_Pin;
+        gpio_port = DRV_P_GPIO_Port;
+        gpio_pin = DRV_P_Pin;
     }
     //Set Magnetization Status
     this->status_magnetization = this->requested_magnetization;
@@ -142,9 +142,9 @@ FSMStatus FootController::FSM_readyToSwitchOn(FSMStatus state, uint16_t &status_
 
 FSMStatus FootController::FSM_switchedOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) && !this->active_magnetization) //If the Caps are charged and no magnetization is active
-        HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //If the Caps are not charged, start charging
-    else HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET); //Else stop charging
+    // if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) && !this->active_magnetization) //If the Caps are charged and no magnetization is active
+    //     HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //If the Caps are not charged, start charging
+    // else HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET); //Else stop charging
     return state;
 }
 
@@ -166,7 +166,7 @@ FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status
         }
     }
     //Charge Capacitors
-    if(!this->active_magnetization) HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+    // if(!this->active_magnetization) HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
 
     //Discharge state
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, this->requested_discharge ? GPIO_PIN_RESET : GPIO_PIN_SET);

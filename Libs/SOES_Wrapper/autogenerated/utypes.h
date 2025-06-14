@@ -16,14 +16,14 @@ typedef struct
    int16_t Temperatures[4];
    uint16_t Status_word;
    int8_t Operation_modes_display;
-   int32_t Position_Demand;
+   float Position_Demand;
    int32_t Position_Actual;
-   int32_t Velocity_Demand;
+   float Velocity_Demand;
    int32_t Velocity_Actual;
-   int16_t Torque_Demand;
+   float Torque_Demand;
    int32_t Torque_Actual;
-   int32_t Current_Actual;
-   uint32_t DC_Link_Voltage;
+   int32_t Total_Current;
+   float DC_Link_Voltage;
 
    /* Outputs */
 
@@ -49,7 +49,7 @@ typedef struct
 
    /* Manufacturer specific data */
 
-   uint16_t Device_Information[7];
+   uint32_t Device_Information[7];
    struct
    {
       uint32_t Phase_resistance;
@@ -66,15 +66,21 @@ typedef struct
    {
       float Iq;
       float Id;
-      float Uq;
-      float Ud;
+      float Uq_Demand;
+      float Ud_Demand;
+      float Ia;
+      float Ib;
+      float Ic;
    } Internal_Info;
    uint8_t Fan_Speed;
    uint8_t GPIO_Toggle[2];
    uint8_t GPIO_State[2];
-   uint8_t Encodre_Offset_Calibrated;
-   uint16_t Special_Command;
+   uint8_t Encoder_Offset_Calibrated;
+   float Zero_Position_Offset;
    uint32_t Timestamp;
+   float Cutoff_Frequency_Impeadance;
+   float Quick_Stop_PID[3];
+   uint8_t Tunes;
 
    /* Dynamic Sync Managers */
 
@@ -92,4 +98,5 @@ typedef struct
 } _Objects;
 
 extern _Objects Obj;
+
 #endif /* __UTYPES_H__ */

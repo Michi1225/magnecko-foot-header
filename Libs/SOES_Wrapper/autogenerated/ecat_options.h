@@ -33,8 +33,8 @@
 #define SM3_smc          0x60
 #define SM3_act          1
 
-#define MAX_MAPPINGS_SM2 9
-#define MAX_MAPPINGS_SM3 11
+#define MAX_MAPPINGS_SM2 11
+#define MAX_MAPPINGS_SM3 38
 
 #define MAX_RXPDO_SIZE   512
 #define MAX_TXPDO_SIZE   1877
