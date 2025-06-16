@@ -26,8 +26,9 @@ TMAG5273::TMAG5273(device_version version)
 
 uint8_t TMAG5273::init()
 {
-    uint8_t data[0x0D] =
+    uint8_t data[0x0E] =
     {
+        DEVICE_CONFIG_1_ADDR,
         DEVICE_CONFIG_1_VAL,
         DEVICE_CONFIG_2_VAL,
         SENSOR_CONFIG_1_VAL,
@@ -43,49 +44,66 @@ uint8_t TMAG5273::init()
         I2C_ADDRESS_VAL
     };
     uint8_t general_call_write = 0x00;
-    return HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, general_call_write, data, 0x0D, 100);
+    uint8_t error_code = HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, general_call_write, data, 0x0E, 100);
+    return error_code;
 }
+
+float TMAG5273::read_Bx()
+{
+    uint8_t txData[1] = {X_MSB_RESULT_ADDR}; // Read operation
+    uint8_t rxData[2] = {0};
+    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
+
+    float bx = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
+    return bx;
+}
+
 
 float TMAG5273::read_By()
 {
     uint8_t txData[1] = {Y_MSB_RESULT_ADDR};
     uint8_t rxData[2] = {0};
-    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, this->device_address, txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, this->device_address, rxData, 2, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
     float by = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
     return by;
 }
 
 
-float TMAG5273::read_Bx()
-{
-    uint8_t txData[1] = {X_MSB_RESULT_ADDR};
-    uint8_t rxData[2] = {0};
-    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, this->device_address, txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, this->device_address, rxData, 2, 100) != HAL_OK) Error_Handler();
-
-    float bx = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
-    return bx;
-}
 
 float TMAG5273::read_Bz()
 {
     uint8_t txData[1] = {Z_MSB_RESULT_ADDR};
     uint8_t rxData[2] = {0};
-    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, this->device_address, txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, this->device_address, rxData, 2, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
     float bz = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
     return bz;
+}
+
+float TMAG5273::read_magnitude()
+{
+    uint8_t txData[1] = {X_MSB_RESULT_ADDR}; // Read operation
+    uint8_t rxData[6] = {0};
+    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 6, 100) != HAL_OK) Error_Handler();
+
+    float bx = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
+    float by = (float)((((int16_t)rxData[2] << 8) | rxData[3])) / 65536.0f * 2 * MAG_SENSITIVITY;
+    float bz = (float)((((int16_t)rxData[4] << 8) | rxData[5])) / 65536.0f * 2 * MAG_SENSITIVITY;
+    float magnitude = sqrt(bx * bx + by * by + bz * bz);
+    return magnitude;
 }
 
 float TMAG5273::read_T()
 {
     uint8_t txData[1] = {T_MSB_RESULT_ADDR};
     uint8_t rxData[2] = {0};
-    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, this->device_address, txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, this->device_address, rxData, 2, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
     float t = 25.0f + ((((int16_t)rxData[0] << 8) | rxData[1]) - 17508) / 60.1f;
     return t;

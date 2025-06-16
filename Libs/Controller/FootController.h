@@ -102,10 +102,10 @@ public:
     LDC1614 ldc;
     uint8_t force_estimation = 0;
     //Hall Sensors
-    TMAG5273 hall0;
-    TMAG5273 hall1;
-    TMAG5273 hall2;
-    TMAG5273 hall3;
+    TMAG5273 hall0 = TMAG5273(TMAG5273::A1);
+    TMAG5273 hall1 = TMAG5273(TMAG5273::B1);
+    TMAG5273 hall2 = TMAG5273(TMAG5273::C1);
+    TMAG5273 hall3 = TMAG5273(TMAG5273::D1);
     uint8_t contact_estimation = 0;
     //TOF
     VL53L7CH tof;
@@ -116,6 +116,7 @@ public:
     bool status_magnetization = false;      //Status of the magnetization
     bool active_magnetization = false;      //A magnetization is active
     bool requested_discharge = false;       //A discharge is requested
+    bool charge_done = false;          //Capacitors are charged
 
     FootController();
 

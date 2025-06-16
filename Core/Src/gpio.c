@@ -58,13 +58,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, DRV_P_Pin|CHARGE_START_Pin|TOF_I2C_RST_Pin|DISCHARGE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, ECAT_NCS_Pin|IMU_NCS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, ECAT_NCS_Pin|TOF_LP_Pin|IMU_NCS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, STATUS0_Pin|STATUS1_Pin|STATUS2_Pin|STATUS3_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(TOF_LP_GPIO_Port, TOF_LP_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin, GPIO_PIN_SET);

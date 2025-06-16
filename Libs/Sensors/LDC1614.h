@@ -19,16 +19,16 @@
 
 // read/write
 #define RCOUNT0_ADDR 0x08
-#define RCOUNT0_VAL  0x10CC0 //100us
+#define RCOUNT0_VAL  0xFFFF
 
 #define RCOUNT1_ADDR 0x09
-#define RCOUNT1_VAL  0x10CC0 //100us
+#define RCOUNT1_VAL  0xFFFF //100us
 
 #define RCOUNT2_ADDR 0x0A
-#define RCOUNT2_VAL  0x10CC0 //100us
+#define RCOUNT2_VAL  0xFFFF //100us
 
 #define RCOUNT3_ADDR 0x0B
-#define RCOUNT3_VAL  0x10CC0 //100us
+#define RCOUNT3_VAL  0xFFFF //100us
 
 #define OFFSET0_ADDR 0x0C
 #define OFFSET0_VAL  0x00
@@ -95,7 +95,7 @@
 
 #define DATAx_MSB_MASK 0x0FFF
 
-#define LDC_I2C_ADDRESS 0x2A // LDC1614 I2C address
+#define LDC_I2C_ADDRESS 0x2B // LDC1614 I2C address
 
 #define LDC_I2C_HANDLE &hi2c3 // I2C handle
 

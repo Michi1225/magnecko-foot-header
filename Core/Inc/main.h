@@ -100,10 +100,6 @@ void Error_Handler(void);
 #define TOF_INT_GPIO_Port GPIOC
 #define TOF_I2C_RST_Pin GPIO_PIN_7
 #define TOF_I2C_RST_GPIO_Port GPIOC
-#define SENS_SDA_Pin GPIO_PIN_9
-#define SENS_SDA_GPIO_Port GPIOC
-#define SENS_SCL_Pin GPIO_PIN_8
-#define SENS_SCL_GPIO_Port GPIOA
 #define TOF_LP_Pin GPIO_PIN_9
 #define TOF_LP_GPIO_Port GPIOA
 #define LDC_INT_Pin GPIO_PIN_10

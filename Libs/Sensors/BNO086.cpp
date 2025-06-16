@@ -19,7 +19,7 @@ uint8_t BNO086::init()
 {
     //Set feature reports to be set up
     this->features.push_back(std::make_pair(BNO086_ID_ACCELEROMETER,        BNO086_PERIOD_ACCELEROMETER));
-    // this->features.push_back(std::make_pair(BNO086_ID_GYROSCOPE,            BNO086_PERIOD_GYROSCOPE));
+    this->features.push_back(std::make_pair(BNO086_ID_GYROSCOPE,            BNO086_PERIOD_GYROSCOPE));
     // this->features.push_back(std::make_pair(BNO086_ID_ROTATION,          BNO086_PERIOD_ROTATION));
     // this->features.push_back(std::make_pair(BNO086_ID_MAGNETOMETER,         BNO086_PERIOD_MAGNETOMETER));
     // this->features.push_back(std::make_pair(BNO086_ID_LINEAR_ACCELERATION,  BNO086_PERIOD_LINEAR_ACCELERATION));
@@ -40,25 +40,25 @@ uint8_t BNO086::init()
     //Read advertisemsent
     while(!this->msg_ready);
     this->msg_ready = false;
-    uint8_t advertisement[284] = {0};
+    uint8_t advertisement[568] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, advertisement, 284, 10) != HAL_OK) Error_Handler();
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, advertisement, 568, 10) != HAL_OK) Error_Handler();
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
     
     //read initialize response
     while(!this->msg_ready);
     this->msg_ready = false;
-    uint8_t init[20] = {0};
+    uint8_t init[40] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100) != HAL_OK) Error_Handler();
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 40, 100) != HAL_OK) Error_Handler();
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
     //read message from executable
     while(!this->msg_ready);
     this->msg_ready = false;
-    uint8_t exec[5] = {0};
+    uint8_t exec[10] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 1) != HAL_OK) Error_Handler();
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 10, 10) != HAL_OK) Error_Handler();
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
     return 0;
@@ -116,7 +116,7 @@ uint8_t BNO086::start()
         this->msg_ready = false;
         uint8_t rxBytes[21] = {0};
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, rxBytes, 21, 1000);
+        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, rxBytes, 12, 1000);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS low
         if(errorcode != HAL_OK) return errorcode;
     }

@@ -13,7 +13,7 @@
 #define SENSOR_CONFIG_1_VAL  0x70
 
 #define SENSOR_CONFIG_2_ADDR 0x03
-#define SENSOR_CONFIG_2_VAL  0x00 //angle calculation disabled
+#define SENSOR_CONFIG_2_VAL  0x03 //angle calculation disabled
 
 #define X_THR_CONFIG_ADDR 0x04
 #define X_THR_CONFIG_VAL  0x00
@@ -28,7 +28,7 @@
 #define T_CONFIG_VAL  0x01
 
 #define INT_CONFIG_1_ADDR 0x08
-#define INT_CONFIG_1_VAL  0x00
+#define INT_CONFIG_1_VAL  0x01
 
 #define MAG_GAIN_CONFIG_ADDR 0x09
 #define MAG_GAIN_CONFIG_VAL  0x00
@@ -65,7 +65,7 @@
 #if (DEVICE_VERSION == 1)
 #define MAG_SENSITIVITY 40 // mT/LSB
 #elif (DEVICE_VERSION == 2)
-#define MAG_SENSITIVITY 133 // mT/LSB
+#define MAG_SENSITIVITY 125 // mT/LSB
 #endif
 
 #define SENS_I2C_HANDLE &hi2c3
@@ -115,6 +115,12 @@ public:
      * @return Bz value in mT
      */
     float read_Bz();
+
+    /**
+     * @brief read all three axes B-Field values
+     * @return B-Field Magnitude in mT
+     */
+    float read_magnitude();
 
     /**
      * @brief read the temperature value
