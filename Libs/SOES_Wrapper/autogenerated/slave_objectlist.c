@@ -137,6 +137,7 @@ static const char acName2016_01[] = "Kp";
 static const char acName2016_02[] = "Ki";
 static const char acName2016_03[] = "Kd";
 static const char acName2017[] = "Tunes";
+static const char acName2018[] = "Torque Rate Limit";
 static const char acName2040[] = "Temperatures";
 static const char acName2040_00[] = "Max SubIndex";
 static const char acName2040_01[] = "PCB Temperature";
@@ -352,6 +353,12 @@ const _objd SDO2017[] =
 {
   {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RW, acName2017, 0, &Obj.Tunes},
 };
+
+const _objd SDO2018[] =
+{
+  {0x0, DTYPE_REAL32, 32, ATYPE_RWpre, acName2018, 0, &Obj.Torque_Rate_Limit},
+};
+
 const _objd SDO2040[] =
 {
   {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2040_00, 4, NULL},
@@ -413,11 +420,11 @@ const _objd SDO6071[] =
 };
 const _objd SDO6072[] =
 {
-  {0x0, DTYPE_UNSIGNED16, 16, ATYPE_RW, acName6072, 0, &Obj.Max_Torque},
+  {0x0, DTYPE_REAL32, 32, ATYPE_RWpre, acName6072, 0, &Obj.Max_Torque},
 };
 const _objd SDO6073[] =
 {
-  {0x0, DTYPE_UNSIGNED16, 16, ATYPE_RW, acName6073, 0, &Obj.Max_Current},
+  {0x0, DTYPE_REAL32, 32, ATYPE_RWpre, acName6073, 0, &Obj.Max_Current},
 };
 const _objd SDO6074[] =
 {
@@ -473,6 +480,7 @@ const _objectlist SDOobjects[] =
   {0x2015, OTYPE_VAR, 0, 0, acName2015, SDO2015},
   {0x2016, OTYPE_ARRAY, 3, 0, acName2016, SDO2016},
   {0x2017, OTYPE_VAR, 0, 0, acName2017, SDO2017},
+  {0x2018, OTYPE_VAR, 0, 0, acName2018, SDO2018},
   {0x2040, OTYPE_ARRAY, 4, 0, acName2040, SDO2040},
   {0x2080, OTYPE_RECORD, 3, 0, acName2080, SDO2080},
   {0x603F, OTYPE_VAR, 0, 0, acName603F, SDO603F},
