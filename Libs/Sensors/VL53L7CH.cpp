@@ -8,6 +8,14 @@ VL53L7CH::VL53L7CH()
 
 int VL53L7CH::init()
 {
+    HAL_GPIO_WritePin(TOF_LP_GPIO_Port, TOF_LP_Pin, GPIO_PIN_SET); // Enable I2C Comms
+    HAL_Delay(10);
+    HAL_GPIO_WritePin(TOF_I2C_RST_GPIO_Port, TOF_I2C_RST_Pin, GPIO_PIN_RESET);
+    HAL_Delay(10);
+    HAL_GPIO_WritePin(TOF_I2C_RST_GPIO_Port, TOF_I2C_RST_Pin, GPIO_PIN_SET);
+    HAL_Delay(10);
+    HAL_GPIO_WritePin(TOF_I2C_RST_GPIO_Port, TOF_I2C_RST_Pin, GPIO_PIN_RESET);
+
     // Initialize the sensor
     int status = vl53lmz_init(&this->config);
 
@@ -42,7 +50,7 @@ int VL53L7CH::init()
     status |= vl53lmz_disable_internal_cp(&this->config);
 
     // Disable synch pin
-    status |= vl53lmz_set_external_sync_pin_enable(&this->config, 0);
+    // status |= vl53lmz_set_external_sync_pin_enable(&this->config, 0);
 
     // Set Glare filter
     status |= vl53lmz_set_glare_filter_cfg(&this->config, 0, 0); // No glare filter
