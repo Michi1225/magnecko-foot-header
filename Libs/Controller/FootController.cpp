@@ -39,8 +39,8 @@ void FootController::init()
     //TODO: Go to FMS Fault state if init fails
     // if(imu.init() != 0) Error_Handler();
 
-    if(ldc.init() != 0) Error_Handler();
-    if(TMAG5273::init() != 0) Error_Handler();
+    // if(ldc.init() != 0) Error_Handler();
+    // if(TMAG5273::init() != 0) Error_Handler();
     // if(tof.init() != 0) Error_Handler();
 
     // if(imu.start() != 0) Error_Handler();
@@ -54,6 +54,10 @@ void FootController::runCommunication()
 
 void FootController::magnetize(uint8_t time)
 {
+    if(time < 10 || time > 100)
+    {
+        return; //Invalid time, do nothing
+    }
     //Set active flag
     this->active_magnetization = true;
 
