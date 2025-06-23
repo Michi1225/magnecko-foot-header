@@ -55,7 +55,8 @@ float TMAG5273::read_Bx()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
-    float bx = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
+    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
+    float bx = (float)(raw) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return bx;
 }
 
@@ -67,7 +68,8 @@ float TMAG5273::read_By()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
-    float by = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
+    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
+    float by = (float)(raw) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return by;
 }
 
@@ -80,7 +82,8 @@ float TMAG5273::read_Bz()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
-    float bz = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
+    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
+    float bz = (float)(raw) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return bz;
 }
 
@@ -91,9 +94,14 @@ float TMAG5273::read_magnitude()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 6, 100) != HAL_OK) Error_Handler();
 
-    float bx = (float)((((int16_t)rxData[0] << 8) | rxData[1])) / 65536.0f * 2 * MAG_SENSITIVITY;
-    float by = (float)((((int16_t)rxData[2] << 8) | rxData[3])) / 65536.0f * 2 * MAG_SENSITIVITY;
-    float bz = (float)((((int16_t)rxData[4] << 8) | rxData[5])) / 65536.0f * 2 * MAG_SENSITIVITY;
+
+    
+    int16_t raw_x = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
+    float bx = (float)(raw_x) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    int16_t raw_y = (static_cast<int16_t>(rxData[2]) << 8) | rxData[3];
+    float by = (float)(raw_y) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    int16_t raw_z = (static_cast<int16_t>(rxData[4]) << 8) | rxData[5];
+    float bz = (float)(raw_z) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     float magnitude = sqrt(bx * bx + by * by + bz * bz);
     return magnitude;
 }
@@ -105,17 +113,15 @@ float TMAG5273::read_T()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
-    float t = 25.0f + ((((int16_t)rxData[0] << 8) | rxData[1]) - 17508) / 60.1f;
+    
+    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
+    float t = 25.0f + (raw - 17508) / 60.1f;
     return t;
 }
 
 bool TMAG5273::estimate_contact()
 {
-    float bx = this->read_Bx();
-    float by = this->read_By();
-    float bz = this->read_Bz();
-
-    float b_mag = sqrt(bx * bx + by * by + bz * bz);
+    float b_mag = this->read_magnitude();
     float b_mag_threshold = 0.5f; // Threshold for contact estimation
     return b_mag < b_mag_threshold;
 }
