@@ -54,6 +54,8 @@ void FootController::runCommunication()
 
 void FootController::magnetize(uint8_t time)
 {
+    
+    if(time < 10 ||time > 100) return; 
     //Set active flag
     this->active_magnetization = true;
 
