@@ -43,9 +43,10 @@ typedef struct
 
    uint16_t Error_Code;
    int16_t Quick_stop_option_code;
-   uint16_t Max_Torque;
-   uint16_t Max_Current;
+   float Max_Torque;
+   float Max_Current;
    uint32_t Supported_drive_modes;
+   float Torque_Rate_Limit;
 
    /* Manufacturer specific data */
 
