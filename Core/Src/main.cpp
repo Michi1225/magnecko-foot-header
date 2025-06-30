@@ -416,6 +416,11 @@ void MPU_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+  HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
+
   /* User can add his own implementation to report the HAL error return state */
   HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET); //Disable Switching
   HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET); //Disable Switching

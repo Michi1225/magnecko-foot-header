@@ -115,17 +115,15 @@ float TMAG5273::read_T()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
-    float t = 25.0f + ((((int16_t)rxData[0] << 8) | rxData[1]) - 17508) / 60.1f;
+    
+    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
+    float t = 25.0f + (raw - 17508) / 60.1f;
     return t;
 }
 
 bool TMAG5273::estimate_contact()
 {
-    float bx = this->read_Bx();
-    float by = this->read_By();
-    float bz = this->read_Bz();
-
-    float b_mag = sqrt(bx * bx + by * by + bz * bz);
+    float b_mag = this->read_magnitude();
     float b_mag_threshold = 0.5f; // Threshold for contact estimation
     return b_mag < b_mag_threshold;
 }
