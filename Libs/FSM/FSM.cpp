@@ -57,7 +57,6 @@ void FSM::init(const FSMActions &actions)
     actions_ = actions;
     next_state_ = states_[FSMStatus::NOT_READY_TO_SWITCH_ON];
     state_ = FSMStatus::NOT_READY_TO_SWITCH_ON;
-
 }
 
 void FSM::notReadyToSwitchOn()

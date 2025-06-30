@@ -55,8 +55,8 @@ float TMAG5273::read_Bx()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
-    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
-    float bx = (float)(raw) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    int16_t raw_value = (static_cast<int16_t>(rxData[0]) << 8) | static_cast<int16_t>(rxData[1]);
+    float bx = static_cast<float>(raw_value) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return bx;
 }
 
@@ -68,8 +68,8 @@ float TMAG5273::read_By()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
-    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
-    float by = (float)(raw) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    int16_t raw_value = (static_cast<int16_t>(rxData[0]) << 8) | static_cast<int16_t>(rxData[1]);
+    float by = static_cast<float>(raw_value) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return by;
 }
 
@@ -82,8 +82,8 @@ float TMAG5273::read_Bz()
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
 
-    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
-    float bz = (float)(raw) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    int16_t raw_value = (static_cast<int16_t>(rxData[0]) << 8) | static_cast<int16_t>(rxData[1]);
+    float bz = static_cast<float>(raw_value) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return bz;
 }
 
@@ -95,13 +95,15 @@ float TMAG5273::read_magnitude()
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 6, 100) != HAL_OK) Error_Handler();
 
 
+    int16_t raw_value_x = (static_cast<int16_t>(rxData[0]) << 8) | static_cast<int16_t>(rxData[1]);
+    float bx = static_cast<float>(raw_value_x) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+
+    int16_t raw_value_y = (static_cast<int16_t>(rxData[2]) << 8) | static_cast<int16_t>(rxData[3]);
+    float by = static_cast<float>(raw_value_y) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+
+    int16_t raw_value_z = (static_cast<int16_t>(rxData[4]) << 8) | static_cast<int16_t>(rxData[5]);
+    float bz = static_cast<float>(raw_value_z) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     
-    int16_t raw_x = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
-    float bx = (float)(raw_x) / 65536.0f * 2.0f * MAG_SENSITIVITY;
-    int16_t raw_y = (static_cast<int16_t>(rxData[2]) << 8) | rxData[3];
-    float by = (float)(raw_y) / 65536.0f * 2.0f * MAG_SENSITIVITY;
-    int16_t raw_z = (static_cast<int16_t>(rxData[4]) << 8) | rxData[5];
-    float bz = (float)(raw_z) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     float magnitude = sqrt(bx * bx + by * by + bz * bz);
     return magnitude;
 }

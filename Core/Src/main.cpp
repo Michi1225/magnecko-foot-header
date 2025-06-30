@@ -182,14 +182,14 @@ int main(void)
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Status LED to indicate booting
-  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_SET); //Set Status LED 2
-  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_SET); //Set Status LED 1
-  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET); //Set Status LED 0
+  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_SET); 
+  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET);
   controller.init();
   HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_RESET); //Reset Status LED
-  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_RESET); //Reset Status LED 2
-  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_RESET); //Reset Status LED 1
-  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_RESET); //Reset Status LED 0
+  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_RESET); 
+  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_RESET);
 
 
 
@@ -203,10 +203,24 @@ int main(void)
   {
     controller.runCommunication();
     HAL_Delay(0);
-    Obj.Temperatures[0] = controller.hall0.read_By() * 100;
-    Obj.Temperatures[1] = controller.hall1.read_By() * 100;
-    Obj.Temperatures[2] = controller.hall2.read_By() * 100;
-    Obj.Temperatures[3] = controller.hall3.read_By() * 100;
+    controller.tof.get_ranging_data(); //Get ToF data
+    // Obj.Temperatures[0] = static_cast<int16_t>(controller.hall0.read_By() * 100);
+    // Obj.Temperatures[1] = static_cast<int16_t>(controller.hall1.read_By() * 100);
+    // Obj.Temperatures[2] = static_cast<int16_t>(controller.hall2.read_By() * 100);
+    // Obj.Temperatures[3] = static_cast<int16_t>(controller.hall3.read_By() * 100);
+    Obj.Internal_Info.Ia = controller.hall0.read_Bx();
+    Obj.Internal_Info.Ib = controller.hall0.read_By();
+    Obj.Internal_Info.Ic = controller.hall0.read_Bz();
+    float data = controller.ldc.readData(0);
+    // Obj.Internal_Info.Ib = controller.hall1.read_magnitude();
+    // Obj.Internal_Info.Ic = controller.hall2.read_magnitude();
+    // Obj.Internal_Info.Id = controller.hall3.read_magnitude();
+    // Obj.Internal_Info.Ia = controller.hall0.read_By();
+    // Obj.Internal_Info.Ib = controller.hall1.read_By();
+    // Obj.Internal_Info.Ic = controller.hall2.read_By();
+    Obj.Internal_Info.Id = controller.hall3.read_By();
+    // if(controller.tof.get_ranging_data() != 0) Error_Handler(); //Check if ToF sensor is working
+    
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -334,26 +348,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_GPIO_TogglePin(STATUS1_GPIO_Port, STATUS1_Pin); //Set Status LED 1
     // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //Charge Capacitors
     //Wait for Capacitors to charge
-    uint8_t cnt = 0;
-    while(true)
-    {
-      if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) == GPIO_PIN_RESET) //Check if Capacitors are charged
-      {
-        ++cnt; //Increment counter
-        if(cnt >= 10) //Deglitch
-        {
-          controller.charge_done = true; //Set charge done flag
-          HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET); //Set Status LED 0
-          break; //Exit loop
+    // uint8_t cnt = 0;
+    // while(true)
+    // {
+    //   if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) == GPIO_PIN_RESET) //Check if Capacitors are charged
+    //   {
+    //     ++cnt; //Increment counter
+    //     if(cnt >= 10) //Deglitch
+    //     {
+    //       controller.charge_done = true; //Set charge done flag
+    //       HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET); //Set Status LED 0
+    //       break; //Exit loop
 
-        }
-      }
-      else
-      {
-        cnt = 0; //Reset counter
+    //     }
+    //   }
+    //   else
+    //   {
+    //     cnt = 0; //Reset counter
 
-      }
-    }
+    //   }
+    // }
 
     //Toggle magnetization with each button press
     controller.requested_demagnetization =   controller.status_magnetization;
@@ -408,6 +422,12 @@ void Error_Handler(void)
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
 
   /* User can add his own implementation to report the HAL error return state */
+  HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET); //Disable Switching
+  HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET); //Disable Switching
+  HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET); //Disable Charging
+  HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge
+
+
   for(int i = 0; i <= 162; ++i)
   {
     if( i != SysTick_IRQn) NVIC_DisableIRQ((IRQn_Type)i); //Disable all interrupts except SysTick
