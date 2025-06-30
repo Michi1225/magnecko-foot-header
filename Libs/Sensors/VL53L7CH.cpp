@@ -94,7 +94,7 @@ int VL53L7CH::stop_ranging()
 int VL53L7CH::get_ranging_data()
 {
     int status = vl53lmz_get_ranging_data(&this->config, &this->results);
-    if (status != 0) return status;
+    // if (status != 0) return status;
 
     for(int i = 0; i < 8; i++)
     {

@@ -65,7 +65,7 @@
 #if (DEVICE_VERSION == 1)
 #define MAG_SENSITIVITY 40 // mT/LSB
 #elif (DEVICE_VERSION == 2)
-#define MAG_SENSITIVITY 125 // mT/LSB
+#define MAG_SENSITIVITY 125.0f // mT/LSB
 #endif
 
 #define SENS_I2C_HANDLE &hi2c3
