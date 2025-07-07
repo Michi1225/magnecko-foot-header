@@ -39,9 +39,9 @@ void FootController::init()
     //TODO: Go to FMS Fault state if init fails
     if(imu.init() != 0) Error_Handler();
 
-    if(ldc.init() != 0) Error_Handler();
+    // if(ldc.init() != 0) Error_Handler();
     if(TMAG5273::init() != 0) Error_Handler();
-    if(tof.init() != 0) Error_Handler();
+    // if(tof.init() != 0) Error_Handler();
 
     if(imu.start() != 0) Error_Handler();
     // if(tof.start_ranging() != 0) Error_Handler();
@@ -93,7 +93,8 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
 {
     //Handle Sensors
     //IMU
-    imu.update();
+    // if(imu.update()) Error_Handler();
+    imu.update(); //Update IMU data
     // this->rotation_data.quaternion_i = imu.rot_data.quaternion_i;
     // this->rotation_data.quaternion_j = imu.rot_data.quaternion_j;
     // this->rotation_data.quaternion_k = imu.rot_data.quaternion_k;

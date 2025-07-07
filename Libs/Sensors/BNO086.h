@@ -38,7 +38,9 @@
 
 #define BNO086_SPI_HANDLE &hspi6
 
-typedef struct __attribute__((packed))
+#define PACKED __attribute__((packed))
+
+typedef struct PACKED
 {
     int8_t sequence_number;
     int8_t status;
@@ -49,7 +51,7 @@ typedef struct __attribute__((packed))
     uint8_t q_point;
 }VectorData;
 
-typedef struct __attribute__((packed))
+typedef struct PACKED
 {
     int8_t sequence_number;
     int8_t status;

@@ -56,6 +56,8 @@ std::deque<float> mag_avg0;
 std::deque<float> mag_avg1;
 std::deque<float> mag_avg2;
 std::deque<float> mag_avg3;
+bool prev_mag_request = false;
+bool prev_demag_request = false;
 
 
 /* USER CODE END PV */
@@ -77,32 +79,38 @@ void cb_get_inputs()
     controller.requested_magnetization = false;
     controller.requested_demagnetization = false;
   }
-  else if(Obj.GPIO_Toggle[0] == 1 && controller.status_magnetization == false)
+  else if(Obj.GPIO_Toggle[0] == 1 && !prev_mag_request)
   {
     //Magnet needs to be magnetized
     controller.requested_magnetization = true;
     controller.requested_demagnetization = false;
-  }else if(Obj.GPIO_Toggle[0] == 0 && controller.status_magnetization == true)
+    prev_mag_request = true;
+    prev_demag_request = false;
+  }else if(Obj.GPIO_Toggle[1] == 1 && !prev_demag_request)
   {
     //Magnet needs to be demagnetized
     controller.requested_magnetization = false;
     controller.requested_demagnetization = true;
+    prev_mag_request = false;
+    prev_demag_request = true;
   }
   else
   {
-    //Magnet is in the correct state
+    //No work to be done
     controller.requested_magnetization = false;
     controller.requested_demagnetization = false;
+    prev_mag_request = false;
+    prev_demag_request = false;
   }
-  if(Obj.GPIO_Toggle[1] == 1)
-  {
-    //Discharge request
-    controller.requested_discharge = true;
-  }
-  else
-  {
-    controller.requested_discharge = false;
-  }
+  // if(Obj.GPIO_Toggle[1] == 1)
+  // {
+  //   //Discharge request
+  //   controller.requested_discharge = true;
+  // }
+  // else
+  // {
+  //   controller.requested_discharge = false;
+  // }
   // //Bit 4 is the Magnetization request 
   // controller.requested_magnetization = control_word & (1 << 4);
   // //Bit 5 is the Demagnetization request
@@ -203,23 +211,30 @@ int main(void)
   {
     controller.runCommunication();
     HAL_Delay(0);
-    controller.tof.get_ranging_data(); //Get ToF data
+    // controller.tof.get_ranging_data(); //Get ToF data
     // Obj.Temperatures[0] = static_cast<int16_t>(controller.hall0.read_By() * 100);
     // Obj.Temperatures[1] = static_cast<int16_t>(controller.hall1.read_By() * 100);
     // Obj.Temperatures[2] = static_cast<int16_t>(controller.hall2.read_By() * 100);
     // Obj.Temperatures[3] = static_cast<int16_t>(controller.hall3.read_By() * 100);
-    Obj.Internal_Info.Ia = controller.hall0.read_Bx();
-    Obj.Internal_Info.Ib = controller.hall0.read_By();
-    Obj.Internal_Info.Ic = controller.hall0.read_Bz();
-    float data = controller.ldc.readData(0);
+    // Obj.Internal_Info.Ia = controller.hall0.read_Bx();
+    // Obj.Internal_Info.Ib = controller.hall0.read_By();
+    // Obj.Internal_Info.Ic = controller.hall0.read_Bz();
+    // float data = controller.ldc.readData(0);
     // Obj.Internal_Info.Ib = controller.hall1.read_magnitude();
     // Obj.Internal_Info.Ic = controller.hall2.read_magnitude();
     // Obj.Internal_Info.Id = controller.hall3.read_magnitude();
     // Obj.Internal_Info.Ia = controller.hall0.read_By();
     // Obj.Internal_Info.Ib = controller.hall1.read_By();
     // Obj.Internal_Info.Ic = controller.hall2.read_By();
-    Obj.Internal_Info.Id = controller.hall3.read_By();
+    // Obj.Internal_Info.Id = controller.hall3.read_By();
     // if(controller.tof.get_ranging_data() != 0) Error_Handler(); //Check if ToF sensor is working
+
+    Obj.Internal_Info.Ia = q_to_float(controller.imu.accel_data.axis_x, controller.imu.accel_data.q_point);
+    Obj.Internal_Info.Ib = q_to_float(controller.imu.accel_data.axis_y, controller.imu.accel_data.q_point);
+    Obj.Internal_Info.Ic = q_to_float(controller.imu.accel_data.axis_z, controller.imu.accel_data.q_point);
+
+    Obj.Internal_Info.Id = controller.hall0.read_magnitude();
+    Obj.Internal_Info.Iq = controller.hall2.read_magnitude();
     
     /* USER CODE END WHILE */
 

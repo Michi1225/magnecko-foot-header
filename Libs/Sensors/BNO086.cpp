@@ -6,12 +6,20 @@ BNO086::BNO086()
     this->msg_ready = false;
     this->seqNum = 0;
     this->features.clear();
-    this->accel_data = {0, 0, 0, 0, 0, 0, 0};
-    this->gyro_data = {0, 0, 0, 0, 0, 0, 0};
-    this->mag_data = {0, 0, 0, 0, 0, 0, 0};
-    this->lin_accel_data = {0, 0, 0, 0, 0, 0, 0};
-    this->rot_data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    this->grav_data = {0, 0, 0, 0, 0, 0, 0};
+    // this->accel_data = {
+    //     .axis_x = 0,
+    //     .axis_y = 0,
+    //     .axis_z = 0,
+    //     .delay = 0,
+    //     .sequence_number = 0,
+    //     .status = 0,
+    //     .q_point = BNO086_Q_POINT_ACCELEROMETER
+    // };
+    // this->gyro_data = {0, 0, 0, 0, 0, 0, 0};
+    // this->mag_data = {0, 0, 0, 0, 0, 0, 0};
+    // this->lin_accel_data = {0, 0, 0, 0, 0, 0, 0};
+    // this->rot_data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    // this->grav_data = {0, 0, 0, 0, 0, 0, 0};
 }
 
 
@@ -161,32 +169,32 @@ uint8_t BNO086::update()
         //      If this is the case, every variable has to be copied seperately
 
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->accel_data, 8, HAL_MAX_DELAY);
+        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->accel_data, 9, HAL_MAX_DELAY);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
         break;
     case BNO086_ID_GYROSCOPE:
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->gyro_data, 8, HAL_MAX_DELAY);
+        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->gyro_data, 9, HAL_MAX_DELAY);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
         break;
     case BNO086_ID_MAGNETOMETER:
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->mag_data, 8, HAL_MAX_DELAY);
+        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->mag_data, 9, HAL_MAX_DELAY);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
         break;
     case BNO086_ID_LINEAR_ACCELERATION:
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->lin_accel_data, 8, HAL_MAX_DELAY);
+        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->lin_accel_data, 9, HAL_MAX_DELAY);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
         break;
     case BNO086_ID_ROTATION:
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->rot_data, 12, HAL_MAX_DELAY);
+        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->rot_data, 13, HAL_MAX_DELAY);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
         break;
     case BNO086_ID_GRAVITY:
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->grav_data, 8, HAL_MAX_DELAY);
+        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&this->grav_data, 9, HAL_MAX_DELAY);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
         break;
     default:
@@ -205,5 +213,5 @@ uint8_t BNO086::update()
  */
 float q_to_float(int16_t raw, uint8_t q_point)
 {
-    return raw / (float)(1 << q_point);
+    return static_cast<float>(raw) / (1UL << q_point);
 }
