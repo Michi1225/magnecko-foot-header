@@ -80,7 +80,7 @@ void FootController::magnetize(uint8_t time)
 
     //Start Timer
     TIM1->ARR = time * 100; // time in us
-    if(HAL_TIM_Base_Start_IT(&htim1)!= HAL_OK) Error_Handler();
+    if(HAL_TIM_Base_Start_IT(&htim1)!= HAL_OK) return;
     HAL_GPIO_WritePin(gpio_port, gpio_pin, GPIO_PIN_SET);
 }
 
@@ -95,6 +95,7 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     //IMU
     // if(imu.update()) Error_Handler();
     imu.update(); //Update IMU data
+
     // this->rotation_data.quaternion_i = imu.rot_data.quaternion_i;
     // this->rotation_data.quaternion_j = imu.rot_data.quaternion_j;
     // this->rotation_data.quaternion_k = imu.rot_data.quaternion_k;
@@ -169,15 +170,15 @@ FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status
     else if(this->requested_magnetization != this->requested_demagnetization)
     {
         //Check, if the Caps are charged, and no magnetization is active
-        if(!HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) && !this->active_magnetization)
-        {
-            this->magnetize(MAGNETIZATION_TIME);
-        }
+        // if(!HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) && !this->active_magnetization)
+        // {
+        // }
+        this->magnetize(MAGNETIZATION_TIME);
         this->requested_magnetization = false; //Reset requested magnetization state
         this->requested_demagnetization = false; //Reset requested demagnetization state
     }
     //Charge Capacitors
-    if(!this->active_magnetization) HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+    // if(!this->active_magnetization) HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
 
     //Discharge state
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, this->requested_discharge ? GPIO_PIN_RESET : GPIO_PIN_SET);

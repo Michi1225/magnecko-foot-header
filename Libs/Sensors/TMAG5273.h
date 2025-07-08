@@ -13,7 +13,7 @@
 #define SENSOR_CONFIG_1_VAL  0x70
 
 #define SENSOR_CONFIG_2_ADDR 0x03
-#define SENSOR_CONFIG_2_VAL  0x03 //angle calculation disabled
+#define SENSOR_CONFIG_2_VAL  0x00 //angle calculation disabled, 133mT range
 
 #define X_THR_CONFIG_ADDR 0x04
 #define X_THR_CONFIG_VAL  0x00
@@ -65,7 +65,7 @@
 #if (DEVICE_VERSION == 1)
 #define MAG_SENSITIVITY 40 // mT/LSB
 #elif (DEVICE_VERSION == 2)
-#define MAG_SENSITIVITY 125.0f // mT/LSB
+#define MAG_SENSITIVITY 250.0f // mT/LSB
 #endif
 
 #define SENS_I2C_HANDLE &hi2c3
