@@ -19,16 +19,16 @@
 
 // read/write
 #define RCOUNT0_ADDR 0x08
-#define RCOUNT0_VAL  0xFFFF
+#define RCOUNT0_VAL  0x054B //500us
 
 #define RCOUNT1_ADDR 0x09
-#define RCOUNT1_VAL  0xFFFF //100us
+#define RCOUNT1_VAL  0x054B //500us
 
 #define RCOUNT2_ADDR 0x0A
-#define RCOUNT2_VAL  0xFFFF //100us
+#define RCOUNT2_VAL  0x054B //500us
 
 #define RCOUNT3_ADDR 0x0B
-#define RCOUNT3_VAL  0xFFFF //100us
+#define RCOUNT3_VAL  0x054B //500us
 
 #define OFFSET0_ADDR 0x0C
 #define OFFSET0_VAL  0x00
@@ -43,28 +43,28 @@
 #define OFFSET3_VAL  0x00
 
 #define SETTLECOUNT0_ADDR 0x10
-#define SETTLECOUNT0_VAL  0x1A //10us
+#define SETTLECOUNT0_VAL  0x001B //10us
 
 #define SETTLECOUNT1_ADDR 0x11
-#define SETTLECOUNT1_VAL  0x1A //10us
+#define SETTLECOUNT1_VAL  0x001B //10us
 
 #define SETTLECOUNT2_ADDR 0x12
-#define SETTLECOUNT2_VAL  0x1A //10us
+#define SETTLECOUNT2_VAL  0x001B //10us
 
 #define SETTLECOUNT3_ADDR 0x13
-#define SETTLECOUNT3_VAL  0x1A //10us
+#define SETTLECOUNT3_VAL  0x001B //10us
 
 #define CLOCK_DIVIDERS0_ADDR 0x14
-#define CLOCK_DIVIDERS0_VAL  0x0101 // No divider
+#define CLOCK_DIVIDERS0_VAL  0x1001 // No divider
 
 #define CLOCK_DIVIDERS1_ADDR 0x15
-#define CLOCK_DIVIDERS1_VAL  0x0101 // No divider
+#define CLOCK_DIVIDERS1_VAL  0x1001 // No divider
 
 #define CLOCK_DIVIDERS2_ADDR 0x16
-#define CLOCK_DIVIDERS2_VAL  0x0101 // No divider
+#define CLOCK_DIVIDERS2_VAL  0x1001 // No divider
 
 #define CLOCK_DIVIDERS3_ADDR 0x17
-#define CLOCK_DIVIDERS3_VAL  0x0101 // No divider
+#define CLOCK_DIVIDERS3_VAL  0x1001 // No divider
 
 #define ERROR_CONFIG_ADDR 0x19
 #define ERROR_CONFIG_VAL  0xF800 // All errors on DATAx, no errors on INTB
@@ -73,27 +73,27 @@
 #define CONFIG_VAL  0x81 //Disable interrupts
 
 #define MUX_CONFIG_ADDR 0x1B
-#define MUX_CONFIG_VAL  0x420D //Auto-Scan enable, 10MHz deglitch
+#define MUX_CONFIG_VAL  0xC20D //Auto-Scan enable, 10MHz deglitch
 
 #define RESET_DEV_ADDR 0x1C
 #define RESET_DEV_VAL  0x00
 
 #define DRIVE_CURRENT0_ADDR 0x1E
-#define DRIVE_CURRENT0_VAL  0x00
+#define DRIVE_CURRENT0_VAL  0x3F
 
 #define DRIVE_CURRENT1_ADDR 0x1F
-#define DRIVE_CURRENT1_VAL  0x00
+#define DRIVE_CURRENT1_VAL  0x3F
 
 #define DRIVE_CURRENT2_ADDR 0x20
-#define DRIVE_CURRENT2_VAL  0x00
+#define DRIVE_CURRENT2_VAL  0x3F
 
 #define DRIVE_CURRENT3_ADDR 0x21
-#define DRIVE_CURRENT3_VAL  0x00
+#define DRIVE_CURRENT3_VAL  0x3F
 
 
-#define LDC_FREF 48E6 // 48MHz reference clock
+#define LDC_FREF 43350000.0 // 43.35MHz reference clock
 
-#define DATAx_MSB_MASK 0x0FFF
+#define DATAx_MSB_MASK 0x0F
 
 #define LDC_I2C_ADDRESS 0x2B // LDC1614 I2C address
 

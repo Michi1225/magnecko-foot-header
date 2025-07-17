@@ -39,12 +39,13 @@ void FootController::init()
     //TODO: Go to FMS Fault state if init fails
     if(imu.init() != 0) Error_Handler();
 
-    // if(ldc.init() != 0) Error_Handler();
+    if(ldc.init() != 0) Error_Handler();
     if(TMAG5273::init() != 0) Error_Handler();
-    // if(tof.init() != 0) Error_Handler();
+    if(tof.init() != 0) Error_Handler();
+    HAL_Delay(10);
 
     if(imu.start() != 0) Error_Handler();
-    // if(tof.start_ranging() != 0) Error_Handler();
+    if(tof.start_ranging() != 0) Error_Handler();
 }
 
 void FootController::runCommunication()

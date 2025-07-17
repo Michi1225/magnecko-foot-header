@@ -97,6 +97,9 @@ void cb_get_inputs()
     //Magnet needs to be demagnetized
     controller.requested_magnetization = false;
     controller.requested_demagnetization = true;
+    // controller.requested_magnetization = false;
+    // controller.requested_demagnetization = false;
+    // controller.status_magnetization = false;
   }
   else
   {
@@ -187,6 +190,17 @@ int main(void)
   {
     controller.runCommunication();
     HAL_Delay(0);
+    int error = controller.tof.get_ranging_data();
+    Obj.Temperatures[0] = controller.tof.data[0][0];
+    Obj.Temperatures[1] = controller.tof.data[1][0];
+    Obj.Temperatures[2] = controller.tof.data[2][0];
+    Obj.Temperatures[3] = controller.tof.data[3][0];
+
+    Obj.Internal_Info.Iq = controller.ldc.readData(0);
+    Obj.Internal_Info.Ud_Demand = controller.ldc.readData(1);
+    Obj.Internal_Info.Uq_Demand = controller.ldc.readData(2);
+
+
 
     // Obj.Internal_Info.Ia = q_to_float(controller.imu.accel_data.axis_x, controller.imu.accel_data.q_point);
     // Obj.Internal_Info.Ib = q_to_float(controller.imu.accel_data.axis_y, controller.imu.accel_data.q_point);
@@ -375,9 +389,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     // }
 
     //Toggle magnetization with each button press
-    controller.requested_demagnetization =   controller.status_magnetization;
-    controller.requested_magnetization   =  !controller.status_magnetization;
+    // controller.requested_demagnetization =   controller.status_magnetization;
+    // controller.requested_magnetization   =  !controller.status_magnetization;
+    controller.requested_demagnetization =   true;
+    controller.requested_magnetization   =  false;
     controller.magnetize(MAGNETIZATION_TIME);
+    controller.requested_demagnetization = false; //Reset requested magnetization state
+    controller.requested_magnetization = false; //Reset requested demagnetization state
   }
   
 

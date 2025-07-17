@@ -124,29 +124,30 @@ float LDC1614::readData(uint8_t channel) {
     }
 
     //read MSB
-    uint8_t rxData[2];
-    if(HAL_I2C_Mem_Read(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr, 1, rxData, 1, 100) != HAL_OK) return 0; // Error in reading
+    uint8_t rxData[4];
+    if(HAL_I2C_Mem_Read(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr, 1, rxData, 2, 100) != HAL_OK) return 0; // Error in reading
 
     //read LSB
-    if(HAL_I2C_Mem_Read(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr + 1, 1, rxData + 1, 1, 100) != HAL_OK) return 0; // Error in reading
+    if(HAL_I2C_Mem_Read(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr + 1, 1, rxData + 2, 2, 100) != HAL_OK) return 0; // Error in reading
 
     // Check for errors
-    if(rxData[0] & 0x80) {
-        return LDC_UNDER_RANGE; // Under range error
-    } else if (rxData[0] & 0x40) {
-        return LDC_OVER_RANGE; // Over range error
-    } else if (rxData[0] & 0x20) {
-        return LDC_WD_TIMEOUT; // Watchdog timeout error
-    } else if (rxData[0] & 0x10) {
-        return LDC_AMPLITUDE_ERROR; // Amplitude error
-    }
+    // if(rxData[0] & 0x80) {
+    //     return LDC_UNDER_RANGE; // Under range error
+    // } else if (rxData[0] & 0x40) {
+    //     return LDC_OVER_RANGE; // Over range error
+    // } else if (rxData[0] & 0x20) {
+    //     return LDC_WD_TIMEOUT; // Watchdog timeout error
+    // } else if (rxData[0] & 0x10) {
+    //     return LDC_AMPLITUDE_ERROR; // Amplitude error
+    // }
 
-    // Combine the two bytes into a single 16-bit value
-    uint16_t data = (((uint16_t)rxData[0] << 8) | rxData[1]) & DATAx_MSB_MASK;
+    // Combine the two bytes into a single 32-bit value
+    uint32_t data = (((static_cast<uint32_t>(rxData[0] & DATAx_MSB_MASK)) << 24) | (static_cast<uint32_t>(rxData[1]) << 16))|
+                    (static_cast<uint32_t>(rxData[2]) << 8) | (static_cast<uint32_t>(rxData[3]));   
 
-    float frequency = (float)(data * LDC_FREF) / (1 << 28); // Calculate frequency
+    double frequency = (static_cast<double>(data) * LDC_FREF) / (1 << 28); // Calculate frequency
 
-    return frequency; // Mask to get only the relevant bits
+    return static_cast<float>(frequency);
 }
 
 uint16_t LDC1614::readStatus() {

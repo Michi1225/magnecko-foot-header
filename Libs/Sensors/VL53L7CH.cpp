@@ -29,10 +29,10 @@ int VL53L7CH::init()
     status |= vl53lmz_set_power_mode(&this->config, VL53LMZ_POWER_MODE_WAKEUP);
 
     // Set resolution
-    status |= vl53lmz_set_resolution(&this->config, VL53LMZ_RESOLUTION_8X8);
+    status |= vl53lmz_set_resolution(&this->config, RANGING_RESOLUTION);
 
     // Set ranging frequency
-    status |= vl53lmz_set_ranging_frequency_hz(&this->config, 10);
+    status |= vl53lmz_set_ranging_frequency_hz(&this->config, RANGING_FREQUENCY_HZ);
 
     // Set Integration time
     status |= vl53lmz_set_integration_time_ms(&this->config, 50);
@@ -95,7 +95,7 @@ int VL53L7CH::get_ranging_data()
 {
     int status = vl53lmz_get_ranging_data(&this->config, &this->results);
     // if (status != 0) return status;
-
+#if RANGING_RESOLUTION == 64U // VL53LMZ_RESOLUTION_8X8
     for(int i = 0; i < 8; i++)
     {
         for(int j = 0; j < 8; j++)
@@ -103,5 +103,20 @@ int VL53L7CH::get_ranging_data()
             this->data[i][j] = this->results.distance_mm[i * 8 + j];
         }
     }
+#elif RANGING_RESOLUTION == 16U // VL53LMZ_RESOLUTION_4X4
+    for(int i = 0; i < 4; i++)
+    {
+        for(int j = 0; j < 4; j++)
+        {
+            //outlier rejection
+            if(this->results.distance_mm[i * 4 + j] > this->data[i][j] + OUTLIER_THRESHOLD 
+                || this->results.distance_mm[i * 4 + j] < this->data[i][j] - OUTLIER_THRESHOLD)
+            {
+                continue; // reject outlier
+            }
+            this->data[i][j] = this->results.distance_mm[i * 4 + j];
+        }
+    }
+#endif
     return 0;
 }
