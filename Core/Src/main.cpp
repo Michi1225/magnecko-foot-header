@@ -191,14 +191,29 @@ int main(void)
     controller.runCommunication();
     HAL_Delay(0);
     int error = controller.tof.get_ranging_data();
-    Obj.Temperatures[0] = controller.tof.data[0][0];
-    Obj.Temperatures[1] = controller.tof.data[1][0];
-    Obj.Temperatures[2] = controller.tof.data[2][0];
-    Obj.Temperatures[3] = controller.tof.data[3][0];
+    // Obj.Temperatures[0] = controller.tof.data[0][0];
+    // Obj.Temperatures[1] = controller.tof.data[0][1];
+    // Obj.Temperatures[2] = controller.tof.data[0][2];
+    // Obj.Temperatures[3] = controller.tof.data[0][3];
 
-    Obj.Internal_Info.Iq = controller.ldc.readData(0);
-    Obj.Internal_Info.Ud_Demand = controller.ldc.readData(1);
-    Obj.Internal_Info.Uq_Demand = controller.ldc.readData(2);
+    // Obj.Position_Actual = controller.tof.data[1][0];
+    // Obj.Velocity_Actual = controller.tof.data[1][1];
+    // Obj.Torque_Actual = controller.tof.data[1][2];
+    // Obj.Total_Current = controller.tof.data[1][3];
+
+    // Obj.DC_Link_Voltage = controller.tof.data[2][0];
+    // Obj.Internal_Info.Ia = controller.tof.data[2][1];
+    // Obj.Internal_Info.Ib = controller.tof.data[2][2];
+    // Obj.Internal_Info.Ic = controller.tof.data[2][3];
+
+    // Obj.Internal_Info.Id = controller.tof.data[3][0];
+    // Obj.Internal_Info.Iq = controller.tof.data[3][1];
+    // Obj.Internal_Info.Ud_Demand = controller.tof.data[3][2];
+    // Obj.Internal_Info.Uq_Demand = controller.tof.data[3][3];
+
+    // Obj.Internal_Info.Iq = controller.ldc.readData(0);
+    // Obj.Internal_Info.Ud_Demand = controller.ldc.readData(1);
+    // Obj.Internal_Info.Uq_Demand = controller.ldc.readData(2);
 
 
 
@@ -206,39 +221,47 @@ int main(void)
     // Obj.Internal_Info.Ib = q_to_float(controller.imu.accel_data.axis_y, controller.imu.accel_data.q_point);
     // Obj.Internal_Info.Ic = q_to_float(controller.imu.accel_data.axis_z, controller.imu.accel_data.q_point);
 
+    Obj.Internal_Info.Ia = controller.imu.rot_data.quaternion_i;
+    Obj.Internal_Info.Ib = controller.imu.rot_data.quaternion_j;
+    Obj.Internal_Info.Ic = controller.imu.rot_data.quaternion_k;
+    Obj.Internal_Info.Id = controller.imu.rot_data.quaternion_real;
+
+    Obj.Internal_Info.Ud_Demand = q_to_float(controller.imu.accel_data.axis_x, controller.imu.accel_data.q_point);
+    Obj.Internal_Info.Uq_Demand = q_to_float(controller.imu.accel_data.axis_y, controller.imu.accel_data.q_point);
+
     //Windowed average of the magnetometer values
-    mag_avg0.push_back(controller.hall0.read_magnitude());
-    mag_avg1.push_back(controller.hall1.read_magnitude());
-    mag_avg2.push_back(controller.hall2.read_magnitude());
-    mag_avg3.push_back(controller.hall3.read_magnitude());
-    if(mag_avg0.size() > 20) mag_avg0.pop_front();
-    if(mag_avg1.size() > 20) mag_avg1.pop_front();
-    if(mag_avg2.size() > 20) mag_avg2.pop_front();
-    if(mag_avg3.size() > 20) mag_avg3.pop_front();
-    float mag_avg0_sum = 0.0f;
-    float mag_avg1_sum = 0.0f;
-    float mag_avg2_sum = 0.0f;
-    float mag_avg3_sum = 0.0f;
-    for(auto &val : mag_avg0)
-    {
-      mag_avg0_sum += val;
-    }
-    for(auto &val : mag_avg1)
-    {
-      mag_avg1_sum += val;
-    }
-    for(auto &val : mag_avg2)
-    {
-      mag_avg2_sum += val;
-    }
-    for(auto &val : mag_avg3)
-    {
-      mag_avg3_sum += val;
-    }
-    Obj.Internal_Info.Ia = mag_avg0_sum / mag_avg0.size();
-    Obj.Internal_Info.Ib = mag_avg1_sum / mag_avg1.size();
-    Obj.Internal_Info.Ic = mag_avg2_sum / mag_avg2.size();
-    Obj.Internal_Info.Id = mag_avg3_sum / mag_avg3.size();
+    // mag_avg0.push_back(controller.hall0.read_magnitude());
+    // mag_avg1.push_back(controller.hall1.read_magnitude());
+    // mag_avg2.push_back(controller.hall2.read_magnitude());
+    // mag_avg3.push_back(controller.hall3.read_magnitude());
+    // if(mag_avg0.size() > 20) mag_avg0.pop_front();
+    // if(mag_avg1.size() > 20) mag_avg1.pop_front();
+    // if(mag_avg2.size() > 20) mag_avg2.pop_front();
+    // if(mag_avg3.size() > 20) mag_avg3.pop_front();
+    // float mag_avg0_sum = 0.0f;
+    // float mag_avg1_sum = 0.0f;
+    // float mag_avg2_sum = 0.0f;
+    // float mag_avg3_sum = 0.0f;
+    // for(auto &val : mag_avg0)
+    // {
+    //   mag_avg0_sum += val;
+    // }
+    // for(auto &val : mag_avg1)
+    // {
+    //   mag_avg1_sum += val;
+    // }
+    // for(auto &val : mag_avg2)
+    // {
+    //   mag_avg2_sum += val;
+    // }
+    // for(auto &val : mag_avg3)
+    // {
+    //   mag_avg3_sum += val;
+    // }
+    // Obj.Internal_Info.Ia = mag_avg0_sum / mag_avg0.size();
+    // Obj.Internal_Info.Ib = mag_avg1_sum / mag_avg1.size();
+    // Obj.Internal_Info.Ic = mag_avg2_sum / mag_avg2.size();
+    // Obj.Internal_Info.Id = mag_avg3_sum / mag_avg3.size();
     
     /* USER CODE END WHILE */
 
@@ -336,7 +359,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim1)
   {
-    //end switching pereiod
+    //end switching period
     HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
     HAL_TIM_Base_Stop_IT(htim);

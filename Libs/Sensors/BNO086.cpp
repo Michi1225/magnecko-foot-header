@@ -26,9 +26,9 @@ BNO086::BNO086()
 uint8_t BNO086::init()
 {
     //Set feature reports to be set up
+    this->features.push_back(std::make_pair(BNO086_ID_ROTATION,          BNO086_PERIOD_ROTATION));
     this->features.push_back(std::make_pair(BNO086_ID_ACCELEROMETER,        BNO086_PERIOD_ACCELEROMETER));
     // this->features.push_back(std::make_pair(BNO086_ID_GYROSCOPE,            BNO086_PERIOD_GYROSCOPE));
-    // this->features.push_back(std::make_pair(BNO086_ID_ROTATION,          BNO086_PERIOD_ROTATION));
     // this->features.push_back(std::make_pair(BNO086_ID_MAGNETOMETER,         BNO086_PERIOD_MAGNETOMETER));
     // this->features.push_back(std::make_pair(BNO086_ID_LINEAR_ACCELERATION,  BNO086_PERIOD_LINEAR_ACCELERATION));
     // this->features.push_back(std::make_pair(BNO086_ID_GRAVITY,              BNO086_PERIOD_GRAVITY));
@@ -83,18 +83,21 @@ uint8_t BNO086::start()
     HAL_GPIO_WritePin(IMU_WAKE_GPIO_Port, IMU_WAKE_Pin, GPIO_PIN_SET);
 
     uint8_t errorcode = 0;
-    // uint8_t rxBytes[21];
+    uint8_t rxBytes[128] = {0};
     uint8_t txBytes[21];
     
-    txBytes[0] = 0x15;
-    txBytes[1] = 0x00;
-    txBytes[2] = 0x02;
-    txBytes[3] = this->seqNum;
-    txBytes[4] = 0xFD; // Set Feature Command (P.63): https://www.ceva-ip.com/wp-content/uploads/2019/10/SH-2-Reference-Manual.pdf
+
     
 
     for(auto& [id, period]: this->features)
     {
+        txBytes[0] = 0x15;
+        txBytes[1] = 0x00;
+        txBytes[2] = 0x02;
+        txBytes[3] = this->seqNum;
+        txBytes[4] = 0xFD; // Set Feature Command (P.63): https://www.ceva-ip.com/wp-content/uploads/2019/10/SH-2-Reference-Manual.pdf
+
+
         txBytes[5] = id; //Report ID: Rotation Vector
         txBytes[6] = 0b00001000; // Feature Flags (P. 62)
         txBytes[7] = 0x00; //Change Sensitivity LSB         --> Sensitivity only changes, how often new reports are generated, but not how often the corresponding interrupt is asserted.
@@ -119,14 +122,21 @@ uint8_t BNO086::start()
         this->seqNum = (this->seqNum + 1) % 256;
 
         //read Get Feature Response
-        //this response is sent unsolicited on rate change
-        while(!this->msg_ready);
-        this->msg_ready = false;
-        uint8_t rxBytes[21] = {0};
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, rxBytes, 12, 1000);
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS low
-        if(errorcode != HAL_OK) return errorcode;
+        //this response is sent unsolicited on rate change   
+        while(true)     
+        {
+            while(!this->msg_ready);
+            this->msg_ready = false;
+
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+            errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, rxBytes, 2, 1000);
+            uint16_t rxLen = (rxBytes[0] | (static_cast<uint16_t>(rxBytes[1]) << 8)); //Get length of response
+            if(rxLen > 2 && rxLen < 128)errorcode |= HAL_SPI_Receive(BNO086_SPI_HANDLE, &rxBytes[2], rxLen - 2 , 1000);
+            
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS low
+
+            if(rxBytes[4] == 0xFC) break;//Get Feature Response
+        }
     }
 
 

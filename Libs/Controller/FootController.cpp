@@ -94,13 +94,7 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
 {
     //Handle Sensors
     //IMU
-    // if(imu.update()) Error_Handler();
     imu.update(); //Update IMU data
-
-    // this->rotation_data.quaternion_i = imu.rot_data.quaternion_i;
-    // this->rotation_data.quaternion_j = imu.rot_data.quaternion_j;
-    // this->rotation_data.quaternion_k = imu.rot_data.quaternion_k;
-    // this->rotation_data.quaternion_real = imu.rot_data.quaternion_real;
 
 
     //ToF
@@ -166,6 +160,8 @@ FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status
     if(this->requested_magnetization && this->requested_demagnetization)
     {
         //TODO: Handle faulty input
+        this->requested_magnetization = false; //Reset requested magnetization state
+        this->requested_demagnetization = false; //Reset requested demagnetization state
     }
     //Either Mafgnetization or Demagnetization was requested
     else if(this->requested_magnetization != this->requested_demagnetization)

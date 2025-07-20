@@ -12,7 +12,7 @@ extern "C" {
     #include "soes_pin_mapping_def.h"
  }
 
-#define MAGNETIZATION_TIME 20 //2ms
+#define MAGNETIZATION_TIME 50 //3ms
 
 typedef struct
 {
@@ -97,7 +97,6 @@ public:
     //Sensor variables
     //IMU
     BNO086 imu;
-    RotationData rotation_data = {0, 0, 0, 0}; //Quaternion data from IMU
     //LDC
     LDC1614 ldc;
     uint8_t force_estimation = 0;
