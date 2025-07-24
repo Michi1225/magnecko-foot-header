@@ -27,11 +27,11 @@ uint8_t BNO086::init()
 {
     //Set feature reports to be set up
     this->features.push_back(std::make_pair(BNO086_ID_ROTATION,          BNO086_PERIOD_ROTATION));
-    this->features.push_back(std::make_pair(BNO086_ID_ACCELEROMETER,        BNO086_PERIOD_ACCELEROMETER));
+    // this->features.push_back(std::make_pair(BNO086_ID_GRAVITY,              BNO086_PERIOD_GRAVITY));
+    // this->features.push_back(std::make_pair(BNO086_ID_ACCELEROMETER,        BNO086_PERIOD_ACCELEROMETER));
     // this->features.push_back(std::make_pair(BNO086_ID_GYROSCOPE,            BNO086_PERIOD_GYROSCOPE));
     // this->features.push_back(std::make_pair(BNO086_ID_MAGNETOMETER,         BNO086_PERIOD_MAGNETOMETER));
     // this->features.push_back(std::make_pair(BNO086_ID_LINEAR_ACCELERATION,  BNO086_PERIOD_LINEAR_ACCELERATION));
-    // this->features.push_back(std::make_pair(BNO086_ID_GRAVITY,              BNO086_PERIOD_GRAVITY));
 
 
     //Reset BNO
@@ -122,21 +122,17 @@ uint8_t BNO086::start()
         this->seqNum = (this->seqNum + 1) % 256;
 
         //read Get Feature Response
-        //this response is sent unsolicited on rate change   
-        while(true)     
-        {
-            while(!this->msg_ready);
-            this->msg_ready = false;
+        //this response is sent unsolicited on rate change
+        while(!this->msg_ready);
+        this->msg_ready = false;
 
-            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-            errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, rxBytes, 2, 1000);
-            uint16_t rxLen = (rxBytes[0] | (static_cast<uint16_t>(rxBytes[1]) << 8)); //Get length of response
-            if(rxLen > 2 && rxLen < 128)errorcode |= HAL_SPI_Receive(BNO086_SPI_HANDLE, &rxBytes[2], rxLen - 2 , 1000);
-            
-            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS low
-
-            if(rxBytes[4] == 0xFC) break;//Get Feature Response
-        }
+        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, rxBytes, 2, 1000);
+        uint16_t rxLen = (rxBytes[0] | (static_cast<uint16_t>(rxBytes[1]) << 8)); //Get length of response
+        if(rxLen > 2 && rxLen < 128)errorcode |= HAL_SPI_Receive(BNO086_SPI_HANDLE, &rxBytes[2], rxLen - 2 , 1000);
+        
+        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS low
+        HAL_Delay(4);
     }
 
 

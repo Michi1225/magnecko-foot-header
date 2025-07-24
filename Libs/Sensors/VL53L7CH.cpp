@@ -114,7 +114,14 @@ int VL53L7CH::get_ranging_data()
             {
                 continue; // reject outlier
             }
-            this->data[i][j] = this->results.distance_mm[i * 4 + j];
+            if(this->results.distance_mm[i * 4 + j] < 0)
+            {
+                this->data[i][j] = 0;
+            }
+            else
+            {
+                this->data[i][j] = this->results.distance_mm[i * 4 + j];
+            }
         }
     }
 #endif

@@ -191,43 +191,54 @@ int main(void)
     controller.runCommunication();
     HAL_Delay(0);
     int error = controller.tof.get_ranging_data();
-    // Obj.Temperatures[0] = controller.tof.data[0][0];
-    // Obj.Temperatures[1] = controller.tof.data[0][1];
-    // Obj.Temperatures[2] = controller.tof.data[0][2];
-    // Obj.Temperatures[3] = controller.tof.data[0][3];
+    Obj.Temperatures[0] = controller.tof.data[0][0];
+    Obj.Temperatures[1] = controller.tof.data[0][1];
+    Obj.Temperatures[2] = controller.tof.data[0][2];
+    Obj.Temperatures[3] = controller.tof.data[0][3];
 
-    // Obj.Position_Actual = controller.tof.data[1][0];
-    // Obj.Velocity_Actual = controller.tof.data[1][1];
-    // Obj.Torque_Actual = controller.tof.data[1][2];
-    // Obj.Total_Current = controller.tof.data[1][3];
+    Obj.Position_Actual = controller.tof.data[1][0];
+    Obj.Velocity_Actual = controller.tof.data[1][1];
+    Obj.Torque_Actual = controller.tof.data[1][2];
+    Obj.Total_Current = controller.tof.data[1][3];
 
-    // Obj.DC_Link_Voltage = controller.tof.data[2][0];
-    // Obj.Internal_Info.Ia = controller.tof.data[2][1];
-    // Obj.Internal_Info.Ib = controller.tof.data[2][2];
-    // Obj.Internal_Info.Ic = controller.tof.data[2][3];
+    Obj.DC_Link_Voltage = controller.tof.data[2][0];
+    Obj.Internal_Info.Ia = controller.tof.data[2][1];
+    Obj.Internal_Info.Ib = controller.tof.data[2][2];
+    Obj.Internal_Info.Ic = controller.tof.data[2][3];
 
-    // Obj.Internal_Info.Id = controller.tof.data[3][0];
-    // Obj.Internal_Info.Iq = controller.tof.data[3][1];
-    // Obj.Internal_Info.Ud_Demand = controller.tof.data[3][2];
-    // Obj.Internal_Info.Uq_Demand = controller.tof.data[3][3];
+    Obj.Internal_Info.Id = controller.tof.data[3][0];
+    Obj.Internal_Info.Iq = controller.tof.data[3][1];
+    Obj.Internal_Info.Ud_Demand = controller.tof.data[3][2];
+    Obj.Internal_Info.Uq_Demand = controller.tof.data[3][3];
 
-    // Obj.Internal_Info.Iq = controller.ldc.readData(0);
-    // Obj.Internal_Info.Ud_Demand = controller.ldc.readData(1);
-    // Obj.Internal_Info.Uq_Demand = controller.ldc.readData(2);
+    // Obj.Internal_Info.Ia = controller.ldc.readData(0); // Read data from LDC1614 for channel 0
+    // Obj.Internal_Info.Ib = controller.ldc.readData(1); // Read data from LDC1614 for channel 1
+    // Obj.Internal_Info.Ic = controller.ldc.readData(2); // Read data from LDC1614 for channel 2
+    // Obj.Internal_Info.Id = controller.ldc.readData(3); // Read data from LDC1614 for channel 3
 
 
-
+    //IMU
     // Obj.Internal_Info.Ia = q_to_float(controller.imu.accel_data.axis_x, controller.imu.accel_data.q_point);
     // Obj.Internal_Info.Ib = q_to_float(controller.imu.accel_data.axis_y, controller.imu.accel_data.q_point);
     // Obj.Internal_Info.Ic = q_to_float(controller.imu.accel_data.axis_z, controller.imu.accel_data.q_point);
 
-    Obj.Internal_Info.Ia = controller.imu.rot_data.quaternion_i;
-    Obj.Internal_Info.Ib = controller.imu.rot_data.quaternion_j;
-    Obj.Internal_Info.Ic = controller.imu.rot_data.quaternion_k;
-    Obj.Internal_Info.Id = controller.imu.rot_data.quaternion_real;
+    // Obj.Internal_Info.Ia = q_to_float(controller.imu.grav_data.axis_x, controller.imu.grav_data.q_point);
+    // Obj.Internal_Info.Ib = q_to_float(controller.imu.grav_data.axis_y, controller.imu.grav_data.q_point);
+    // Obj.Internal_Info.Ic = q_to_float(controller.imu.grav_data.axis_z, controller.imu.grav_data.q_point);
 
-    Obj.Internal_Info.Ud_Demand = q_to_float(controller.imu.accel_data.axis_x, controller.imu.accel_data.q_point);
-    Obj.Internal_Info.Uq_Demand = q_to_float(controller.imu.accel_data.axis_y, controller.imu.accel_data.q_point);
+    // Obj.Internal_Info.Ia = controller.imu.rot_data.quaternion_i;
+    // Obj.Internal_Info.Ib = controller.imu.rot_data.quaternion_j;
+    // Obj.Internal_Info.Ic = controller.imu.rot_data.quaternion_k;
+    // Obj.Internal_Info.Id = controller.imu.rot_data.quaternion_real;
+
+    // Obj.Internal_Info.Ia = q_to_float(controller.imu.gyro_data.axis_x, controller.imu.gyro_data.q_point);
+    // Obj.Internal_Info.Ib = q_to_float(controller.imu.gyro_data.axis_y, controller.imu.gyro_data.q_point);
+    // Obj.Internal_Info.Ic = q_to_float(controller.imu.gyro_data.axis_z, controller.imu.gyro_data.q_point);
+
+    // Obj.Internal_Info.Ia = q_to_float(controller.imu.mag_data.axis_x, controller.imu.mag_data.q_point);
+    // Obj.Internal_Info.Ib = q_to_float(controller.imu.mag_data.axis_y, controller.imu.mag_data.q_point);
+    // Obj.Internal_Info.Ic = q_to_float(controller.imu.mag_data.axis_z, controller.imu.mag_data.q_point);
+
 
     //Windowed average of the magnetometer values
     // mag_avg0.push_back(controller.hall0.read_magnitude());

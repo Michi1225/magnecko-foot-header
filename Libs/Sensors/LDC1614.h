@@ -70,7 +70,7 @@
 #define ERROR_CONFIG_VAL  0xF800 // All errors on DATAx, no errors on INTB
 
 #define CONFIG_ADDR 0x1A
-#define CONFIG_VAL  0x81 //Disable interrupts
+#define CONFIG_VAL  0x1081 //Disable interrupts, RP_OVERRIDE
 
 #define MUX_CONFIG_ADDR 0x1B
 #define MUX_CONFIG_VAL  0xC20D //Auto-Scan enable, 10MHz deglitch
@@ -79,16 +79,16 @@
 #define RESET_DEV_VAL  0x00
 
 #define DRIVE_CURRENT0_ADDR 0x1E
-#define DRIVE_CURRENT0_VAL  0x3F
+#define DRIVE_CURRENT0_VAL  0xF800
 
 #define DRIVE_CURRENT1_ADDR 0x1F
-#define DRIVE_CURRENT1_VAL  0x3F
+#define DRIVE_CURRENT1_VAL  0xF800
 
 #define DRIVE_CURRENT2_ADDR 0x20
-#define DRIVE_CURRENT2_VAL  0x3F
+#define DRIVE_CURRENT2_VAL  0xF800
 
 #define DRIVE_CURRENT3_ADDR 0x21
-#define DRIVE_CURRENT3_VAL  0x3F
+#define DRIVE_CURRENT3_VAL  0xF800
 
 
 #define LDC_FREF 43350000.0 // 43.35MHz reference clock
@@ -114,6 +114,8 @@ typedef enum {
 
 class LDC1614 
 {
+private:
+    float offset[4] = {0.0f, 0.0f, 0.0f, 0.0f}; // Offset for each channel
 public:
     LDC1614();
     uint8_t init();

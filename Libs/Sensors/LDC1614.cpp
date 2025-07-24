@@ -97,6 +97,11 @@ uint8_t LDC1614::init() {
     txData[1] = CONFIG_VAL & 0xFF;        // Low byte
     status |= HAL_I2C_Mem_Write(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, CONFIG_ADDR, 1, txData, 2, 100);
 
+    this->offset[0] = this->readData(0); // Read initial offset for channel 0
+    this->offset[1] = this->readData(1); // Read initial offset for channel 1
+    this->offset[2] = this->readData(2); // Read initial offset for channel 2
+    this->offset[3] = this->readData(3); // Read initial offset for channel 3
+
     return status;
 }
 
@@ -147,7 +152,7 @@ float LDC1614::readData(uint8_t channel) {
 
     double frequency = (static_cast<double>(data) * LDC_FREF) / (1 << 28); // Calculate frequency
 
-    return static_cast<float>(frequency);
+    return static_cast<float>(frequency) - this->offset[channel]; // Return frequency minus offset
 }
 
 uint16_t LDC1614::readStatus() {
