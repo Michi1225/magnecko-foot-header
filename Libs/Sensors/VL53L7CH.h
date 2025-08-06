@@ -10,10 +10,10 @@
 class VL53L7CH
 {
 private:
-    VL53LMZ_Configuration config;
-    VL53LMZ_ResultsData results;
-    VL53LMZ_ModuleInfo module_info;
-    VL53LMZ_FWVersion fw_version;
+    static VL53LMZ_Configuration config;
+    static VL53LMZ_ResultsData results;
+    static VL53LMZ_ModuleInfo module_info;
+    static VL53LMZ_FWVersion fw_version;
 
     uint8_t device_id = 0;
     uint8_t revision_id = 0;

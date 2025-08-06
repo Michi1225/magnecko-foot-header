@@ -94,7 +94,7 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
 {
     //Handle Sensors
     //IMU
-    imu.update(); //Update IMU data
+    // imu.update(); //Update IMU data
 
 
     //ToF
@@ -130,16 +130,16 @@ FSMStatus FootController::FSM_notReadyToSwitchOn(FSMStatus state, uint16_t &stat
 
 FSMStatus FootController::FSM_switchOnDisabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    // HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
-    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
+    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
     return state;
 }
 
 FSMStatus FootController::FSM_readyToSwitchOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
-    // HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
+    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
     return state;
 }
@@ -155,6 +155,7 @@ FSMStatus FootController::FSM_switchedOn(FSMStatus state, uint16_t &status_word,
 
 FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
     //Magnetization state
     //Handle Magnetization/Demagnetization requests
     if(this->requested_magnetization && this->requested_demagnetization)
@@ -166,19 +167,10 @@ FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status
     //Either Mafgnetization or Demagnetization was requested
     else if(this->requested_magnetization != this->requested_demagnetization)
     {
-        //Check, if the Caps are charged, and no magnetization is active
-        // if(!HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) && !this->active_magnetization)
-        // {
-        // }
         this->magnetize(MAGNETIZATION_TIME);
         this->requested_magnetization = false; //Reset requested magnetization state
         this->requested_demagnetization = false; //Reset requested demagnetization state
     }
-    //Charge Capacitors
-    // if(!this->active_magnetization) HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
-
-    //Discharge state
-    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, this->requested_discharge ? GPIO_PIN_RESET : GPIO_PIN_SET);
     return state;
 }
 

@@ -86,6 +86,8 @@ public:
         D1
     };
 
+    float bx,by,bz;
+
     /**
      * @brief TMAG5273 constructor
      * @param version device version

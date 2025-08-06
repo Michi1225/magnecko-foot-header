@@ -56,10 +56,15 @@ void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
 void EXTI2_IRQHandler(void);
+void DMA1_Stream0_IRQHandler(void);
+void DMA1_Stream1_IRQHandler(void);
 void TIM1_UP_IRQHandler(void);
 void TIM2_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
 void TIM6_DAC_IRQHandler(void);
+void I2C3_EV_IRQHandler(void);
+void I2C3_ER_IRQHandler(void);
+void DMAMUX1_OVR_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

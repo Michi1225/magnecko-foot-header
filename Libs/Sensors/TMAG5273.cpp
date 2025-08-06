@@ -1,6 +1,9 @@
 #include "TMAG5273.h"
 
 
+__section(".RAM") uint8_t rxDataHall[6];
+
+
 TMAG5273::TMAG5273(device_version version)
 {
     switch (version)
@@ -51,11 +54,10 @@ uint8_t TMAG5273::init()
 float TMAG5273::read_Bx()
 {
     uint8_t txData[1] = {X_MSB_RESULT_ADDR}; // Read operation
-    uint8_t rxData[2] = {0};
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 2, 100) != HAL_OK) Error_Handler();
 
-    int16_t raw_value = (static_cast<int16_t>(rxData[0]) << 8) | static_cast<int16_t>(rxData[1]);
+    int16_t raw_value = (static_cast<int16_t>(rxDataHall[0]) << 8) | static_cast<int16_t>(rxDataHall[1]);
     float bx = static_cast<float>(raw_value) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return bx;
 }
@@ -64,11 +66,10 @@ float TMAG5273::read_Bx()
 float TMAG5273::read_By()
 {
     uint8_t txData[1] = {Y_MSB_RESULT_ADDR};
-    uint8_t rxData[2] = {0};
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 2, 100) != HAL_OK) Error_Handler();
 
-    int16_t raw_value = (static_cast<int16_t>(rxData[0]) << 8) | static_cast<int16_t>(rxData[1]);
+    int16_t raw_value = (static_cast<int16_t>(rxDataHall[0]) << 8) | static_cast<int16_t>(rxDataHall[1]);
     float by = static_cast<float>(raw_value) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return by;
 }
@@ -78,45 +79,57 @@ float TMAG5273::read_By()
 float TMAG5273::read_Bz()
 {
     uint8_t txData[1] = {Z_MSB_RESULT_ADDR};
-    uint8_t rxData[2] = {0};
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 2, 100) != HAL_OK) Error_Handler();
 
-    int16_t raw_value = (static_cast<int16_t>(rxData[0]) << 8) | static_cast<int16_t>(rxData[1]);
+    int16_t raw_value = (static_cast<int16_t>(rxDataHall[0]) << 8) | static_cast<int16_t>(rxDataHall[1]);
     float bz = static_cast<float>(raw_value) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     return bz;
 }
 
 float TMAG5273::read_magnitude()
 {
-    uint8_t txData[1] = {X_MSB_RESULT_ADDR}; // Read operation
-    uint8_t rxData[6] = {0};
-    if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 6, 100) != HAL_OK) Error_Handler();
+    // static uint8_t txData[1] = {X_MSB_RESULT_ADDR}; // Read operation
+    // static uint8_t rxDataHall[6] = {0};
+    // if(HAL_I2C_Master_Transmit_DMA(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1) != HAL_OK) Error_Handler();
+    // while(HAL_I2C_GetState(SENS_I2C_HANDLE) != HAL_I2C_STATE_READY)
+	// {
+	// 	// Wait for the I2C to be ready
+	// }
+    // if(HAL_I2C_Master_Receive_DMA(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 6) != HAL_OK) Error_Handler();
+    // while(HAL_I2C_GetState(SENS_I2C_HANDLE) != HAL_I2C_STATE_READY)
+	// {
+	// 	// Wait for the I2C to be ready
+	// }
+
+    HAL_I2C_Mem_Read_DMA(SENS_I2C_HANDLE, (this->device_address << 1), X_MSB_RESULT_ADDR, I2C_MEMADD_SIZE_8BIT, rxDataHall, 6);
+    while(HAL_I2C_GetState(SENS_I2C_HANDLE) != HAL_I2C_STATE_READY)
+    {
+        // Wait for the I2C to be ready
+    }
 
 
-    int16_t raw_value_x = (static_cast<int16_t>(rxData[0]) << 8) | static_cast<int16_t>(rxData[1]);
-    float bx = static_cast<float>(raw_value_x) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    int16_t raw_value_x = (static_cast<int16_t>(rxDataHall[0]) << 8) | static_cast<int16_t>(rxDataHall[1]);
+    this->bx = static_cast<float>(raw_value_x) / 65536.0f * 2.0f * MAG_SENSITIVITY;
 
-    int16_t raw_value_y = (static_cast<int16_t>(rxData[2]) << 8) | static_cast<int16_t>(rxData[3]);
-    float by = static_cast<float>(raw_value_y) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    int16_t raw_value_y = (static_cast<int16_t>(rxDataHall[2]) << 8) | static_cast<int16_t>(rxDataHall[3]);
+    this->by = static_cast<float>(raw_value_y) / 65536.0f * 2.0f * MAG_SENSITIVITY;
 
-    int16_t raw_value_z = (static_cast<int16_t>(rxData[4]) << 8) | static_cast<int16_t>(rxData[5]);
-    float bz = static_cast<float>(raw_value_z) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    int16_t raw_value_z = (static_cast<int16_t>(rxDataHall[4]) << 8) | static_cast<int16_t>(rxDataHall[5]);
+    this->bz = static_cast<float>(raw_value_z) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     
-    float magnitude = sqrt(bx * bx + by * by + bz * bz);
+    float magnitude = sqrt(this->bx * this->bx + this->by * this->by + this->bz * this->bz);
     return magnitude;
 }
 
 float TMAG5273::read_T()
 {
     uint8_t txData[1] = {T_MSB_RESULT_ADDR};
-    uint8_t rxData[2] = {0};
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
-    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxData, 2, 100) != HAL_OK) Error_Handler();
+    if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 2, 100) != HAL_OK) Error_Handler();
 
     
-    int16_t raw = (static_cast<int16_t>(rxData[0]) << 8) | rxData[1];
+    int16_t raw = (static_cast<int16_t>(rxDataHall[0]) << 8) | rxDataHall[1];
     float t = 25.0f + (raw - 17508) / 60.1f;
     return t;
 }

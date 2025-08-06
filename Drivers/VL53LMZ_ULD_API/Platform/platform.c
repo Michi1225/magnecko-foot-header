@@ -14,19 +14,22 @@
 
 extern I2C_HandleTypeDef hi2c3;
 
+__section(".RAM") uint8_t data_write[0x8000];
+__section(".RAM") uint8_t data_read[0x8000];
+
 uint8_t RdByte(
 		VL53LMZ_Platform *p_platform,
 		uint16_t RegisterAdress,
 		uint8_t *p_value)
 {
 	uint8_t status = 0;
-	uint8_t data_write[2];
-	uint8_t data_read[1];
 
 	data_write[0] = (RegisterAdress >> 8) & 0xFF;
 	data_write[1] = RegisterAdress & 0xFF;
-	status = HAL_I2C_Master_Transmit(&hi2c3, p_platform->address, data_write, 2, 100);
-	status = HAL_I2C_Master_Receive(&hi2c3, p_platform->address, data_read, 1, 100);
+	status = HAL_I2C_Master_Transmit_DMA(&hi2c3, p_platform->address, data_write, 2);
+	while(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY);
+	status = HAL_I2C_Master_Receive_DMA(&hi2c3, p_platform->address, data_read, 1);
+	while(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY);
 	*p_value = data_read[0];
 	//uart_printf("read 1 byte\n");
 	return status;
@@ -37,13 +40,13 @@ uint8_t WrByte(
 		uint16_t RegisterAdress,
 		uint8_t value)
 {
-	uint8_t data_write[3];
 	uint8_t status = 0;
 
 	data_write[0] = (RegisterAdress >> 8) & 0xFF;
 	data_write[1] = RegisterAdress & 0xFF;
 	data_write[2] = value & 0xFF;
-	status = HAL_I2C_Master_Transmit(&hi2c3, p_platform->address, data_write, 3, 100);
+	status = HAL_I2C_Master_Transmit_DMA(&hi2c3, p_platform->address, data_write, 3);
+	while(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY);
 	//uart_printf("write 1 byte\n");
 	return status;
 }
@@ -54,8 +57,10 @@ uint8_t WrMulti(
 		uint8_t *p_values,
 		uint32_t size)
 {
-	uint8_t status = HAL_I2C_Mem_Write(&hi2c3, p_platform->address, RegisterAdress,
-			I2C_MEMADD_SIZE_16BIT, p_values, size, 65535);
+	memcpy(data_write, p_values, size);
+	uint8_t status = HAL_I2C_Mem_Write_DMA(&hi2c3, p_platform->address, RegisterAdress,
+			I2C_MEMADD_SIZE_16BIT, data_write, size);
+	while(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY);
 	//uart_printf("write %d bytes\n",size);
 	return status;
 }
@@ -67,12 +72,14 @@ uint8_t RdMulti(
 		uint32_t size)
 {
 	uint8_t status;
-	uint8_t data_write[2];
 	data_write[0] = (RegisterAdress>>8) & 0xFF;
 	data_write[1] = RegisterAdress & 0xFF;
 
-	status = HAL_I2C_Master_Transmit(&hi2c3, p_platform->address, data_write, 2, 10);
-	status += HAL_I2C_Master_Receive(&hi2c3, p_platform->address, p_values, size, 400);
+	status = HAL_I2C_Master_Transmit_DMA(&hi2c3, p_platform->address, data_write, 2);
+	while(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY);
+	status += HAL_I2C_Master_Receive_DMA(&hi2c3, p_platform->address, data_read, size);
+	while(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY);
+	memcpy(p_values, data_read, size);
     //uart_printf("read %d bytes\n",size);
 
 	return status;

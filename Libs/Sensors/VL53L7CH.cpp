@@ -1,6 +1,11 @@
 
 #include "VL53L7CH.h"
 
+VL53LMZ_Configuration VL53L7CH::config __section(".RAM");
+VL53LMZ_ResultsData VL53L7CH::results __section(".RAM");
+VL53LMZ_ModuleInfo VL53L7CH::module_info __section(".RAM");
+VL53LMZ_FWVersion VL53L7CH::fw_version __section(".RAM");
+
 VL53L7CH::VL53L7CH()
 {
     this->config.platform.address = 0x52;
@@ -23,7 +28,7 @@ int VL53L7CH::init()
 	status |= vl53lmz_check_sensor(&this->config, &this->device_id, &this->revision_id);
 
     // Read Firmware version
-    status |= vl53lmz_get_fw_version(&this->config, &this->fw_version);
+    // status |= vl53lmz_get_fw_version(&this->config, &this->fw_version);
 
     //Set WAKEUP mode
     status |= vl53lmz_set_power_mode(&this->config, VL53LMZ_POWER_MODE_WAKEUP);

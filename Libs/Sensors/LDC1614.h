@@ -129,3 +129,7 @@ public:
      */
     uint8_t forceEstimation();
 };
+
+
+// extern uint8_t data_addr;
+// extern uint8_t rxData[4]; // Buffer to hold received data

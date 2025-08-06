@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "memorymap.h"
 #include "spi.h"
@@ -71,6 +72,7 @@ static void MPU_Config(void);
 void cb_get_inputs()
 {
   controller.fsm_.setControlWord(Obj.Control_Word);
+  Obj.GPIO_State[0] = ~Obj.GPIO_State[0];
 
   //Magnetization on GPIO0, Charging on GPIO1
 
@@ -156,6 +158,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
   MX_SPI6_Init();
@@ -188,8 +191,10 @@ int main(void)
   std::deque<float> mag_avg3;
   while (1)
   {
-    controller.runCommunication();
-    HAL_Delay(0);
+    // controller.runCommunication();
+    // HAL_Delay(0);
+
+    // uint32_t current_time = HAL_GetTick();
     int error = controller.tof.get_ranging_data();
     Obj.Temperatures[0] = controller.tof.data[0][0];
     Obj.Temperatures[1] = controller.tof.data[0][1];
@@ -210,6 +215,7 @@ int main(void)
     Obj.Internal_Info.Iq = controller.tof.data[3][1];
     Obj.Internal_Info.Ud_Demand = controller.tof.data[3][2];
     Obj.Internal_Info.Uq_Demand = controller.tof.data[3][3];
+    
 
     // Obj.Internal_Info.Ia = controller.ldc.readData(0); // Read data from LDC1614 for channel 0
     // Obj.Internal_Info.Ib = controller.ldc.readData(1); // Read data from LDC1614 for channel 1
@@ -218,13 +224,10 @@ int main(void)
 
 
     //IMU
-    // Obj.Internal_Info.Ia = q_to_float(controller.imu.accel_data.axis_x, controller.imu.accel_data.q_point);
-    // Obj.Internal_Info.Ib = q_to_float(controller.imu.accel_data.axis_y, controller.imu.accel_data.q_point);
-    // Obj.Internal_Info.Ic = q_to_float(controller.imu.accel_data.axis_z, controller.imu.accel_data.q_point);
-
-    // Obj.Internal_Info.Ia = q_to_float(controller.imu.grav_data.axis_x, controller.imu.grav_data.q_point);
-    // Obj.Internal_Info.Ib = q_to_float(controller.imu.grav_data.axis_y, controller.imu.grav_data.q_point);
-    // Obj.Internal_Info.Ic = q_to_float(controller.imu.grav_data.axis_z, controller.imu.grav_data.q_point);
+    // controller.imu.update(); //Update IMU data
+    // Obj.Internal_Info.Ia = q_to_float(controller.imu.lin_accel_data.axis_x, controller.imu.lin_accel_data.q_point);
+    // Obj.Internal_Info.Ib = q_to_float(controller.imu.lin_accel_data.axis_y, controller.imu.lin_accel_data.q_point);
+    // Obj.Internal_Info.Ic = q_to_float(controller.imu.lin_accel_data.axis_z, controller.imu.lin_accel_data.q_point);
 
     // Obj.Internal_Info.Ia = controller.imu.rot_data.quaternion_i;
     // Obj.Internal_Info.Ib = controller.imu.rot_data.quaternion_j;
@@ -234,6 +237,10 @@ int main(void)
     // Obj.Internal_Info.Ia = q_to_float(controller.imu.gyro_data.axis_x, controller.imu.gyro_data.q_point);
     // Obj.Internal_Info.Ib = q_to_float(controller.imu.gyro_data.axis_y, controller.imu.gyro_data.q_point);
     // Obj.Internal_Info.Ic = q_to_float(controller.imu.gyro_data.axis_z, controller.imu.gyro_data.q_point);
+
+    // Obj.Internal_Info.Ia = q_to_float(controller.imu.grav_data.axis_x, controller.imu.grav_data.q_point);
+    // Obj.Internal_Info.Ib = q_to_float(controller.imu.grav_data.axis_y, controller.imu.grav_data.q_point);
+    // Obj.Internal_Info.Ic = q_to_float(controller.imu.grav_data.axis_z, controller.imu.grav_data.q_point);
 
     // Obj.Internal_Info.Ia = q_to_float(controller.imu.mag_data.axis_x, controller.imu.mag_data.q_point);
     // Obj.Internal_Info.Ib = q_to_float(controller.imu.mag_data.axis_y, controller.imu.mag_data.q_point);
@@ -273,7 +280,6 @@ int main(void)
     // Obj.Internal_Info.Ib = mag_avg1_sum / mag_avg1.size();
     // Obj.Internal_Info.Ic = mag_avg2_sum / mag_avg2.size();
     // Obj.Internal_Info.Id = mag_avg3_sum / mag_avg3.size();
-    
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -385,6 +391,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     // Update the controller
     controller.runControl();
+    // uint32_t current_time = SysTick->VAL;
+    controller.runCommunication();
+    // uint32_t elapsed = (SysTick->VAL > current_time) ? SysTick->VAL - current_time : SysTick->LOAD - current_time + SysTick->VAL;
   }
 
 
@@ -433,6 +442,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
   
 
+}
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  int i = 0;
+  UNUSED(i);
+}
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  int i = 0;
+  UNUSED(i);
 }
 
 /* USER CODE END 4 */

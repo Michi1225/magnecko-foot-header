@@ -1,6 +1,8 @@
 #include "LDC1614.h"
 
+__section(".RAM") uint8_t data_addr = 0x00; // Initialize data address
 
+__section(".RAM") uint8_t rxData[4]; // Buffer to hold received data
 
 static uint8_t freq_to_Force(float freq)
 {
@@ -97,16 +99,16 @@ uint8_t LDC1614::init() {
     txData[1] = CONFIG_VAL & 0xFF;        // Low byte
     status |= HAL_I2C_Mem_Write(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, CONFIG_ADDR, 1, txData, 2, 100);
 
-    this->offset[0] = this->readData(0); // Read initial offset for channel 0
-    this->offset[1] = this->readData(1); // Read initial offset for channel 1
-    this->offset[2] = this->readData(2); // Read initial offset for channel 2
-    this->offset[3] = this->readData(3); // Read initial offset for channel 3
+    // this->offset[0] = this->readData(0); // Read initial offset for channel 0
+    // this->offset[1] = this->readData(1); // Read initial offset for channel 1
+    // this->offset[2] = this->readData(2); // Read initial offset for channel 2
+    // this->offset[3] = this->readData(3); // Read initial offset for channel 3
 
     return status;
 }
 
-float LDC1614::readData(uint8_t channel) {
-    uint8_t data_addr = 0x00;
+float LDC1614::readData(uint8_t channel) 
+{
 
     switch (channel)  // Check the channel number    
     {
@@ -129,12 +131,18 @@ float LDC1614::readData(uint8_t channel) {
     }
 
     //read MSB
-    uint8_t rxData[4];
-    if(HAL_I2C_Mem_Read(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr, 1, rxData, 2, 100) != HAL_OK) return 0; // Error in reading
+    if(HAL_I2C_Mem_Read_DMA(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr, 1, rxData, 4) != HAL_OK) return 0; // Error in reading
+	while(HAL_I2C_GetState(LDC_I2C_HANDLE) != HAL_I2C_STATE_READY)
+	{
+		// Wait for the I2C to be ready
+	}
 
-    //read LSB
-    if(HAL_I2C_Mem_Read(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr + 1, 1, rxData + 2, 2, 100) != HAL_OK) return 0; // Error in reading
-
+    // //read LSB
+    if(HAL_I2C_Mem_Read_DMA(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr + 1, 1, rxData + 2, 2) != HAL_OK) return 0; // Error in reading
+	while(HAL_I2C_GetState(LDC_I2C_HANDLE) != HAL_I2C_STATE_READY)
+	{
+		// Wait for the I2C to be ready
+	}
     // Check for errors
     // if(rxData[0] & 0x80) {
     //     return LDC_UNDER_RANGE; // Under range error
@@ -152,7 +160,7 @@ float LDC1614::readData(uint8_t channel) {
 
     double frequency = (static_cast<double>(data) * LDC_FREF) / (1 << 28); // Calculate frequency
 
-    return static_cast<float>(frequency) - this->offset[channel]; // Return frequency minus offset
+    return static_cast<float>(frequency);// - this->offset[channel]; // Return frequency minus offset
 }
 
 uint16_t LDC1614::readStatus() {
