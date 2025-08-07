@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "bdma.h"
 #include "dma.h"
 #include "i2c.h"
 #include "memorymap.h"
@@ -159,13 +160,14 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
+  MX_BDMA_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
   MX_SPI6_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
-  MX_TIM6_Init();
   MX_I2C3_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Status LED to indicate booting
   HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_SET); 
@@ -191,10 +193,7 @@ int main(void)
   std::deque<float> mag_avg3;
   while (1)
   {
-    // controller.runCommunication();
-    // HAL_Delay(0);
-
-    // uint32_t current_time = HAL_GetTick();
+    uint32_t current_time = HAL_GetTick();
     int error = controller.tof.get_ranging_data();
     Obj.Temperatures[0] = controller.tof.data[0][0];
     Obj.Temperatures[1] = controller.tof.data[0][1];
@@ -217,26 +216,26 @@ int main(void)
     Obj.Internal_Info.Uq_Demand = controller.tof.data[3][3];
     
 
-    // Obj.Internal_Info.Ia = controller.ldc.readData(0); // Read data from LDC1614 for channel 0
-    // Obj.Internal_Info.Ib = controller.ldc.readData(1); // Read data from LDC1614 for channel 1
-    // Obj.Internal_Info.Ic = controller.ldc.readData(2); // Read data from LDC1614 for channel 2
-    // Obj.Internal_Info.Id = controller.ldc.readData(3); // Read data from LDC1614 for channel 3
+    Obj.Internal_Info.Ia = controller.ldc.readData(0); // Read data from LDC1614 for channel 0
+    Obj.Internal_Info.Ib = controller.ldc.readData(1); // Read data from LDC1614 for channel 1
+    Obj.Internal_Info.Ic = controller.ldc.readData(2); // Read data from LDC1614 for channel 2
+    Obj.Internal_Info.Id = controller.ldc.readData(3); // Read data from LDC1614 for channel 3
 
 
     //IMU
-    // controller.imu.update(); //Update IMU data
-    // Obj.Internal_Info.Ia = q_to_float(controller.imu.lin_accel_data.axis_x, controller.imu.lin_accel_data.q_point);
-    // Obj.Internal_Info.Ib = q_to_float(controller.imu.lin_accel_data.axis_y, controller.imu.lin_accel_data.q_point);
-    // Obj.Internal_Info.Ic = q_to_float(controller.imu.lin_accel_data.axis_z, controller.imu.lin_accel_data.q_point);
+    controller.imu.update(); //Update IMU data
+    Obj.Internal_Info.Ia = q_to_float(controller.imu.lin_accel_data.axis_x, controller.imu.lin_accel_data.q_point);
+    Obj.Internal_Info.Ib = q_to_float(controller.imu.lin_accel_data.axis_y, controller.imu.lin_accel_data.q_point);
+    Obj.Internal_Info.Ic = q_to_float(controller.imu.lin_accel_data.axis_z, controller.imu.lin_accel_data.q_point);
 
-    // Obj.Internal_Info.Ia = controller.imu.rot_data.quaternion_i;
-    // Obj.Internal_Info.Ib = controller.imu.rot_data.quaternion_j;
-    // Obj.Internal_Info.Ic = controller.imu.rot_data.quaternion_k;
-    // Obj.Internal_Info.Id = controller.imu.rot_data.quaternion_real;
+    Obj.Internal_Info.Ia = controller.imu.rot_data.quaternion_i;
+    Obj.Internal_Info.Ib = controller.imu.rot_data.quaternion_j;
+    Obj.Internal_Info.Ic = controller.imu.rot_data.quaternion_k;
+    Obj.Internal_Info.Id = controller.imu.rot_data.quaternion_real;
 
-    // Obj.Internal_Info.Ia = q_to_float(controller.imu.gyro_data.axis_x, controller.imu.gyro_data.q_point);
-    // Obj.Internal_Info.Ib = q_to_float(controller.imu.gyro_data.axis_y, controller.imu.gyro_data.q_point);
-    // Obj.Internal_Info.Ic = q_to_float(controller.imu.gyro_data.axis_z, controller.imu.gyro_data.q_point);
+    Obj.Internal_Info.Ia = q_to_float(controller.imu.gyro_data.axis_x, controller.imu.gyro_data.q_point);
+    Obj.Internal_Info.Ib = q_to_float(controller.imu.gyro_data.axis_y, controller.imu.gyro_data.q_point);
+    Obj.Internal_Info.Ic = q_to_float(controller.imu.gyro_data.axis_z, controller.imu.gyro_data.q_point);
 
     // Obj.Internal_Info.Ia = q_to_float(controller.imu.grav_data.axis_x, controller.imu.grav_data.q_point);
     // Obj.Internal_Info.Ib = q_to_float(controller.imu.grav_data.axis_y, controller.imu.grav_data.q_point);
@@ -248,38 +247,39 @@ int main(void)
 
 
     //Windowed average of the magnetometer values
-    // mag_avg0.push_back(controller.hall0.read_magnitude());
-    // mag_avg1.push_back(controller.hall1.read_magnitude());
-    // mag_avg2.push_back(controller.hall2.read_magnitude());
-    // mag_avg3.push_back(controller.hall3.read_magnitude());
-    // if(mag_avg0.size() > 20) mag_avg0.pop_front();
-    // if(mag_avg1.size() > 20) mag_avg1.pop_front();
-    // if(mag_avg2.size() > 20) mag_avg2.pop_front();
-    // if(mag_avg3.size() > 20) mag_avg3.pop_front();
-    // float mag_avg0_sum = 0.0f;
-    // float mag_avg1_sum = 0.0f;
-    // float mag_avg2_sum = 0.0f;
-    // float mag_avg3_sum = 0.0f;
-    // for(auto &val : mag_avg0)
-    // {
-    //   mag_avg0_sum += val;
-    // }
-    // for(auto &val : mag_avg1)
-    // {
-    //   mag_avg1_sum += val;
-    // }
-    // for(auto &val : mag_avg2)
-    // {
-    //   mag_avg2_sum += val;
-    // }
-    // for(auto &val : mag_avg3)
-    // {
-    //   mag_avg3_sum += val;
-    // }
-    // Obj.Internal_Info.Ia = mag_avg0_sum / mag_avg0.size();
-    // Obj.Internal_Info.Ib = mag_avg1_sum / mag_avg1.size();
-    // Obj.Internal_Info.Ic = mag_avg2_sum / mag_avg2.size();
-    // Obj.Internal_Info.Id = mag_avg3_sum / mag_avg3.size();
+    mag_avg0.push_back(controller.hall0.read_magnitude());
+    mag_avg1.push_back(controller.hall1.read_magnitude());
+    mag_avg2.push_back(controller.hall2.read_magnitude());
+    mag_avg3.push_back(controller.hall3.read_magnitude());
+    if(mag_avg0.size() > 20) mag_avg0.pop_front();
+    if(mag_avg1.size() > 20) mag_avg1.pop_front();
+    if(mag_avg2.size() > 20) mag_avg2.pop_front();
+    if(mag_avg3.size() > 20) mag_avg3.pop_front();
+    float mag_avg0_sum = 0.0f;
+    float mag_avg1_sum = 0.0f;
+    float mag_avg2_sum = 0.0f;
+    float mag_avg3_sum = 0.0f;
+    for(auto &val : mag_avg0)
+    {
+      mag_avg0_sum += val;
+    }
+    for(auto &val : mag_avg1)
+    {
+      mag_avg1_sum += val;
+    }
+    for(auto &val : mag_avg2)
+    {
+      mag_avg2_sum += val;
+    }
+    for(auto &val : mag_avg3)
+    {
+      mag_avg3_sum += val;
+    }
+    Obj.Internal_Info.Ia = mag_avg0_sum / mag_avg0.size();
+    Obj.Internal_Info.Ib = mag_avg1_sum / mag_avg1.size();
+    Obj.Internal_Info.Ic = mag_avg2_sum / mag_avg2.size();
+    Obj.Internal_Info.Id = mag_avg3_sum / mag_avg3.size();
+    Obj.Timestamp = HAL_GetTick() - current_time; //Timestamp in ms since last update
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -442,16 +442,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
   
 
-}
-void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
-{
-  int i = 0;
-  UNUSED(i);
-}
-void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
-{
-  int i = 0;
-  UNUSED(i);
 }
 
 /* USER CODE END 4 */

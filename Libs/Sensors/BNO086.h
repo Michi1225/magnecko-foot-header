@@ -95,12 +95,12 @@ public:
      */
     uint8_t update();
     
-    VectorData gyro_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GYROSCOPE};
-    VectorData accel_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ACCELEROMETER};
-    VectorData mag_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_MAGNETOMETER};
-    VectorData lin_accel_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_LINEAR_ACCELERATION};
-    VectorData grav_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GRAVITY};
-    RotationVectorData rot_data = {0, 0, 0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ROTATION, BNO086_Q_POINT_ACCURACY_ROTATION};
+    static VectorData gyro_data;
+    static VectorData accel_data;
+    static VectorData mag_data;
+    static VectorData lin_accel_data;
+    static VectorData grav_data;
+    static RotationVectorData rot_data;
     uint8_t seqNum = 0;
     bool msg_ready = false;
 

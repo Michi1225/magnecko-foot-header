@@ -98,6 +98,9 @@ int VL53L7CH::stop_ranging()
 
 int VL53L7CH::get_ranging_data()
 {
+    uint8_t drdy = 0;
+    (void)vl53lmz_check_data_ready(&this->config, &drdy);
+    if (drdy == 0) return -1; // No data ready
     int status = vl53lmz_get_ranging_data(&this->config, &this->results);
     // if (status != 0) return status;
 #if RANGING_RESOLUTION == 64U // VL53LMZ_RESOLUTION_8X8
