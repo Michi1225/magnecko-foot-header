@@ -131,7 +131,7 @@ float LDC1614::readData(uint8_t channel)
     }
 
     //read MSB
-    if(HAL_I2C_Mem_Read_DMA(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr, I2C_MEMADD_SIZE_8BIT, rxData, 4) != HAL_OK) return 0; // Error in reading
+    if(HAL_I2C_Mem_Read_DMA(LDC_I2C_HANDLE, LDC_I2C_ADDRESS << 1, data_addr, I2C_MEMADD_SIZE_8BIT, rxData, 2) != HAL_OK) return 0; // Error in reading
 	while(HAL_I2C_GetState(LDC_I2C_HANDLE) != HAL_I2C_STATE_READY)
 	{
 		// Wait for the I2C to be ready
