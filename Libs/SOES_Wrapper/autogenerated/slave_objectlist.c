@@ -2,79 +2,68 @@
 #include "utypes.h"
 #include <stddef.h>
 
-#ifndef HW_REV
-#define HW_REV "1.0"
-#endif
-
-#ifndef SW_REV
-#define SW_REV "1.0"
-#endif
 
 static const char acName1000[] = "Device Type";
-static const char acName1008[] = "Manufacturer Device Name";
-static const char acName1009[] = "Manufacturer Hardware Version";
-static const char acName100A[] = "Manufacturer Software Version";
+static const char acName1008[] = "Device Name";
+static const char acName1009[] = "Hardware Version";
+static const char acName100A[] = "Software Version";
 static const char acName1018[] = "Identity Object";
 static const char acName1018_00[] = "Max SubIndex";
 static const char acName1018_01[] = "Vendor ID";
 static const char acName1018_02[] = "Product Code";
 static const char acName1018_03[] = "Revision Number";
 static const char acName1018_04[] = "Serial Number";
-static const char acName1603[] = "Full";
-static const char acName1603_00[] = "Max SubIndex";
-static const char acName1603_01[] = "Control Word";
-static const char acName1603_02[] = "Operation Modes";
-static const char acName1603_03[] = "Padding 3";
-static const char acName1603_04[] = "Target Position";
-static const char acName1603_05[] = "Target Velocity";
-static const char acName1603_06[] = "Target Torque";
-static const char acName1603_07[] = "Kp";
-static const char acName1603_08[] = "Ki";
-static const char acName1603_09[] = "Kd";
-static const char acName1603_0A[] = "GPIO0";
-static const char acName1603_0B[] = "GPIO1";
-static const char acName1A03[] = "Full";
+static const char acName1600[] = "Control Word";
+static const char acName1600_00[] = "Max SubIndex";
+static const char acName1600_01[] = "Control Word";
+static const char acName1601[] = "Operation Mode";
+static const char acName1601_00[] = "Max SubIndex";
+static const char acName1601_01[] = "Operation Mode";
+static const char acName1602[] = "Magnet Command";
+static const char acName1602_00[] = "Max SubIndex";
+static const char acName1602_01[] = "Magnet Command";
+static const char acName1A00[] = "Status Word";
+static const char acName1A00_00[] = "Max SubIndex";
+static const char acName1A00_01[] = "Status Word";
+static const char acName1A01[] = "Operation Mode Display";
+static const char acName1A01_00[] = "Max SubIndex";
+static const char acName1A01_01[] = "Operation Mode Display";
+static const char acName1A02[] = "Magnet Status";
+static const char acName1A02_00[] = "Max SubIndex";
+static const char acName1A02_01[] = "Magnet Status";
+static const char acName1A03[] = "IMU Data";
 static const char acName1A03_00[] = "Max SubIndex";
-static const char acName1A03_01[] = "Status word";
-static const char acName1A03_02[] = "Operation modes display";
-static const char acName1A03_03[] = "Padding 3";
-static const char acName1A03_04[] = "Position Actual";
-static const char acName1A03_05[] = "Velocity Actual";
-static const char acName1A03_06[] = "Torque Actual";
-static const char acName1A03_07[] = "PCB Temperature";
-static const char acName1A03_08[] = "Motor Temperature 1";
-static const char acName1A03_09[] = "Motor Temperature 2";
-static const char acName1A03_0A[] = "Motor Temperature 3";
-static const char acName1A03_0B[] = "Total Current";
-static const char acName1A03_0C[] = "GPIO0";
-static const char acName1A03_0D[] = "GPIO1";
-static const char acName1A04[] = "Debug";
+static const char acName1A03_01[] = "Gyro X";
+static const char acName1A03_02[] = "Gyro Y";
+static const char acName1A03_03[] = "Gyro Z";
+static const char acName1A03_04[] = "Acc X";
+static const char acName1A03_05[] = "Acc Y";
+static const char acName1A03_06[] = "Acc Z";
+static const char acName1A03_07[] = "Quat R";
+static const char acName1A03_08[] = "Quat I";
+static const char acName1A03_09[] = "Quat J";
+static const char acName1A03_0A[] = "Quat K";
+static const char acName1A04[] = "ToF Data";
 static const char acName1A04_00[] = "Max SubIndex";
-static const char acName1A04_01[] = "Status word";
-static const char acName1A04_02[] = "Operation modes display";
-static const char acName1A04_03[] = "Padding 3";
-static const char acName1A04_04[] = "Position Actual";
-static const char acName1A04_05[] = "Velocity Actual";
-static const char acName1A04_06[] = "Torque Actual";
-static const char acName1A04_07[] = "PCB Temperature";
-static const char acName1A04_08[] = "Motor Temperature 1";
-static const char acName1A04_09[] = "Motor Temperature 2";
-static const char acName1A04_0A[] = "Motor Temperature 3";
-static const char acName1A04_0B[] = "Total Current";
-static const char acName1A04_0C[] = "GPIO0";
-static const char acName1A04_0D[] = "GPIO1";
-static const char acName1A04_0E[] = "DC Link Voltage";
-static const char acName1A04_0F[] = "Iq";
-static const char acName1A04_10[] = "Id";
-static const char acName1A04_11[] = "Uq Demand";
-static const char acName1A04_12[] = "Ud Demand";
-static const char acName1A04_13[] = "Ia";
-static const char acName1A04_14[] = "Ib";
-static const char acName1A04_15[] = "Ic";
-static const char acName1A04_16[] = "Position Demand";
-static const char acName1A04_17[] = "Velocity Demand";
-static const char acName1A04_18[] = "Torque Demand";
-static const char acName1A04_19[] = "Timestamp";
+static const char acName1A04_01[] = "0 0";
+static const char acName1A04_02[] = "0 1";
+static const char acName1A04_03[] = "0 2";
+static const char acName1A04_04[] = "0 3";
+static const char acName1A04_05[] = "1 0";
+static const char acName1A04_06[] = "1 1";
+static const char acName1A04_07[] = "1 2";
+static const char acName1A04_08[] = "1 3";
+static const char acName1A04_09[] = "2 0";
+static const char acName1A04_0A[] = "2 1";
+static const char acName1A04_0B[] = "2 2";
+static const char acName1A04_0C[] = "2 3";
+static const char acName1A04_0D[] = "3 0";
+static const char acName1A04_0E[] = "3 1";
+static const char acName1A04_0F[] = "3 2";
+static const char acName1A04_10[] = "3 3";
+static const char acName1A05[] = "Force Estimate";
+static const char acName1A05_00[] = "Max SubIndex";
+static const char acName1A05_01[] = "Force Estimate";
 static const char acName1C00[] = "Sync Manager Communication Type";
 static const char acName1C00_00[] = "Max SubIndex";
 static const char acName1C00_01[] = "Communications Type SM0";
@@ -89,171 +78,174 @@ static const char acName1C13_00[] = "Max SubIndex";
 static const char acName1C13_01[] = "PDO Mapping";
 static const char acName1C13_02[] = "SM Entry 1C13:02";
 static const char acName1C13_03[] = "SM Entry 1C13:03";
-static const char acName2000[] = "Device Information";
-static const char acName2000_00[] = "Max SubIndex";
-static const char acName2000_01[] = "Controller part number";
-static const char acName2000_02[] = "Motor Part Number";
-static const char acName2000_03[] = "Encoder Part Number";
-static const char acName2000_04[] = "Software Version";
-static const char acName2000_05[] = "Hardware Version";
-static const char acName2000_06[] = "Runtime";
-static const char acName2000_07[] = "Actuator Number";
-static const char acName2001[] = "Motor Parameters";
-static const char acName2001_00[] = "Max SubIndex";
-static const char acName2001_01[] = "Phase resistance";
-static const char acName2001_02[] = "D-Axis inductance";
-static const char acName2001_03[] = "Q-Axis inductance";
-static const char acName2001_04[] = "Pole pairs";
-static const char acName2001_05[] = "Torque constatnt";
-static const char acName2001_06[] = "Inertia";
-static const char acName2001_07[] = "Rated Voltage";
-static const char acName2001_08[] = "Rated Current";
-static const char acName2001_09[] = "Rated speed";
-static const char acName200E[] = "Internal Info";
-static const char acName200E_00[] = "Max SubIndex";
-static const char acName200E_01[] = "Iq";
-static const char acName200E_02[] = "Id";
-static const char acName200E_03[] = "Uq Demand";
-static const char acName200E_04[] = "Ud Demand";
-static const char acName200E_05[] = "Ia";
-static const char acName200E_06[] = "Ib";
-static const char acName200E_07[] = "Ic";
-static const char acName200F[] = "Fan Speed";
-static const char acName2010[] = "GPIO Toggle";
-static const char acName2010_00[] = "Max SubIndex";
-static const char acName2010_01[] = "GPIO0";
-static const char acName2010_02[] = "GPIO1";
-static const char acName2011[] = "GPIO State";
-static const char acName2011_00[] = "Max SubIndex";
-static const char acName2011_01[] = "GPIO0";
-static const char acName2011_02[] = "GPIO1";
-static const char acName2012[] = "Encoder Offset Calibrated";
-static const char acName2013[] = "Zero Position Offset";
-static const char acName2014[] = "Timestamp";
-static const char acName2015[] = "Cutoff Frequency Impeadance";
-static const char acName2016[] = "Quick Stop PID";
-static const char acName2016_00[] = "Max SubIndex";
-static const char acName2016_01[] = "Kp";
-static const char acName2016_02[] = "Ki";
-static const char acName2016_03[] = "Kd";
-static const char acName2017[] = "Tunes";
-static const char acName2018[] = "Torque Rate Limit";
-static const char acName2040[] = "Temperatures";
-static const char acName2040_00[] = "Max SubIndex";
-static const char acName2040_01[] = "PCB Temperature";
-static const char acName2040_02[] = "Motor Temperature 1";
-static const char acName2040_03[] = "Motor Temperature 2";
-static const char acName2040_04[] = "Motor Temperature 3";
-static const char acName2080[] = "Controller Gains";
-static const char acName2080_00[] = "Max SubIndex";
-static const char acName2080_01[] = "Kp";
-static const char acName2080_02[] = "Ki";
-static const char acName2080_03[] = "Kd";
+static const char acName2000[] = "Pulse Time";
+static const char acName2001[] = "EPM Number";
+static const char acName2002[] = "Force Estimate Params";
+static const char acName2002_00[] = "Max SubIndex";
+static const char acName2002_01[] = "Offset";
+static const char acName2002_02[] = "Slope";
 static const char acName603F[] = "Error Code";
 static const char acName6040[] = "Control Word";
-static const char acName6041[] = "Status word";
-static const char acName605A[] = "Quick stop option code";
-static const char acName6060[] = "Operation Modes";
-static const char acName6061[] = "Operation modes display";
-static const char acName6062[] = "Position Demand";
-static const char acName6064[] = "Position Actual";
-static const char acName606B[] = "Velocity Demand";
-static const char acName606C[] = "Velocity Actual";
-static const char acName6071[] = "Target Torque";
-static const char acName6072[] = "Max Torque";
-static const char acName6073[] = "Max Current";
-static const char acName6074[] = "Torque Demand";
-static const char acName6077[] = "Torque Actual";
-static const char acName6078[] = "Total Current";
-static const char acName6079[] = "DC Link Voltage";
-static const char acName607A[] = "Target Position";
-static const char acName60FF[] = "Target Velocity";
-static const char acName6502[] = "Supported drive modes";
+static const char acName6041[] = "Status Word";
+static const char acName6060[] = "Operation Mode";
+static const char acName6061[] = "Operation Mode Display";
+static const char acName6080[] = "Magnet Command";
+static const char acName6081[] = "Magnet Status";
+static const char acName6090[] = "IMU Data";
+static const char acName6090_00[] = "Max SubIndex";
+static const char acName6090_01[] = "Gyro X";
+static const char acName6090_02[] = "Gyro Y";
+static const char acName6090_03[] = "Gyro Z";
+static const char acName6090_04[] = "Acc X";
+static const char acName6090_05[] = "Acc Y";
+static const char acName6090_06[] = "Acc Z";
+static const char acName6090_07[] = "Quat R";
+static const char acName6090_08[] = "Quat I";
+static const char acName6090_09[] = "Quat J";
+static const char acName6090_0A[] = "Quat K";
+static const char acName6091[] = "ToF Data";
+static const char acName6091_00[] = "Max SubIndex";
+static const char acName6091_01[] = "0 0";
+static const char acName6091_02[] = "0 1";
+static const char acName6091_03[] = "0 2";
+static const char acName6091_04[] = "0 3";
+static const char acName6091_05[] = "1 0";
+static const char acName6091_06[] = "1 1";
+static const char acName6091_07[] = "1 2";
+static const char acName6091_08[] = "1 3";
+static const char acName6091_09[] = "2 0";
+static const char acName6091_0A[] = "2 1";
+static const char acName6091_0B[] = "2 2";
+static const char acName6091_0C[] = "2 3";
+static const char acName6091_0D[] = "3 0";
+static const char acName6091_0E[] = "3 1";
+static const char acName6091_0F[] = "3 2";
+static const char acName6091_10[] = "3 3";
+static const char acName6092[] = "Force Estimate";
 
 const _objd SDO1000[] =
 {
-  {0x0, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1000, 0x00001389, NULL},
+  {0x0, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1000, 5001, NULL},
 };
 const _objd SDO1008[] =
 {
-  {0x0, DTYPE_VISIBLE_STRING, 64, ATYPE_RO, acName1008, 0, "actuator"},
+  {0x0, DTYPE_VISIBLE_STRING, 376, ATYPE_RO, acName1008, 0, "2-channel Hypergalactic input superimpermanator"},
 };
 const _objd SDO1009[] =
 {
-  {0x0, DTYPE_VISIBLE_STRING, 24, ATYPE_RO, acName1009, 0, HW_REV},
+  {0x0, DTYPE_VISIBLE_STRING, 40, ATYPE_RO, acName1009, 0, "1.0.0"},
 };
 const _objd SDO100A[] =
 {
-  {0x0, DTYPE_VISIBLE_STRING, 24, ATYPE_RO, acName100A, 0, SW_REV},
+  {0x0, DTYPE_VISIBLE_STRING, 40, ATYPE_RO, acName100A, 0, "1.0.0"},
 };
 const _objd SDO1018[] =
 {
   {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1018_00, 4, NULL},
-  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1018_01, 0, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1018_01, 69, NULL},
   {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1018_02, 0, NULL},
   {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1018_03, 0, NULL},
-  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1018_04, 0x00000000, &Obj.serial},
+  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1018_04, 0, &Obj.serial},
 };
-const _objd SDO1603[] =
+const _objd SDO1600[] =
 {
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1603_00, 11, NULL},
-  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_01, 0x60400010, NULL},
-  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_02, 0x60600008, NULL},
-  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_03, 0x00000008, NULL},
-  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_04, 0x607A0020, NULL},
-  {0x05, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_05, 0x60FF0020, NULL},
-  {0x06, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_06, 0x60710020, NULL},
-  {0x07, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_07, 0x20800120, NULL},
-  {0x08, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_08, 0x20800220, NULL},
-  {0x09, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_09, 0x20800320, NULL},
-  {0x0A, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_0A, 0x20100108, NULL},
-  {0x0B, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1603_0B, 0x20100208, NULL},
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1600_00, 3, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1600_01, 0x60400010, NULL},
+  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1601_01, 0x60600008, NULL},
+  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1602_01, 0x60800008, NULL},
+};
+const _objd SDO1601[] =
+{
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1601_00, 1, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1601_01, 0x60600008, NULL},
+};
+const _objd SDO1602[] =
+{
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1602_00, 1, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1602_01, 0x60800008, NULL},
+};
+const _objd SDO1A00[] =
+{
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1A00_00, 30, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A00_01, 0x60410010, NULL},
+  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A01_01, 0x60610008, NULL},
+  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A02_01, 0x60810008, NULL},
+  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_01, 0x60900120, NULL},
+  {0x05, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_02, 0x60900220, NULL},
+  {0x06, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_03, 0x60900320, NULL},
+  {0x07, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_04, 0x60900420, NULL},
+  {0x08, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_05, 0x60900520, NULL},
+  {0x09, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_06, 0x60900620, NULL},
+  {0x0A, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_07, 0x60900720, NULL},
+  {0x0B, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_08, 0x60900820, NULL},
+  {0x0C, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_09, 0x60900920, NULL},
+  {0x0D, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_0A, 0x60900a20, NULL},
+  {0x0E, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_01, 0x60910110, NULL},
+  {0x0F, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_02, 0x60910210, NULL},
+  {0x10, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_03, 0x60910310, NULL},
+  {0x11, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_04, 0x60910410, NULL},
+  {0x12, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_05, 0x60910510, NULL},
+  {0x13, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_06, 0x60910610, NULL},
+  {0x14, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_07, 0x60910710, NULL},
+  {0x15, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_08, 0x60910810, NULL},
+  {0x16, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_09, 0x60910910, NULL},
+  {0x17, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0A, 0x60910a10, NULL},
+  {0x18, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0B, 0x60910b10, NULL},
+  {0x19, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0C, 0x60910c10, NULL},
+  {0x1A, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0D, 0x60910d10, NULL},
+  {0x1B, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0E, 0x60910e10, NULL},
+  {0x1C, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0F, 0x60910f10, NULL},
+  {0x1D, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_10, 0x60911010, NULL},
+  {0x1E, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A05_01, 0x60920020, NULL},
+};
+const _objd SDO1A01[] =
+{
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1A01_00, 1, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A01_01, 0x60610008, NULL},
+};
+const _objd SDO1A02[] =
+{
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1A02_00, 1, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A02_01, 0x60810008, NULL},
 };
 const _objd SDO1A03[] =
 {
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1A03_00, 13, NULL},
-  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_01, 0x60410010, NULL},
-  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_02, 0x60610008, NULL},
-  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_03, 0x00000008, NULL},
-  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_04, 0x60640020, NULL},
-  {0x05, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_05, 0x606C0020, NULL},
-  {0x06, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_06, 0x60770020, NULL},
-  {0x07, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_07, 0x20400110, NULL},
-  {0x08, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_08, 0x20400210, NULL},
-  {0x09, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_09, 0x20400310, NULL},
-  {0x0A, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_0A, 0x20400410, NULL},
-  {0x0B, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_0B, 0x60780020, NULL},
-  {0x0C, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_0C, 0x20110108, NULL},
-  {0x0D, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_0D, 0x20110208, NULL},
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1A03_00, 10, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_01, 0x60900120, NULL},
+  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_02, 0x60900220, NULL},
+  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_03, 0x60900320, NULL},
+  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_04, 0x60900420, NULL},
+  {0x05, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_05, 0x60900520, NULL},
+  {0x06, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_06, 0x60900620, NULL},
+  {0x07, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_07, 0x60900720, NULL},
+  {0x08, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_08, 0x60900820, NULL},
+  {0x09, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_09, 0x60900920, NULL},
+  {0x0A, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A03_0A, 0x60900a20, NULL},
 };
 const _objd SDO1A04[] =
 {
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1A04_00, 25, NULL},
-  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_01, 0x60410010, NULL},
-  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_02, 0x60610008, NULL},
-  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_03, 0x00000008, NULL},
-  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_04, 0x60640020, NULL},
-  {0x05, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_05, 0x606C0020, NULL},
-  {0x06, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_06, 0x60770020, NULL},
-  {0x07, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_07, 0x20400110, NULL},
-  {0x08, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_08, 0x20400210, NULL},
-  {0x09, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_09, 0x20400310, NULL},
-  {0x0A, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0A, 0x20400410, NULL},
-  {0x0B, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0B, 0x60780020, NULL},
-  {0x0C, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0C, 0x20110108, NULL},
-  {0x0D, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0D, 0x20110208, NULL},
-  {0x0E, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0E, 0x60790020, NULL},
-  {0x0F, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0F, 0x200E0120, NULL},
-  {0x10, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_10, 0x200E0220, NULL},
-  {0x11, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_11, 0x200E0320, NULL},
-  {0x12, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_12, 0x200E0420, NULL},
-  {0x13, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_13, 0x200E0520, NULL},
-  {0x14, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_14, 0x200E0620, NULL},
-  {0x15, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_15, 0x200E0720, NULL},
-  {0x16, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_16, 0x60620020, NULL},
-  {0x17, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_17, 0x606B0020, NULL},
-  {0x18, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_18, 0x60740020, NULL},
-  {0x19, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_19, 0x20140020, NULL},
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1A04_00, 16, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_01, 0x60910110, NULL},
+  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_02, 0x60910210, NULL},
+  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_03, 0x60910310, NULL},
+  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_04, 0x60910410, NULL},
+  {0x05, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_05, 0x60910510, NULL},
+  {0x06, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_06, 0x60910610, NULL},
+  {0x07, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_07, 0x60910710, NULL},
+  {0x08, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_08, 0x60910810, NULL},
+  {0x09, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_09, 0x60910910, NULL},
+  {0x0A, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0A, 0x60910a10, NULL},
+  {0x0B, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0B, 0x60910b10, NULL},
+  {0x0C, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0C, 0x60910c10, NULL},
+  {0x0D, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0D, 0x60910d10, NULL},
+  {0x0E, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0E, 0x60910e10, NULL},
+  {0x0F, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_0F, 0x60910f10, NULL},
+  {0x10, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A04_10, 0x60911010, NULL},
+};
+const _objd SDO1A05[] =
+{
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1A05_00, 1, NULL},
+  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName1A05_01, 0x60920020, NULL},
 };
 const _objd SDO1C00[] =
 {
@@ -265,114 +257,27 @@ const _objd SDO1C00[] =
 };
 const _objd SDO1C12[] =
 {
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RWpre, acName1C12_00, 1, &Obj.SM1C12.maxsub},
-  {0x01, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C12_01, 0x1603, &Obj.SM1C12.value[0]},
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1C12_00, 1, NULL},
+  {0x01, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C12_01, 0x1600, NULL},
 };
 const _objd SDO1C13[] =
 {
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RWpre, acName1C13_00, 3, &Obj.SM1C13.maxsub},
-  {0x01, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_01, 0x1A03, &Obj.SM1C13.value[0]},
-  {0x02, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_02, 0x0000, &Obj.SM1C13.value[1]},
-  {0x03, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_03, 0x0000, &Obj.SM1C13.value[2]},
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName1C13_00, 1, NULL},
+  {0x01, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C13_01, 0x1A00, NULL},
 };
 const _objd SDO2000[] =
 {
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2000_00, 7, NULL},
-  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName2000_01, 0, &Obj.Device_Information[0]},
-  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName2000_02, 0, &Obj.Device_Information[1]},
-  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName2000_03, 0, &Obj.Device_Information[2]},
-  {0x04, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName2000_04, 0, &Obj.Device_Information[3]},
-  {0x05, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName2000_05, 0, &Obj.Device_Information[4]},
-  {0x06, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName2000_06, 0, &Obj.Device_Information[5]},
-  {0x07, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName2000_07, 0, &Obj.Device_Information[6]},
+  {0x0, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName2000, 0, &Obj.Pulse_Time},
 };
 const _objd SDO2001[] =
 {
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2001_00, 9, NULL},
-  {0x01, DTYPE_UNSIGNED32, 32, ATYPE_RW, acName2001_01, 0, &Obj.Motor_Parameters.Phase_resistance},
-  {0x02, DTYPE_UNSIGNED32, 32, ATYPE_RW, acName2001_02, 0, &Obj.Motor_Parameters.D_Axis_inductance},
-  {0x03, DTYPE_UNSIGNED32, 32, ATYPE_RW, acName2001_03, 0, &Obj.Motor_Parameters.Q_Axis_inductance},
-  {0x04, DTYPE_UNSIGNED8, 8, ATYPE_RW, acName2001_04, 0, &Obj.Motor_Parameters.Pole_pairs},
-  {0x05, DTYPE_UNSIGNED32, 32, ATYPE_RW, acName2001_05, 0, &Obj.Motor_Parameters.Torque_constatnt},
-  {0x06, DTYPE_UNSIGNED32, 32, ATYPE_RW, acName2001_06, 0, &Obj.Motor_Parameters.Inertia},
-  {0x07, DTYPE_UNSIGNED32, 32, ATYPE_RW, acName2001_07, 0, &Obj.Motor_Parameters.Rated_Voltage},
-  {0x08, DTYPE_UNSIGNED32, 32, ATYPE_RW, acName2001_08, 0, &Obj.Motor_Parameters.Rated_Current},
-  {0x09, DTYPE_UNSIGNED32, 32, ATYPE_RW, acName2001_09, 0, &Obj.Motor_Parameters.Rated_speed},
+  {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2001, 0, &Obj.EPM_Number},
 };
-const _objd SDO200E[] =
+const _objd SDO2002[] =
 {
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName200E_00, 7, NULL},
-  {0x01, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName200E_01, 0x00000000, &Obj.Internal_Info.Iq},
-  {0x02, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName200E_02, 0x00000000, &Obj.Internal_Info.Id},
-  {0x03, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName200E_03, 0x00000000, &Obj.Internal_Info.Uq_Demand},
-  {0x04, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName200E_04, 0x00000000, &Obj.Internal_Info.Ud_Demand},
-  {0x05, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName200E_05, 0x00000000, &Obj.Internal_Info.Ia},
-  {0x06, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName200E_06, 0x00000000, &Obj.Internal_Info.Ib},
-  {0x07, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName200E_07, 0x00000000, &Obj.Internal_Info.Ic},
-};
-const _objd SDO200F[] =
-{
-  {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RW | ATYPE_RXPDO, acName200F, 0, &Obj.Fan_Speed},
-};
-const _objd SDO2010[] =
-{
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2010_00, 2, NULL},
-  {0x01, DTYPE_UNSIGNED8, 8, ATYPE_RW | ATYPE_RXPDO, acName2010_01, 0, &Obj.GPIO_Toggle[0]},
-  {0x02, DTYPE_UNSIGNED8, 8, ATYPE_RW | ATYPE_RXPDO, acName2010_02, 0, &Obj.GPIO_Toggle[1]},
-};
-const _objd SDO2011[] =
-{
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2011_00, 2, NULL},
-  {0x01, DTYPE_UNSIGNED8, 8, ATYPE_RW | ATYPE_TXPDO, acName2011_01, 0, &Obj.GPIO_State[0]},
-  {0x02, DTYPE_UNSIGNED8, 8, ATYPE_RW | ATYPE_TXPDO, acName2011_02, 0, &Obj.GPIO_State[1]},
-};
-const _objd SDO2012[] =
-{
-  {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2012, 0, &Obj.Encoder_Offset_Calibrated},
-};
-const _objd SDO2013[] =
-{
-  {0x0, DTYPE_REAL32, 32, ATYPE_RW, acName2013, 0x00000000, &Obj.Zero_Position_Offset},
-};
-const _objd SDO2014[] =
-{
-  {0x0, DTYPE_UNSIGNED32, 32, ATYPE_RW | ATYPE_TXPDO, acName2014, 0, &Obj.Timestamp},
-};
-const _objd SDO2015[] =
-{
-  {0x0, DTYPE_REAL32, 32, ATYPE_RW, acName2015, 0x00000000, &Obj.Cutoff_Frequency_Impeadance},
-};
-const _objd SDO2016[] =
-{
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2016_00, 3, NULL},
-  {0x01, DTYPE_REAL32, 32, ATYPE_RW, acName2016_01, 0x00000000, &Obj.Quick_Stop_PID[0]},
-  {0x02, DTYPE_REAL32, 32, ATYPE_RW, acName2016_02, 0x00000000, &Obj.Quick_Stop_PID[1]},
-  {0x03, DTYPE_REAL32, 32, ATYPE_RW, acName2016_03, 0x00000000, &Obj.Quick_Stop_PID[2]},
-};
-const _objd SDO2017[] =
-{
-  {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RW, acName2017, 0, &Obj.Tunes},
-};
-
-const _objd SDO2018[] =
-{
-  {0x0, DTYPE_REAL32, 32, ATYPE_RWpre, acName2018, 0, &Obj.Torque_Rate_Limit},
-};
-
-const _objd SDO2040[] =
-{
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2040_00, 4, NULL},
-  {0x01, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName2040_01, 0, &Obj.Temperatures[0]},
-  {0x02, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName2040_02, 0, &Obj.Temperatures[1]},
-  {0x03, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName2040_03, 0, &Obj.Temperatures[2]},
-  {0x04, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName2040_04, 0, &Obj.Temperatures[3]},
-};
-const _objd SDO2080[] =
-{
-  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2080_00, 3, NULL},
-  {0x01, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_RXPDO, acName2080_01, 0x00000000, &Obj.Controller_Gains.Kp},
-  {0x02, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_RXPDO, acName2080_02, 0x00000000, &Obj.Controller_Gains.Ki},
-  {0x03, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_RXPDO, acName2080_03, 0x00000000, &Obj.Controller_Gains.Kd},
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName2002_00, 2, NULL},
+  {0x01, DTYPE_REAL32, 32, ATYPE_RO, acName2002_01, 0x00000000, &Obj.Force_Estimate_Params[0]},
+  {0x02, DTYPE_REAL32, 32, ATYPE_RO, acName2002_02, 0x00000000, &Obj.Force_Estimate_Params[1]},
 };
 const _objd SDO603F[] =
 {
@@ -380,79 +285,65 @@ const _objd SDO603F[] =
 };
 const _objd SDO6040[] =
 {
-  {0x0, DTYPE_UNSIGNED16, 16, ATYPE_RW | ATYPE_RXPDO, acName6040, 0, &Obj.Control_Word},
+  {0x0, DTYPE_UNSIGNED16, 16, ATYPE_RO | ATYPE_RXPDO, acName6040, 0, &Obj.Control_Word},
 };
 const _objd SDO6041[] =
 {
-  {0x0, DTYPE_UNSIGNED16, 16, ATYPE_RO | ATYPE_TXPDO, acName6041, 0, &Obj.Status_word},
-};
-const _objd SDO605A[] =
-{
-  {0x0, DTYPE_INTEGER16, 16, ATYPE_RW, acName605A, 0, &Obj.Quick_stop_option_code},
+  {0x0, DTYPE_UNSIGNED16, 16, ATYPE_RO | ATYPE_TXPDO, acName6041, 0, &Obj.Status_Word},
 };
 const _objd SDO6060[] =
 {
-  {0x0, DTYPE_INTEGER8, 8, ATYPE_RW | ATYPE_RXPDO, acName6060, 0, &Obj.Operation_Modes},
+  {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RO | ATYPE_RXPDO, acName6060, 0, &Obj.Operation_Mode},
 };
 const _objd SDO6061[] =
 {
-  {0x0, DTYPE_INTEGER8, 8, ATYPE_RO | ATYPE_TXPDO, acName6061, 0, &Obj.Operation_modes_display},
+  {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RO | ATYPE_TXPDO, acName6061, 0, &Obj.Operation_Mode_Display},
 };
-const _objd SDO6062[] =
+const _objd SDO6080[] =
 {
-  {0x0, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6062, 0x00000000, &Obj.Position_Demand},
+  {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RO | ATYPE_RXPDO, acName6080, 0, &Obj.Magnet_Command},
 };
-const _objd SDO6064[] =
+const _objd SDO6081[] =
 {
-  {0x0, DTYPE_INTEGER32, 32, ATYPE_RO | ATYPE_TXPDO, acName6064, 0, &Obj.Position_Actual},
+  {0x0, DTYPE_UNSIGNED8, 8, ATYPE_RO | ATYPE_TXPDO, acName6081, 0, &Obj.Magnet_Status},
 };
-const _objd SDO606B[] =
+const _objd SDO6090[] =
 {
-  {0x0, DTYPE_REAL32, 32, ATYPE_RW | ATYPE_TXPDO, acName606B, 0x00000000, &Obj.Velocity_Demand},
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName6090_00, 10, NULL},
+  {0x01, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_01, 0x00000000, &Obj.IMU_Data.Gyro_X},
+  {0x02, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_02, 0x00000000, &Obj.IMU_Data.Gyro_Y},
+  {0x03, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_03, 0x00000000, &Obj.IMU_Data.Gyro_Z},
+  {0x04, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_04, 0x00000000, &Obj.IMU_Data.Acc_X},
+  {0x05, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_05, 0x00000000, &Obj.IMU_Data.Acc_Y},
+  {0x06, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_06, 0x00000000, &Obj.IMU_Data.Acc_Z},
+  {0x07, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_07, 0x00000000, &Obj.IMU_Data.Quat_R},
+  {0x08, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_08, 0x00000000, &Obj.IMU_Data.Quat_I},
+  {0x09, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_09, 0x00000000, &Obj.IMU_Data.Quat_J},
+  {0x0A, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6090_0A, 0x00000000, &Obj.IMU_Data.Quat_K},
 };
-const _objd SDO606C[] =
+const _objd SDO6091[] =
 {
-  {0x0, DTYPE_INTEGER32, 32, ATYPE_RO | ATYPE_TXPDO, acName606C, 0, &Obj.Velocity_Actual},
+  {0x00, DTYPE_UNSIGNED8, 8, ATYPE_RO, acName6091_00, 16, NULL},
+  {0x01, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_01, 0, &Obj.ToF_Data[0]},
+  {0x02, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_02, 0, &Obj.ToF_Data[1]},
+  {0x03, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_03, 0, &Obj.ToF_Data[2]},
+  {0x04, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_04, 0, &Obj.ToF_Data[3]},
+  {0x05, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_05, 0, &Obj.ToF_Data[4]},
+  {0x06, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_06, 0, &Obj.ToF_Data[5]},
+  {0x07, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_07, 0, &Obj.ToF_Data[6]},
+  {0x08, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_08, 0, &Obj.ToF_Data[7]},
+  {0x09, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_09, 0, &Obj.ToF_Data[8]},
+  {0x0A, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_0A, 0, &Obj.ToF_Data[9]},
+  {0x0B, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_0B, 0, &Obj.ToF_Data[10]},
+  {0x0C, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_0C, 0, &Obj.ToF_Data[11]},
+  {0x0D, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_0D, 0, &Obj.ToF_Data[12]},
+  {0x0E, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_0E, 0, &Obj.ToF_Data[13]},
+  {0x0F, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_0F, 0, &Obj.ToF_Data[14]},
+  {0x10, DTYPE_INTEGER16, 16, ATYPE_RO | ATYPE_TXPDO, acName6091_10, 0, &Obj.ToF_Data[15]},
 };
-const _objd SDO6071[] =
+const _objd SDO6092[] =
 {
-  {0x0, DTYPE_INTEGER32, 32, ATYPE_RO | ATYPE_RXPDO, acName6071, 0, &Obj.Target_Torque},
-};
-const _objd SDO6072[] =
-{
-  {0x0, DTYPE_REAL32, 32, ATYPE_RWpre, acName6072, 0, &Obj.Max_Torque},
-};
-const _objd SDO6073[] =
-{
-  {0x0, DTYPE_REAL32, 32, ATYPE_RWpre, acName6073, 0, &Obj.Max_Current},
-};
-const _objd SDO6074[] =
-{
-  {0x0, DTYPE_REAL32, 32, ATYPE_RW | ATYPE_TXPDO, acName6074, 0x00000000, &Obj.Torque_Demand},
-};
-const _objd SDO6077[] =
-{
-  {0x0, DTYPE_INTEGER32, 32, ATYPE_RO | ATYPE_TXPDO, acName6077, 0, &Obj.Torque_Actual},
-};
-const _objd SDO6078[] =
-{
-  {0x0, DTYPE_INTEGER32, 32, ATYPE_RO | ATYPE_TXPDO, acName6078, 0, &Obj.Total_Current},
-};
-const _objd SDO6079[] =
-{
-  {0x0, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6079, 0x00000000, &Obj.DC_Link_Voltage},
-};
-const _objd SDO607A[] =
-{
-  {0x0, DTYPE_INTEGER32, 32, ATYPE_RW | ATYPE_RXPDO, acName607A, 0, &Obj.Target_Position},
-};
-const _objd SDO60FF[] =
-{
-  {0x0, DTYPE_INTEGER32, 32, ATYPE_RW | ATYPE_RXPDO, acName60FF, 0, &Obj.Target_Velocity},
-};
-const _objd SDO6502[] =
-{
-  {0x0, DTYPE_UNSIGNED32, 32, ATYPE_RO, acName6502, 0, &Obj.Supported_drive_modes},
+  {0x0, DTYPE_REAL32, 32, ATYPE_RO | ATYPE_TXPDO, acName6092, 0x00000000, &Obj.Force_Estimate},
 };
 
 const _objectlist SDOobjects[] =
@@ -462,46 +353,30 @@ const _objectlist SDOobjects[] =
   {0x1009, OTYPE_VAR, 0, 0, acName1009, SDO1009},
   {0x100A, OTYPE_VAR, 0, 0, acName100A, SDO100A},
   {0x1018, OTYPE_RECORD, 4, 0, acName1018, SDO1018},
-  {0x1603, OTYPE_RECORD, 11, 0, acName1603, SDO1603},
-  {0x1A03, OTYPE_RECORD, 13, 0, acName1A03, SDO1A03},
-  {0x1A04, OTYPE_RECORD, 25, 0, acName1A04, SDO1A04},
+  {0x1600, OTYPE_RECORD, 3, 0, acName1600, SDO1600},
+  {0x1601, OTYPE_RECORD, 1, 0, acName1601, SDO1601},
+  {0x1602, OTYPE_RECORD, 1, 0, acName1602, SDO1602},
+  {0x1A00, OTYPE_RECORD, 30, 0, acName1A00, SDO1A00},
+  {0x1A01, OTYPE_RECORD, 1, 0, acName1A01, SDO1A01},
+  {0x1A02, OTYPE_RECORD, 1, 0, acName1A02, SDO1A02},
+  {0x1A03, OTYPE_RECORD, 10, 0, acName1A03, SDO1A03},
+  {0x1A04, OTYPE_RECORD, 16, 0, acName1A04, SDO1A04},
+  {0x1A05, OTYPE_RECORD, 1, 0, acName1A05, SDO1A05},
   {0x1C00, OTYPE_ARRAY, 4, 0, acName1C00, SDO1C00},
   {0x1C12, OTYPE_ARRAY, 1, 0, acName1C12, SDO1C12},
-  {0x1C13, OTYPE_ARRAY, 3, 0, acName1C13, SDO1C13},
-  {0x2000, OTYPE_ARRAY, 7, 0, acName2000, SDO2000},
-  {0x2001, OTYPE_RECORD, 9, 0, acName2001, SDO2001},
-  {0x200E, OTYPE_RECORD, 7, 0, acName200E, SDO200E},
-  {0x200F, OTYPE_VAR, 0, 0, acName200F, SDO200F},
-  {0x2010, OTYPE_ARRAY, 2, 0, acName2010, SDO2010},
-  {0x2011, OTYPE_ARRAY, 2, 0, acName2011, SDO2011},
-  {0x2012, OTYPE_VAR, 0, 0, acName2012, SDO2012},
-  {0x2013, OTYPE_VAR, 0, 0, acName2013, SDO2013},
-  {0x2014, OTYPE_VAR, 0, 0, acName2014, SDO2014},
-  {0x2015, OTYPE_VAR, 0, 0, acName2015, SDO2015},
-  {0x2016, OTYPE_ARRAY, 3, 0, acName2016, SDO2016},
-  {0x2017, OTYPE_VAR, 0, 0, acName2017, SDO2017},
-  {0x2018, OTYPE_VAR, 0, 0, acName2018, SDO2018},
-  {0x2040, OTYPE_ARRAY, 4, 0, acName2040, SDO2040},
-  {0x2080, OTYPE_RECORD, 3, 0, acName2080, SDO2080},
+  {0x1C13, OTYPE_ARRAY, 1, 0, acName1C13, SDO1C13},
+  {0x2000, OTYPE_VAR, 0, 0, acName2000, SDO2000},
+  {0x2001, OTYPE_VAR, 0, 0, acName2001, SDO2001},
+  {0x2002, OTYPE_ARRAY, 2, 0, acName2002, SDO2002},
   {0x603F, OTYPE_VAR, 0, 0, acName603F, SDO603F},
   {0x6040, OTYPE_VAR, 0, 0, acName6040, SDO6040},
   {0x6041, OTYPE_VAR, 0, 0, acName6041, SDO6041},
-  {0x605A, OTYPE_VAR, 0, 0, acName605A, SDO605A},
   {0x6060, OTYPE_VAR, 0, 0, acName6060, SDO6060},
   {0x6061, OTYPE_VAR, 0, 0, acName6061, SDO6061},
-  {0x6062, OTYPE_VAR, 0, 0, acName6062, SDO6062},
-  {0x6064, OTYPE_VAR, 0, 0, acName6064, SDO6064},
-  {0x606B, OTYPE_VAR, 0, 0, acName606B, SDO606B},
-  {0x606C, OTYPE_VAR, 0, 0, acName606C, SDO606C},
-  {0x6071, OTYPE_VAR, 0, 0, acName6071, SDO6071},
-  {0x6072, OTYPE_VAR, 0, 0, acName6072, SDO6072},
-  {0x6073, OTYPE_VAR, 0, 0, acName6073, SDO6073},
-  {0x6074, OTYPE_VAR, 0, 0, acName6074, SDO6074},
-  {0x6077, OTYPE_VAR, 0, 0, acName6077, SDO6077},
-  {0x6078, OTYPE_VAR, 0, 0, acName6078, SDO6078},
-  {0x6079, OTYPE_VAR, 0, 0, acName6079, SDO6079},
-  {0x607A, OTYPE_VAR, 0, 0, acName607A, SDO607A},
-  {0x60FF, OTYPE_VAR, 0, 0, acName60FF, SDO60FF},
-  {0x6502, OTYPE_VAR, 0, 0, acName6502, SDO6502},
+  {0x6080, OTYPE_VAR, 0, 0, acName6080, SDO6080},
+  {0x6081, OTYPE_VAR, 0, 0, acName6081, SDO6081},
+  {0x6090, OTYPE_RECORD, 10, 0, acName6090, SDO6090},
+  {0x6091, OTYPE_ARRAY, 16, 0, acName6091, SDO6091},
+  {0x6092, OTYPE_VAR, 0, 0, acName6092, SDO6092},
   {0xffff, 0xff, 0xff, 0xff, NULL, NULL}
 };

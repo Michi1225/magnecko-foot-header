@@ -76,11 +76,11 @@ void cb_get_inputs()
   controller.fsm_.setControlWord(Obj.Control_Word);
   
   //Magnetize on GPIO0 rising edge
-  if(Obj.GPIO_Toggle[0] && !prev_mag)
+  if((Obj.Magnet_Command & 0x01) && !prev_mag)
   {
     controller.requested_magnetization = true; //Set requested magnetization state
   }
-  if(Obj.GPIO_Toggle[1] && !prev_demag)
+  if((Obj.Magnet_Command & 0x02) && !prev_demag)
   {
     controller.requested_demagnetization = true; //Set requested demagnetization state
   }
@@ -91,8 +91,8 @@ void cb_get_inputs()
     controller.requested_demagnetization = false;
   }
 
-  prev_mag = Obj.GPIO_Toggle[0];
-  prev_demag = Obj.GPIO_Toggle[1];
+  prev_mag = static_cast<bool>(Obj.Magnet_Command & 0x01);
+  prev_demag = static_cast<bool>(Obj.Magnet_Command & 0x02);
 }
 
 /**
@@ -100,7 +100,7 @@ void cb_get_inputs()
  */
 void cb_set_outputs()
 {
-  Obj.Status_word = controller.fsm_.getStatusWord();
+  Obj.Status_Word = controller.fsm_.getStatusWord();
 }
 
 /* USER CODE END PFP */
@@ -180,26 +180,8 @@ int main(void)
   {
     HAL_Delay(0);
     // uint32_t current_time = HAL_GetTick();
-    // int error = controller.tof.get_ranging_data();
-    // Obj.Temperatures[0] = controller.tof.data[0][0];
-    // Obj.Temperatures[1] = controller.tof.data[0][1];
-    // Obj.Temperatures[2] = controller.tof.data[0][2];
-    // Obj.Temperatures[3] = controller.tof.data[0][3];
-
-    // Obj.Position_Actual = controller.tof.data[1][0];
-    // Obj.Velocity_Actual = controller.tof.data[1][1];
-    // Obj.Torque_Actual = controller.tof.data[1][2];
-    // Obj.Total_Current = controller.tof.data[1][3];
-
-    // Obj.DC_Link_Voltage = controller.tof.data[2][0];
-    // Obj.Internal_Info.Ia = controller.tof.data[2][1];
-    // Obj.Internal_Info.Ib = controller.tof.data[2][2];
-    // Obj.Internal_Info.Ic = controller.tof.data[2][3];
-
-    // Obj.Internal_Info.Id = controller.tof.data[3][0];
-    // Obj.Internal_Info.Iq = controller.tof.data[3][1];
-    // Obj.Internal_Info.Ud_Demand = controller.tof.data[3][2];
-    // Obj.Internal_Info.Uq_Demand = controller.tof.data[3][3];
+    int error = controller.tof.get_ranging_data();
+    std::memcpy(Obj.ToF_Data, controller.tof.data, sizeof(controller.tof.data));
     
 
     // Obj.Internal_Info.Ia = controller.ldc.readData(0); // Read data from LDC1614 for channel 0
@@ -270,6 +252,7 @@ int main(void)
     // Obj.Internal_Info.Ic = mag_avg2_sum / mag_avg2.size();
     // Obj.Internal_Info.Id = mag_avg3_sum / mag_avg3.size();
     // Obj.Timestamp = HAL_GetTick() - current_time; //Timestamp in ms since last update
+    Obj.Force_Estimate = 0.69;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -387,20 +370,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     //BNO update
     controller.imu.update(); //Update IMU data
-    // Obj.Internal_Info.Ia = q_to_float(controller.imu.lin_accel_data.axis_x, controller.imu.lin_accel_data.q_point);
-    // Obj.Internal_Info.Ib = q_to_float(controller.imu.lin_accel_data.axis_y, controller.imu.lin_accel_data.q_point);
-    // Obj.Internal_Info.Ic = q_to_float(controller.imu.lin_accel_data.axis_z, controller.imu.lin_accel_data.q_point);
+    Obj.IMU_Data.Acc_X = q_to_float(controller.imu.lin_accel_data.axis_x, controller.imu.lin_accel_data.q_point);
+    Obj.IMU_Data.Acc_Y = q_to_float(controller.imu.lin_accel_data.axis_y, controller.imu.lin_accel_data.q_point);
+    Obj.IMU_Data.Acc_Z = q_to_float(controller.imu.lin_accel_data.axis_z, controller.imu.lin_accel_data.q_point);
 
-    Obj.Internal_Info.Ia = controller.imu.rot_data.quaternion_i;
-    Obj.Internal_Info.Ib = controller.imu.rot_data.quaternion_j;
-    Obj.Internal_Info.Ic = controller.imu.rot_data.quaternion_k;
-    Obj.Internal_Info.Id = controller.imu.rot_data.quaternion_real;
+    Obj.IMU_Data.Gyro_X = q_to_float(controller.imu.gyro_data.axis_x, controller.imu.gyro_data.q_point);
+    Obj.IMU_Data.Gyro_Y = q_to_float(controller.imu.gyro_data.axis_y, controller.imu.gyro_data.q_point);
+    Obj.IMU_Data.Gyro_Z = q_to_float(controller.imu.gyro_data.axis_z, controller.imu.gyro_data.q_point);
 
-    Obj.Timestamp = HAL_GetTick(); //Timestamp in ms since last update
-
-    // Obj.Internal_Info.Ia = q_to_float(controller.imu.gyro_data.axis_x, controller.imu.gyro_data.q_point);
-    // Obj.Internal_Info.Ib = q_to_float(controller.imu.gyro_data.axis_y, controller.imu.gyro_data.q_point);
-    // Obj.Internal_Info.Ic = q_to_float(controller.imu.gyro_data.axis_z, controller.imu.gyro_data.q_point);
+    Obj.IMU_Data.Quat_I = q_to_float(controller.imu.rot_data.quaternion_i, controller.imu.rot_data.q_point);
+    Obj.IMU_Data.Quat_J = q_to_float(controller.imu.rot_data.quaternion_j, controller.imu.rot_data.q_point);
+    Obj.IMU_Data.Quat_K = q_to_float(controller.imu.rot_data.quaternion_k, controller.imu.rot_data.q_point);
+    Obj.IMU_Data.Quat_R = q_to_float(controller.imu.rot_data.quaternion_real, controller.imu.rot_data.q_point);
   }
 
 

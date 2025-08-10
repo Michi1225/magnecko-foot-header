@@ -21,7 +21,8 @@ private:
     bool first_start = true;
     uint8_t n_outliers[8][8] = {0};
 public:
-    int data[8][8] = {0};
+    //TODO: Change to 8x8 array if needed
+    int16_t data[4][4] = {0};
 
     VL53L7CH();
     int init();

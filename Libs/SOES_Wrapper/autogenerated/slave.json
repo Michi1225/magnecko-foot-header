@@ -1,0 +1,348 @@
+{
+  "form": {
+    "VendorName": "Magnecko",
+    "VendorID": "69",
+    "ProductCode": "0",
+    "ProfileNo": "0",
+    "RevisionNumber": "0",
+    "SerialNumber": "0",
+    "HWversion": "1.0.0",
+    "SWversion": "1.0.0",
+    "EEPROMsize": "2048",
+    "RxMailboxOffset": "0x1000",
+    "TxMailboxOffset": "0x1200",
+    "MailboxSize": "512",
+    "SM2Offset": "0x1400",
+    "SM3Offset": "0x1A00",
+    "TextGroupType": "DigIn",
+    "TextGroupName5": "Digital input",
+    "ImageName": "IMGCBY",
+    "TextDeviceType": "DigIn2000",
+    "TextDeviceName": "2-channel Hypergalactic input superimpermanator",
+    "Port0Physical": "Y",
+    "Port1Physical": "Y",
+    "Port2Physical": " ",
+    "Port3Physical": " ",
+    "ESC": "ET1100",
+    "SPImode": "3",
+    "CoeDetailsEnableSDO": true,
+    "CoeDetailsEnableSDOInfo": true,
+    "CoeDetailsEnablePDOAssign": true,
+    "CoeDetailsEnablePDOConfiguration": true,
+    "CoeDetailsEnableUploadAtStartup": true,
+    "CoeDetailsEnableSDOCompleteAccess": true,
+    "DetailsEnableUseFoE": true
+  },
+  "od": {
+    "sdo": {
+      "2000": {
+        "otype": "VAR",
+        "name": "Pulse Time",
+        "access": "RO",
+        "dtype": "UNSIGNED16",
+        "value": "0",
+        "isSDOitem": true,
+        "data": "&Obj.Pulse_Time"
+      },
+      "2001": {
+        "otype": "VAR",
+        "name": "EPM Number",
+        "access": "RO",
+        "dtype": "UNSIGNED8",
+        "value": "0",
+        "isSDOitem": true,
+        "data": "&Obj.EPM_Number"
+      },
+      "2002": {
+        "otype": "ARRAY",
+        "name": "Force Estimate Params",
+        "access": "RO",
+        "dtype": "REAL32",
+        "items": [
+          {
+            "name": "Max SubIndex"
+          },
+          {
+            "name": "Offset",
+            "value": "0",
+            "data": "&Obj.Force_Estimate_Params[0]"
+          },
+          {
+            "name": "Slope",
+            "value": "0",
+            "data": "&Obj.Force_Estimate_Params[1]"
+          }
+        ],
+        "isSDOitem": true
+      },
+      "603F": {
+        "otype": "VAR",
+        "name": "Error Code",
+        "access": "RO",
+        "dtype": "UNSIGNED16",
+        "value": "0",
+        "isSDOitem": true,
+        "data": "&Obj.Error_Code"
+      }
+    },
+    "txpdo": {
+      "6041": {
+        "otype": "VAR",
+        "name": "Status Word",
+        "access": "RO",
+        "dtype": "UNSIGNED16",
+        "pdo_mappings": [
+          "txpdo"
+        ],
+        "value": "0",
+        "data": "&Obj.Status_Word"
+      },
+      "6061": {
+        "otype": "VAR",
+        "name": "Operation Mode Display",
+        "access": "RO",
+        "dtype": "UNSIGNED8",
+        "pdo_mappings": [
+          "txpdo"
+        ],
+        "value": "0",
+        "data": "&Obj.Operation_Mode_Display"
+      },
+      "6081": {
+        "otype": "VAR",
+        "name": "Magnet Status",
+        "access": "RO",
+        "dtype": "UNSIGNED8",
+        "pdo_mappings": [
+          "txpdo"
+        ],
+        "value": "0",
+        "data": "&Obj.Magnet_Status"
+      },
+      "6090": {
+        "otype": "RECORD",
+        "name": "IMU Data",
+        "access": "RO",
+        "items": [
+          {
+            "name": "Max SubIndex"
+          },
+          {
+            "name": "Gyro X",
+            "dtype": "REAL32",
+            "value": "0",
+            "data": "&Obj.IMU_Data.Gyro_X",
+            "access": "RW"
+          },
+          {
+            "name": "Gyro Y",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Gyro_Y"
+          },
+          {
+            "name": "Gyro Z",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Gyro_Z"
+          },
+          {
+            "name": "Acc X",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Acc_X"
+          },
+          {
+            "name": "Acc Y",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Acc_Y"
+          },
+          {
+            "name": "Acc Z",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Acc_Z"
+          },
+          {
+            "name": "Quat R",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Quat_R"
+          },
+          {
+            "name": "Quat I",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Quat_I"
+          },
+          {
+            "name": "Quat J",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Quat_J"
+          },
+          {
+            "name": "Quat K",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.IMU_Data.Quat_K"
+          }
+        ],
+        "pdo_mappings": [
+          "txpdo"
+        ]
+      },
+      "6091": {
+        "otype": "ARRAY",
+        "name": "ToF Data",
+        "access": "RO",
+        "dtype": "INTEGER16",
+        "items": [
+          {
+            "name": "Max SubIndex"
+          },
+          {
+            "name": "0 0",
+            "value": "0",
+            "data": "&Obj.ToF_Data[0]"
+          },
+          {
+            "name": "0 1",
+            "value": "0",
+            "data": "&Obj.ToF_Data[1]"
+          },
+          {
+            "name": "0 2",
+            "value": "0",
+            "data": "&Obj.ToF_Data[2]"
+          },
+          {
+            "name": "0 3",
+            "value": "0",
+            "data": "&Obj.ToF_Data[3]"
+          },
+          {
+            "name": "1 0",
+            "value": "0",
+            "data": "&Obj.ToF_Data[4]"
+          },
+          {
+            "name": "1 1",
+            "value": "0",
+            "data": "&Obj.ToF_Data[5]"
+          },
+          {
+            "name": "1 2",
+            "value": "0",
+            "data": "&Obj.ToF_Data[6]"
+          },
+          {
+            "name": "1 3",
+            "value": "0",
+            "data": "&Obj.ToF_Data[7]"
+          },
+          {
+            "name": "2 0",
+            "value": "0",
+            "data": "&Obj.ToF_Data[8]"
+          },
+          {
+            "name": "2 1",
+            "value": "0",
+            "data": "&Obj.ToF_Data[9]"
+          },
+          {
+            "name": "2 2",
+            "value": "0",
+            "data": "&Obj.ToF_Data[10]"
+          },
+          {
+            "name": "2 3",
+            "value": "0",
+            "data": "&Obj.ToF_Data[11]"
+          },
+          {
+            "name": "3 0",
+            "value": "0",
+            "data": "&Obj.ToF_Data[12]"
+          },
+          {
+            "name": "3 1",
+            "value": "0",
+            "data": "&Obj.ToF_Data[13]"
+          },
+          {
+            "name": "3 2",
+            "value": "0",
+            "data": "&Obj.ToF_Data[14]"
+          },
+          {
+            "name": "3 3",
+            "value": "0",
+            "data": "&Obj.ToF_Data[15]"
+          }
+        ],
+        "pdo_mappings": [
+          "txpdo"
+        ]
+      },
+      "6092": {
+        "otype": "VAR",
+        "name": "Force Estimate",
+        "access": "RO",
+        "dtype": "REAL32",
+        "pdo_mappings": [
+          "txpdo"
+        ],
+        "value": "0",
+        "data": "&Obj.Force_Estimate"
+      }
+    },
+    "rxpdo": {
+      "6040": {
+        "otype": "VAR",
+        "name": "Control Word",
+        "access": "RO",
+        "dtype": "UNSIGNED16",
+        "pdo_mappings": [
+          "rxpdo"
+        ],
+        "value": "0",
+        "data": "&Obj.Control_Word"
+      },
+      "6060": {
+        "otype": "VAR",
+        "name": "Operation Mode",
+        "access": "RO",
+        "dtype": "UNSIGNED8",
+        "pdo_mappings": [
+          "rxpdo"
+        ],
+        "value": "0",
+        "data": "&Obj.Operation_Mode"
+      },
+      "6080": {
+        "otype": "VAR",
+        "name": "Magnet Command",
+        "access": "RO",
+        "dtype": "UNSIGNED8",
+        "pdo_mappings": [
+          "rxpdo"
+        ],
+        "value": "0",
+        "data": "&Obj.Magnet_Command"
+      }
+    }
+  },
+  "dc": []
+}

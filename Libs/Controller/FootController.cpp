@@ -33,7 +33,7 @@ void FootController::init()
     while(!HAL_GPIO_ReadPin(EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin)){} //Wait for EEPROM to be loaded
     ecat_slv_init(&this->config);
     //TODO: Set Obj. constants
-    Obj.Device_Information[6] = 1; // actuator number, needed for hw interface
+    // Obj.Device_Information[6] = 1; // actuator number, needed for hw interface
 
     //Sensor initialization
     //TODO: Go to FMS Fault state if init fails
