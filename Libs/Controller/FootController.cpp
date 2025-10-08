@@ -15,6 +15,13 @@ FootController::FootController() : fsm_(),
 
 void FootController::init()
 {
+    HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Status LED to indicate booting
+    HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_SET); 
+    HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET);
+
+
+
     //FSM initialization
     this->fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
     this->fsmActions_.notReadyToSwitchOn_ = std::bind(&FootController::FSM_notReadyToSwitchOn, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -28,29 +35,41 @@ void FootController::init()
 
     fsm_.init(this->fsmActions_);
 
-    //ECAT initialization
     
-    while(!HAL_GPIO_ReadPin(EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin)){} //Wait for EEPROM to be loaded
-    ecat_slv_init(&this->config);
-    //TODO: Set Obj. constants
-    Obj.Device_Information[6] = 1; // actuator number, needed for hw interface
-
     //Sensor initialization
     //TODO: Go to FMS Fault state if init fails
     if(imu.init() != 0) Error_Handler();
-
+    
     if(ldc.init() != 0) Error_Handler();
     if(TMAG5273::init() != 0) Error_Handler();
     if(tof.init() != 0) Error_Handler();
     HAL_Delay(10);
-
+    
     if(imu.start() != 0) Error_Handler();
     if(tof.start_ranging() != 0) Error_Handler();
+
+    //ECAT initialization 
+    while(!HAL_GPIO_ReadPin(EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin)){} //Wait for EEPROM to be loaded
+    ecat_slv_init(&this->config);
+    //TODO: Set Obj. constants
+    Obj.Device_Information[6] = 100; // actuator number, needed for hw interface
+    if(HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) Error_Handler(); //Start Control Timer
+
+
+
+    
+  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_RESET); //Reset Status LED
+  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_RESET); 
+  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_RESET);
 }
 
 void FootController::runCommunication()
 {
     ecat_slv();
+
+
+    
 }
 
 void FootController::magnetize(uint8_t time)

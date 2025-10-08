@@ -105,7 +105,11 @@ void ESC_write (uint16_t address, void *buf, uint16_t len)
    /* Write address and command to device. */
    esc_address (address, ESC_CMD_WRITE);
    /* Write data. */
-   HAL_SPI_TransmitReceive(soes_pin_mapping->hspi, buf, dummy, len,100);
+   HAL_StatusTypeDef err = HAL_SPI_TransmitReceive(soes_pin_mapping->hspi, buf, dummy, len,100);
+   if(err != HAL_OK)
+   {
+      Error_Handler();//TODO: Better Error Handling
+   }
    /* Un-select device. */
    HAL_GPIO_WritePin(soes_pin_mapping->NCS_port,soes_pin_mapping->NCS_pin, GPIO_PIN_SET);
 }

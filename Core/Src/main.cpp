@@ -31,6 +31,7 @@
 /* USER CODE BEGIN Includes */
 #include "FootController.h"
 #include <deque>
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -65,8 +66,54 @@ bool prev_demag = false;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
+
+extern "C" int _write(int file, char *ptr, int len)
+{
+    // (void)file;
+    // for (int i = 0; i < len; i++) {
+    //     ITM_SendChar((uint32_t)*ptr++);
+    // }
+    return len;
+}
+
+
+#define SWO_SPEED 5E6 // 4Mhz
+void SWD_Init(void)
+{
+  *(__IO uint32_t*)(0x5C001004) |= 0x00700000; // DBGMCU_CR D3DBGCKEN D1DBGCKEN TRACECLKEN
+ 
+  //UNLOCK FUNNEL
+  *(__IO uint32_t*)(0x5C004FB0) = 0xC5ACCE55; // SWTF_LAR
+  *(__IO uint32_t*)(0x5C003FB0) = 0xC5ACCE55; // SWO_LAR
+ 
+  //SWO current output divisor register
+  //This divisor value (0x000000C7) corresponds to 400Mhz
+  //To change it, you can use the following rule
+  // value = (CPU Freq/sw speed )-1
+  // devided by 2 because swo runs on half the System clock
+   *(__IO uint32_t*)(0x5C003010) = ((SystemCoreClock / SWO_SPEED / 2) - 1); // SWO_CODR
+ 
+  //SWO selected pin protocol register
+   *(__IO uint32_t*)(0x5C0030F0) = 0x00000002; // SWO_SPPR
+ 
+  //Enable ITM input of SWO trace funnel
+   *(__IO uint32_t*)(0x5C004000) |= 0x00000003; // SWFT_CTRL
+ 
+  //RCC_AHB4ENR enable GPIOB clock
+   *(__IO uint32_t*)(0x580244E0) |= 0x00000002;
+ 
+  // Configure GPIOB pin 3 as AF
+   *(__IO uint32_t*)(0x58020400) = (*(__IO uint32_t*)(0x58020400) & 0xffffff3f) | 0x00000080;
+ 
+  // Configure GPIOB pin 3 Speed
+   *(__IO uint32_t*)(0x58020408) |= 0x00000080;
+ 
+  // Force AF0 for GPIOB pin 3
+   *(__IO uint32_t*)(0x58020420) &= 0xFFFF0FFF;
+}
 
 /**
  * This function is called when to get input values
@@ -74,6 +121,7 @@ static void MPU_Config(void);
 void cb_get_inputs()
 {
   controller.fsm_.setControlWord(Obj.Control_Word);
+  // ITM->PORT[0].u16 = Obj.Control_Word;
   
   //Magnetize on GPIO0 rising edge
   if(Obj.GPIO_Toggle[0] && !prev_mag)
@@ -136,6 +184,9 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+  /* Configure the peripherals common clocks */
+  PeriphCommonClock_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -153,15 +204,9 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Status LED to indicate booting
-  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_SET); 
-  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET);
   controller.init();
-  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_RESET); //Reset Status LED
-  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_RESET); 
-  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_RESET);
+
+  
 
 
 
@@ -169,16 +214,17 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  if(HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) Error_Handler(); //Start Control Timer
   if(HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) Error_Handler(); //Start BNO Timer
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
   std::deque<float> mag_avg0;
   std::deque<float> mag_avg1;
   std::deque<float> mag_avg2;
   std::deque<float> mag_avg3;
+  SWD_Init();
   while (1)
   {
     HAL_Delay(0);
+    
     // uint32_t current_time = HAL_GetTick();
     // int error = controller.tof.get_ranging_data();
     // Obj.Temperatures[0] = controller.tof.data[0][0];
@@ -336,6 +382,35 @@ void SystemClock_Config(void)
   }
 }
 
+/**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI6|RCC_PERIPHCLK_ADC
+                              |RCC_PERIPHCLK_CKPER;
+  PeriphClkInitStruct.PLL2.PLL2M = 4;
+  PeriphClkInitStruct.PLL2.PLL2N = 12;
+  PeriphClkInitStruct.PLL2.PLL2P = 2;
+  PeriphClkInitStruct.PLL2.PLL2Q = 2;
+  PeriphClkInitStruct.PLL2.PLL2R = 2;
+  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_3;
+  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.CkperClockSelection = RCC_CLKPSOURCE_HSI;
+  PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLL2;
+  PeriphClkInitStruct.Spi6ClockSelection = RCC_SPI6CLKSOURCE_PLL2;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
@@ -368,7 +443,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     // Update the controller
     controller.runControl();
+
     controller.runCommunication();
+
     return;
   }
   else if (htim == &htim1)
@@ -378,6 +455,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
     HAL_TIM_Base_Stop_IT(htim);
     controller.active_magnetization = false; //Reset active magnetization flag
+    
 
     //Start charging Capacitors
     HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
@@ -385,8 +463,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
   else if (htim == &htim3)
   {
-    //BNO update
+    //BNO update    
+
     controller.imu.update(); //Update IMU data
+
     // Obj.Internal_Info.Ia = q_to_float(controller.imu.lin_accel_data.axis_x, controller.imu.lin_accel_data.q_point);
     // Obj.Internal_Info.Ib = q_to_float(controller.imu.lin_accel_data.axis_y, controller.imu.lin_accel_data.q_point);
     // Obj.Internal_Info.Ic = q_to_float(controller.imu.lin_accel_data.axis_z, controller.imu.lin_accel_data.q_point);
