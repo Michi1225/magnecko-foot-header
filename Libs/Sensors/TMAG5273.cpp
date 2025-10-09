@@ -119,6 +119,7 @@ float TMAG5273::read_magnitude()
     this->bz = static_cast<float>(raw_value_z) / 65536.0f * 2.0f * MAG_SENSITIVITY;
     
     float magnitude = sqrt(this->bx * this->bx + this->by * this->by + this->bz * this->bz);
+    this->b_mag = magnitude;
     return magnitude;
 }
 
@@ -139,4 +140,17 @@ bool TMAG5273::estimate_contact()
     float b_mag = this->read_magnitude();
     float b_mag_threshold = 0.5f; // Threshold for contact estimation
     return b_mag < b_mag_threshold;
+}
+
+float TMAG5273::force_estimation(float b_mag_0, float b_mag_1, float b_mag_2, float b_mag_3)
+{
+    // Average B-field
+    const float B = 0.25f * (b_mag_0 + b_mag_1 + b_mag_2 + b_mag_3);
+
+    //Air gap estimate
+    float g = powf(B / A_B, INV_M_B) - C_B;
+
+    //Force estimate
+    float F = A_F / powf(g + C_F, N_F);
+    return F;
 }

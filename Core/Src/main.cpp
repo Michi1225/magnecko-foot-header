@@ -170,21 +170,27 @@ int main(void)
   if(HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) Error_Handler(); //Start Control Timer
   if(HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) Error_Handler(); //Start BNO Timer
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
-  std::deque<float> mag_avg0;
+  std::deque<float> force_average;
   while (1)
   {
     int error = controller.tof.get_ranging_data();
     std::memcpy(Obj.ToF_Data, controller.tof.data, sizeof(controller.tof.data));
 
-    // //Windowed average of the magnetometer values
-    mag_avg0.push_back(controller.hall0.read_magnitude());
-    if(mag_avg0.size() > 20) mag_avg0.pop_front();
-    float mag_avg0_sum = 0.0f;
-    for(auto &val : mag_avg0)
+    // Windowed average of force estimation
+    force_average.push_back(
+      TMAG5273::force_estimation(
+        controller.hall0.b_mag,
+        controller.hall1.b_mag,
+        controller.hall2.b_mag,
+        controller.hall3.b_mag)
+    );
+    if(force_average.size() > 20) force_average.pop_front();
+    float force_average_sum = 0.0f;
+    for(auto &val : force_average)
     {
-      mag_avg0_sum += val;
+      mag_force_average_sum += val;
     }
-    Obj.Force_Estimate = mag_avg0_sum / mag_avg0.size();
+    Obj.Force_Estimate = force_average_sum / force_average.size();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

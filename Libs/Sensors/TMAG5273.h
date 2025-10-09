@@ -1,5 +1,16 @@
 #pragma once
 #include "main.h"
+#include <cmath>
+
+//Force estimation parameters
+#define A_B  67.3407354f
+#define C_B  0.0360662672f
+#define M_B  0.528710709f
+#define INV_M_B 1.8913935f
+
+#define A_F  595.83695046f
+#define C_F  0.90280164f
+#define N_F  4.03057196f
 
 
 //DEVICE_CONFIG_1
@@ -86,7 +97,7 @@ public:
         D1
     };
 
-    float bx,by,bz;
+    float bx,by,bz, b_mag;
 
     /**
      * @brief TMAG5273 constructor
@@ -135,6 +146,12 @@ public:
      * @return true if contact, false if no contact
      */
     bool estimate_contact();
+
+    /**
+     * @brief Perform Force Estimation
+     * @return estimated force in Newton
+     */
+    static float force_estimation(float b_mag_0, float b_mag_1, float b_mag_2, float b_mag_3);
 
 
 };
