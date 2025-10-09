@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include "tim.h"
 #include "BNO086.h"
 #include "LDC1614.h"
 #include "TMAG5273.h"
