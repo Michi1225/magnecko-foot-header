@@ -65,6 +65,7 @@ bool prev_demag = false;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
@@ -101,6 +102,8 @@ void cb_get_inputs()
 void cb_set_outputs()
 {
   Obj.Status_Word = controller.fsm_.getStatusWord();
+
+
 }
 
 /* USER CODE END PFP */
@@ -136,6 +139,9 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+  /* Configure the peripherals common clocks */
+  PeriphCommonClock_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -153,15 +159,7 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Status LED to indicate booting
-  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_SET); 
-  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET);
   controller.init();
-  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_RESET); //Reset Status LED
-  HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_RESET); 
-  HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_RESET);
 
 
 
@@ -173,86 +171,20 @@ int main(void)
   if(HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) Error_Handler(); //Start BNO Timer
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
   std::deque<float> mag_avg0;
-  std::deque<float> mag_avg1;
-  std::deque<float> mag_avg2;
-  std::deque<float> mag_avg3;
   while (1)
   {
-    HAL_Delay(0);
-    // uint32_t current_time = HAL_GetTick();
     int error = controller.tof.get_ranging_data();
     std::memcpy(Obj.ToF_Data, controller.tof.data, sizeof(controller.tof.data));
-    
-
-    // Obj.Internal_Info.Ia = controller.ldc.readData(0); // Read data from LDC1614 for channel 0
-    // Obj.Internal_Info.Ib = controller.ldc.readData(1); // Read data from LDC1614 for channel 1
-    // Obj.Internal_Info.Ic = controller.ldc.readData(2); // Read data from LDC1614 for channel 2
-    // Obj.Internal_Info.Id = controller.ldc.readData(3); // Read data from LDC1614 for channel 3
-
-
-    // //IMU
-    // // uint32_t tim = SysTick->VAL;
-
-    // controller.imu.update(); //Update IMU data
-    // Obj.Internal_Info.Ia = q_to_float(controller.imu.lin_accel_data.axis_x, controller.imu.lin_accel_data.q_point);
-    // Obj.Internal_Info.Ib = q_to_float(controller.imu.lin_accel_data.axis_y, controller.imu.lin_accel_data.q_point);
-    // Obj.Internal_Info.Ic = q_to_float(controller.imu.lin_accel_data.axis_z, controller.imu.lin_accel_data.q_point);
-
-    // Obj.Internal_Info.Ia = controller.imu.rot_data.quaternion_i;
-    // Obj.Internal_Info.Ib = controller.imu.rot_data.quaternion_j;
-    // Obj.Internal_Info.Ic = controller.imu.rot_data.quaternion_k;
-    // Obj.Internal_Info.Id = controller.imu.rot_data.quaternion_real;
-
-    // Obj.Internal_Info.Ia = q_to_float(controller.imu.gyro_data.axis_x, controller.imu.gyro_data.q_point);
-    // Obj.Internal_Info.Ib = q_to_float(controller.imu.gyro_data.axis_y, controller.imu.gyro_data.q_point);
-    // Obj.Internal_Info.Ic = q_to_float(controller.imu.gyro_data.axis_z, controller.imu.gyro_data.q_point);
-
-    // // Obj.Timestamp = (tim > SysTick->VAL)? SysTick->LOAD - tim + SysTick->VAL : SysTick->VAL - tim;
-
-    // // Obj.Internal_Info.Ia = q_to_float(controller.imu.grav_data.axis_x, controller.imu.grav_data.q_point);
-    // // Obj.Internal_Info.Ib = q_to_float(controller.imu.grav_data.axis_y, controller.imu.grav_data.q_point);
-    // // Obj.Internal_Info.Ic = q_to_float(controller.imu.grav_data.axis_z, controller.imu.grav_data.q_point);
-
-    // // Obj.Internal_Info.Ia = q_to_float(controller.imu.mag_data.axis_x, controller.imu.mag_data.q_point);
-    // // Obj.Internal_Info.Ib = q_to_float(controller.imu.mag_data.axis_y, controller.imu.mag_data.q_point);
-    // // Obj.Internal_Info.Ic = q_to_float(controller.imu.mag_data.axis_z, controller.imu.mag_data.q_point);
-
 
     // //Windowed average of the magnetometer values
-    // mag_avg0.push_back(controller.hall0.read_magnitude());
-    // mag_avg1.push_back(controller.hall1.read_magnitude());
-    // mag_avg2.push_back(controller.hall2.read_magnitude());
-    // mag_avg3.push_back(controller.hall3.read_magnitude());
-    // if(mag_avg0.size() > 20) mag_avg0.pop_front();
-    // if(mag_avg1.size() > 20) mag_avg1.pop_front();
-    // if(mag_avg2.size() > 20) mag_avg2.pop_front();
-    // if(mag_avg3.size() > 20) mag_avg3.pop_front();
-    // float mag_avg0_sum = 0.0f;
-    // float mag_avg1_sum = 0.0f;
-    // float mag_avg2_sum = 0.0f;
-    // float mag_avg3_sum = 0.0f;
-    // for(auto &val : mag_avg0)
-    // {
-    //   mag_avg0_sum += val;
-    // }
-    // for(auto &val : mag_avg1)
-    // {
-    //   mag_avg1_sum += val;
-    // }
-    // for(auto &val : mag_avg2)
-    // {
-    //   mag_avg2_sum += val;
-    // }
-    // for(auto &val : mag_avg3)
-    // {
-    //   mag_avg3_sum += val;
-    // }
-    // Obj.Internal_Info.Ia = mag_avg0_sum / mag_avg0.size();
-    // Obj.Internal_Info.Ib = mag_avg1_sum / mag_avg1.size();
-    // Obj.Internal_Info.Ic = mag_avg2_sum / mag_avg2.size();
-    // Obj.Internal_Info.Id = mag_avg3_sum / mag_avg3.size();
-    // Obj.Timestamp = HAL_GetTick() - current_time; //Timestamp in ms since last update
-    Obj.Force_Estimate = 0.69;
+    mag_avg0.push_back(controller.hall0.read_magnitude());
+    if(mag_avg0.size() > 20) mag_avg0.pop_front();
+    float mag_avg0_sum = 0.0f;
+    for(auto &val : mag_avg0)
+    {
+      mag_avg0_sum += val;
+    }
+    Obj.Force_Estimate = mag_avg0_sum / mag_avg0.size();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -314,6 +246,33 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_SPI1;
+  PeriphClkInitStruct.PLL2.PLL2M = 4;
+  PeriphClkInitStruct.PLL2.PLL2N = 12;
+  PeriphClkInitStruct.PLL2.PLL2P = 2;
+  PeriphClkInitStruct.PLL2.PLL2Q = 2;
+  PeriphClkInitStruct.PLL2.PLL2R = 2;
+  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_3;
+  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL2;
+  PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLL2;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
