@@ -100,7 +100,7 @@ void SWD_Init(void)
    *(__IO uint32_t*)(0x5C0030F0) = 0x00000002; // SWO_SPPR
  
   //Enable ITM input of SWO trace funnel
-   *(__IO uint32_t*)(0x5C004000) |= 0x00000003; // SWFT_CTRL
+   *(__IO uint32_t*)(0x5C004000) |= 0x00000003; // SWFT_CTRL , Port 0 and 1 enabled
  
   //RCC_AHB4ENR enable GPIOB clock
    *(__IO uint32_t*)(0x580244E0) |= 0x00000002;
@@ -232,12 +232,12 @@ int main(void)
         controller.hall3.b_mag)
     );
     if(force_average.size() > 20) force_average.pop_front();
-    float force_average_sum = 0.0f;
+    float mag_force_average_sum = 0.0f;
     for(auto &val : force_average)
     {
       mag_force_average_sum += val;
     }
-    Obj.Force_Estimate = force_average_sum / force_average.size();
+    Obj.Force_Estimate = mag_force_average_sum / force_average.size();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

@@ -89,7 +89,7 @@ void MX_SPI6_Init(void)
   hspi6.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi6.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi6.Init.NSS = SPI_NSS_SOFT;
-  hspi6.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi6.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi6.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi6.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi6.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -150,6 +150,15 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
   /* USER CODE BEGIN SPI6_MspInit 0 */
 
   /* USER CODE END SPI6_MspInit 0 */
+
+  /** Initializes the peripherals clock
+  */
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI6;
+    PeriphClkInitStruct.Spi6ClockSelection = RCC_SPI6CLKSOURCE_HSI;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+      Error_Handler();
+    }
 
     /* SPI6 clock enable */
     __HAL_RCC_SPI6_CLK_ENABLE();
