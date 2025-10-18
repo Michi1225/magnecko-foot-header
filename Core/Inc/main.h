@@ -66,10 +66,6 @@ void Error_Handler(void);
 #define DRV_M_GPIO_Port GPIOH
 #define DRV_P_Pin GPIO_PIN_0
 #define DRV_P_GPIO_Port GPIOC
-#define CHARGE_START_Pin GPIO_PIN_1
-#define CHARGE_START_GPIO_Port GPIOC
-#define CHARGE_DONE_Pin GPIO_PIN_0
-#define CHARGE_DONE_GPIO_Port GPIOA
 #define IMEAS_Pin GPIO_PIN_1
 #define IMEAS_GPIO_Port GPIOA
 #define EEPROM_LOADED_Pin GPIO_PIN_2
@@ -88,14 +84,8 @@ void Error_Handler(void);
 #define SYNC0_GPIO_Port GPIOC
 #define SYNC1_Pin GPIO_PIN_5
 #define SYNC1_GPIO_Port GPIOC
-#define STATUS0_Pin GPIO_PIN_12
-#define STATUS0_GPIO_Port GPIOB
-#define STATUS1_Pin GPIO_PIN_13
-#define STATUS1_GPIO_Port GPIOB
-#define STATUS2_Pin GPIO_PIN_14
-#define STATUS2_GPIO_Port GPIOB
-#define STATUS3_Pin GPIO_PIN_15
-#define STATUS3_GPIO_Port GPIOB
+#define LED_G_Pin GPIO_PIN_10
+#define LED_G_GPIO_Port GPIOB
 #define TOF_INT_Pin GPIO_PIN_6
 #define TOF_INT_GPIO_Port GPIOC
 #define TOF_I2C_RST_Pin GPIO_PIN_7

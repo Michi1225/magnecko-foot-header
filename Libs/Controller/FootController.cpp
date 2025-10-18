@@ -15,10 +15,6 @@ FootController::FootController() : fsm_(),
 
 void FootController::init()
 {
-    HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Status LED to indicate booting
-    HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_SET); 
-    HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET);
 
     //FSM initialization
     this->fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -53,11 +49,6 @@ void FootController::init()
     if(imu.start() != 0) Error_Handler();
     if(tof.start_ranging() != 0) Error_Handler();
 
-        
-    HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_RESET); //Reset Status LED
-    HAL_GPIO_WritePin(STATUS2_GPIO_Port, STATUS2_Pin, GPIO_PIN_RESET); 
-    HAL_GPIO_WritePin(STATUS1_GPIO_Port, STATUS1_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_RESET);
 }
 
 void FootController::runCommunication()
@@ -75,7 +66,7 @@ void FootController::magnetize(uint8_t time)
     this->active_magnetization = true;
 
     //Disable Charging while magnetizing
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    //TODO: ???
 
     //Ensure no shoot through occurs
     HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
@@ -145,14 +136,14 @@ FSMStatus FootController::FSM_notReadyToSwitchOn(FSMStatus state, uint16_t &stat
 FSMStatus FootController::FSM_switchOnDisabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    //TODO: Handle disabling charging
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
     return state;
 }
 
 FSMStatus FootController::FSM_readyToSwitchOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+    //TODO: Handle enabling charging
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
     return state;
@@ -161,9 +152,6 @@ FSMStatus FootController::FSM_readyToSwitchOn(FSMStatus state, uint16_t &status_
 FSMStatus FootController::FSM_switchedOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
-    // if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) && !this->active_magnetization) //If the Caps are charged and no magnetization is active
-    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //If the Caps are not charged, start charging
-    // else HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET); //Else stop charging
     return state;
 }
 

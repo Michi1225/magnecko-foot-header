@@ -55,13 +55,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, DRV_P_Pin|CHARGE_START_Pin|TOF_I2C_RST_Pin|DISCHARGE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, DRV_P_Pin|TOF_I2C_RST_Pin|DISCHARGE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, ECAT_NCS_Pin|TOF_LP_Pin|IMU_NCS_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, STATUS0_Pin|STATUS1_Pin|STATUS2_Pin|STATUS3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin, GPIO_PIN_SET);
@@ -85,19 +82,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(DRV_P_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CHARGE_START_Pin TOF_I2C_RST_Pin DISCHARGE_Pin */
-  GPIO_InitStruct.Pin = CHARGE_START_Pin|TOF_I2C_RST_Pin|DISCHARGE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : CHARGE_DONE_Pin */
-  GPIO_InitStruct.Pin = CHARGE_DONE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(CHARGE_DONE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EEPROM_LOADED_Pin LDC_INT_Pin */
   GPIO_InitStruct.Pin = EEPROM_LOADED_Pin|LDC_INT_Pin;
@@ -124,14 +108,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : STATUS0_Pin STATUS1_Pin STATUS2_Pin STATUS3_Pin
-                           IMU_NRST_Pin IMU_WAKE_Pin IMU_BOOTN_Pin */
-  GPIO_InitStruct.Pin = STATUS0_Pin|STATUS1_Pin|STATUS2_Pin|STATUS3_Pin
-                          |IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin;
+  /*Configure GPIO pins : TOF_I2C_RST_Pin DISCHARGE_Pin */
+  GPIO_InitStruct.Pin = TOF_I2C_RST_Pin|DISCHARGE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : TOF_LP_Pin */
   GPIO_InitStruct.Pin = TOF_LP_Pin;
@@ -151,6 +133,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : IMU_NRST_Pin IMU_WAKE_Pin IMU_BOOTN_Pin */
+  GPIO_InitStruct.Pin = IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI2_IRQn, 2, 0);

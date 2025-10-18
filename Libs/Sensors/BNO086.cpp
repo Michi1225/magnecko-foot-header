@@ -164,17 +164,7 @@ uint8_t BNO086::update()
     uint8_t errorcode = HAL_SPI_TransmitReceive_DMA(BNO086_SPI_HANDLE, dummy, shtp_header, 1);
     while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
         || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY)
-    {
-        HAL_SPI_StateTypeDef SPI_state = HAL_SPI_GetState(BNO086_SPI_HANDLE);
-        HAL_DMA_StateTypeDef DMA_rx_state = HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx));
-        HAL_DMA_StateTypeDef DMA_tx_state = HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx));
-        int i = 0;
-        UNUSED(i);
-        UNUSED(SPI_state);
-        UNUSED(DMA_rx_state);
-        UNUSED(DMA_tx_state);   
-    }
+        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
     if(errorcode != 0) return errorcode;
 

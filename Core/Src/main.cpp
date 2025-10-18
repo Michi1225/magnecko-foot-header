@@ -204,6 +204,8 @@ int main(void)
   MX_I2C3_Init();
   MX_TIM6_Init();
   MX_TIM3_Init();
+  MX_TIM4_Init();
+  MX_TIM12_Init();
   /* USER CODE BEGIN 2 */
   controller.init();
 
@@ -213,7 +215,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  if(HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) Error_Handler(); //Start Control Timer
+  if(HAL_TIM_Base_Start_IT(&htim4) != HAL_OK) Error_Handler(); //Start Control Timer
   if(HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) Error_Handler(); //Start BNO Timer
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
   std::deque<float> force_average;
@@ -343,14 +345,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
       //Handle Button Press
       TIM6->CNT = 0; //Reset Timer
-      HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+      //TODO: Start Charging caps
       HAL_TIM_Base_Start_IT(&htim6);
 
     }
     else //Rising edge
     {
       HAL_TIM_Base_Stop_IT(&htim6);
-      // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
     }
   }
 }
@@ -359,7 +360,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim == &htim2)
+  if (htim == &htim4)
   {
     // Update the controller
     controller.runControl();
@@ -375,7 +376,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     controller.active_magnetization = false; //Reset active magnetization flag
 
     //Start charging Capacitors
-    HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET);
+    //TODO: ...
   }
 
   else if (htim == &htim3)
@@ -401,40 +402,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   else if (htim == &htim6)
   {
     HAL_TIM_Base_Stop_IT(htim);
-    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
     //Handle Button Press
     //Ignore button press if magnetization is active
     if(controller.active_magnetization) 
     {
       return; //Do nothing if magnetization is active
     }
-    HAL_GPIO_TogglePin(STATUS1_GPIO_Port, STATUS1_Pin); //Set Status LED 1
-    // HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_SET); //Charge Capacitors
-    //Wait for Capacitors to charge
-    // uint8_t cnt = 0;
-    // while(true)
-    // {
-    //   if(HAL_GPIO_ReadPin(CHARGE_DONE_GPIO_Port, CHARGE_DONE_Pin) == GPIO_PIN_RESET) //Check if Capacitors are charged
-    //   {
-    //     ++cnt; //Increment counter
-    //     if(cnt >= 10) //Deglitch
-    //     {
-    //       controller.charge_done = true; //Set charge done flag
-    //       HAL_GPIO_WritePin(STATUS0_GPIO_Port, STATUS0_Pin, GPIO_PIN_SET); //Set Status LED 0
-    //       break; //Exit loop
-
-    //     }
-    //   }
-    //   else
-    //   {
-    //     cnt = 0; //Reset counter
-
-    //   }
-    // }
-
-    //Toggle magnetization with each button press
-    // controller.requested_demagnetization =   controller.status_magnetization;
-    // controller.requested_magnetization   =  !controller.status_magnetization;
     controller.requested_demagnetization =   true;
     controller.requested_magnetization   =  false;
     controller.magnetize(MAGNETIZATION_TIME);
@@ -485,27 +458,19 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET);
+  //TODO: Disable Charging
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
-
-  /* User can add his own implementation to report the HAL error return state */
-  HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET); //Disable Switching
-  HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET); //Disable Switching
-  HAL_GPIO_WritePin(CHARGE_START_GPIO_Port, CHARGE_START_Pin, GPIO_PIN_RESET); //Disable Charging
-  HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge
 
 
   for(int i = 0; i <= 162; ++i)
   {
     if( i != SysTick_IRQn) NVIC_DisableIRQ((IRQn_Type)i); //Disable all interrupts except SysTick
   }
-  HAL_GPIO_WritePin(STATUS3_GPIO_Port, STATUS3_Pin, GPIO_PIN_SET); //Set Error LED
   while (1)
   {
     // Stay in this loop to indicate an error
     // You can also add a blinking LED or other error handling here
     HAL_Delay(200); // Delay to prevent flooding the console
-    HAL_GPIO_TogglePin(STATUS3_GPIO_Port, STATUS3_Pin); //Toggle Error LED
   }
   /* USER CODE END Error_Handler_Debug */
 }
