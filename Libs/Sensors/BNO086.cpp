@@ -243,6 +243,26 @@ uint8_t BNO086::update()
     default:
         break;
     }
+
+    // Update IMU Data Object
+    if(errorcode == 0)
+    {
+        Obj.IMU_Data.Acc_X = q_to_float(this->lin_accel_data.axis_x, this->lin_accel_data.q_point);
+        Obj.IMU_Data.Acc_Y = q_to_float(this->lin_accel_data.axis_y, this->lin_accel_data.q_point);
+        Obj.IMU_Data.Acc_Z = q_to_float(this->lin_accel_data.axis_z, this->lin_accel_data.q_point);
+    
+        Obj.IMU_Data.Gyro_X = q_to_float(this->gyro_data.axis_x, this->gyro_data.q_point);
+        Obj.IMU_Data.Gyro_Y = q_to_float(this->gyro_data.axis_y, this->gyro_data.q_point);
+        Obj.IMU_Data.Gyro_Z = q_to_float(this->gyro_data.axis_z, this->gyro_data.q_point);
+    
+        Obj.IMU_Data.Quat_I = q_to_float(this->rot_data.quaternion_i, this->rot_data.q_point);
+        Obj.IMU_Data.Quat_J = q_to_float(this->rot_data.quaternion_j, this->rot_data.q_point);
+        Obj.IMU_Data.Quat_K = q_to_float(this->rot_data.quaternion_k, this->rot_data.q_point);
+        Obj.IMU_Data.Quat_R = q_to_float(this->rot_data.quaternion_real, this->rot_data.q_point);
+    }
+    //TODO: Handle errorcode: send warning via EtherCAT??
+
+
     return errorcode;
 
 }

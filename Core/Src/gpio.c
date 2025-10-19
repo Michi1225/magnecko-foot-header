@@ -61,7 +61,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, ECAT_NCS_Pin|TOF_LP_Pin|IMU_NCS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, CHARGER_NCS_Pin|IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : NFLT_Pin */
   GPIO_InitStruct.Pin = NFLT_Pin;
@@ -134,8 +134,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : IMU_NRST_Pin IMU_WAKE_Pin IMU_BOOTN_Pin */
-  GPIO_InitStruct.Pin = IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin;
+  /*Configure GPIO pins : CHARGER_NCS_Pin IMU_NRST_Pin IMU_WAKE_Pin IMU_BOOTN_Pin */
+  GPIO_InitStruct.Pin = CHARGER_NCS_Pin|IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

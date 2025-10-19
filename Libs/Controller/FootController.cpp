@@ -15,6 +15,15 @@ FootController::FootController() : fsm_(),
 
 void FootController::init()
 {
+    //LED Timer Initialization
+    TIM2->CCR3 = 0; //Status LED Green off
+    TIM12->CCR1 = 0; //Status LED Blue off
+    TIM12->CCR2 = 0; //Status LED Red off
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);   //Start PWM for Status LED Green
+    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);  //Start PWM for Status LED Blue
+    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);  //Start PWM for Status LED Red
+
+    setStatusLEDHex(COLOUR_WHITE); //Indicate initialization start
 
     //FSM initialization
     this->fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -49,6 +58,7 @@ void FootController::init()
     if(imu.start() != 0) Error_Handler();
     if(tof.start_ranging() != 0) Error_Handler();
 
+    setStatusLEDHex(COLOUR_GREEN); //Indicate initialization done
 }
 
 void FootController::runCommunication()

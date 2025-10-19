@@ -30,6 +30,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "FootController.h"
+#include "utils.h"
 #include <deque>
 #include <stdio.h>
 
@@ -59,8 +60,6 @@ std::deque<float> mag_avg0;
 std::deque<float> mag_avg1;
 std::deque<float> mag_avg2;
 std::deque<float> mag_avg3;
-bool prev_mag = false;
-bool prev_demag = false;
 
 /* USER CODE END PV */
 
@@ -70,50 +69,7 @@ void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
-extern "C" int _write(int file, char *ptr, int len)
-{
-    // (void)file;
-    // for (int i = 0; i < len; i++) {
-    //     ITM_SendChar((uint32_t)*ptr++);
-    // }
-    return len;
-}
 
-
-#define SWO_SPEED 5E6 // 4Mhz
-void SWD_Init(void)
-{
-  *(__IO uint32_t*)(0x5C001004) |= 0x00700000; // DBGMCU_CR D3DBGCKEN D1DBGCKEN TRACECLKEN
- 
-  //UNLOCK FUNNEL
-  *(__IO uint32_t*)(0x5C004FB0) = 0xC5ACCE55; // SWTF_LAR
-  *(__IO uint32_t*)(0x5C003FB0) = 0xC5ACCE55; // SWO_LAR
- 
-  //SWO current output divisor register
-  //This divisor value (0x000000C7) corresponds to 400Mhz
-  //To change it, you can use the following rule
-  // value = (CPU Freq/sw speed )-1
-  // devided by 2 because swo runs on half the System clock
-   *(__IO uint32_t*)(0x5C003010) = ((SystemCoreClock / SWO_SPEED / 2) - 1); // SWO_CODR
- 
-  //SWO selected pin protocol register
-   *(__IO uint32_t*)(0x5C0030F0) = 0x00000002; // SWO_SPPR
- 
-  //Enable ITM input of SWO trace funnel
-   *(__IO uint32_t*)(0x5C004000) |= 0x00000003; // SWFT_CTRL , Port 0 and 1 enabled
- 
-  //RCC_AHB4ENR enable GPIOB clock
-   *(__IO uint32_t*)(0x580244E0) |= 0x00000002;
- 
-  // Configure GPIOB pin 3 as AF
-   *(__IO uint32_t*)(0x58020400) = (*(__IO uint32_t*)(0x58020400) & 0xffffff3f) | 0x00000080;
- 
-  // Configure GPIOB pin 3 Speed
-   *(__IO uint32_t*)(0x58020408) |= 0x00000080;
- 
-  // Force AF0 for GPIOB pin 3
-   *(__IO uint32_t*)(0x58020420) &= 0xFFFF0FFF;
-}
 
 /**
  * This function is called when to get input values
@@ -123,11 +79,11 @@ void cb_get_inputs()
   controller.fsm_.setControlWord(Obj.Control_Word);
   
   //Magnetize on GPIO0 rising edge
-  if((Obj.Magnet_Command & 0x01) && !prev_mag)
+  if((Obj.Magnet_Command & 0x01) && !controller.prev_mag)
   {
     controller.requested_magnetization = true; //Set requested magnetization state
   }
-  if((Obj.Magnet_Command & 0x02) && !prev_demag)
+  if((Obj.Magnet_Command & 0x02) && !controller.prev_demag)
   {
     controller.requested_demagnetization = true; //Set requested demagnetization state
   }
@@ -138,8 +94,8 @@ void cb_get_inputs()
     controller.requested_demagnetization = false;
   }
 
-  prev_mag = static_cast<bool>(Obj.Magnet_Command & 0x01);
-  prev_demag = static_cast<bool>(Obj.Magnet_Command & 0x02);
+  controller.prev_mag = static_cast<bool>(Obj.Magnet_Command & 0x01);
+  controller.prev_demag = static_cast<bool>(Obj.Magnet_Command & 0x02);
 }
 
 /**
@@ -240,6 +196,7 @@ int main(void)
       mag_force_average_sum += val;
     }
     Obj.Force_Estimate = mag_force_average_sum / force_average.size();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -346,7 +303,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
       //Handle Button Press
       TIM6->CNT = 0; //Reset Timer
       //TODO: Start Charging caps
-      HAL_TIM_Base_Start_IT(&htim6);
+      // HAL_TIM_Base_Start_IT(&htim6);
 
     }
     else //Rising edge
@@ -383,18 +340,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     //BNO update
     controller.imu.update(); //Update IMU data
-    Obj.IMU_Data.Acc_X = q_to_float(controller.imu.lin_accel_data.axis_x, controller.imu.lin_accel_data.q_point);
-    Obj.IMU_Data.Acc_Y = q_to_float(controller.imu.lin_accel_data.axis_y, controller.imu.lin_accel_data.q_point);
-    Obj.IMU_Data.Acc_Z = q_to_float(controller.imu.lin_accel_data.axis_z, controller.imu.lin_accel_data.q_point);
 
-    Obj.IMU_Data.Gyro_X = q_to_float(controller.imu.gyro_data.axis_x, controller.imu.gyro_data.q_point);
-    Obj.IMU_Data.Gyro_Y = q_to_float(controller.imu.gyro_data.axis_y, controller.imu.gyro_data.q_point);
-    Obj.IMU_Data.Gyro_Z = q_to_float(controller.imu.gyro_data.axis_z, controller.imu.gyro_data.q_point);
 
-    Obj.IMU_Data.Quat_I = q_to_float(controller.imu.rot_data.quaternion_i, controller.imu.rot_data.q_point);
-    Obj.IMU_Data.Quat_J = q_to_float(controller.imu.rot_data.quaternion_j, controller.imu.rot_data.q_point);
-    Obj.IMU_Data.Quat_K = q_to_float(controller.imu.rot_data.quaternion_k, controller.imu.rot_data.q_point);
-    Obj.IMU_Data.Quat_R = q_to_float(controller.imu.rot_data.quaternion_real, controller.imu.rot_data.q_point);
+    // Cap Charger readout (RGB Fade Test)
+    // uint8_t tx_data[4] = {0x00, 0x00, 0x00, 0x00};
+    // uint8_t rx_data[4] = {0x00, 0x00, 0x00, 0x00};
+    // HAL_GPIO_WritePin(CHARGER_NCS_GPIO_Port, CHARGER_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+    // HAL_SPI_TransmitReceive(&hspi6, tx_data, rx_data, 4, 100);
+    // HAL_GPIO_WritePin(CHARGER_NCS_GPIO_Port, CHARGER_NCS_Pin, GPIO_PIN_SET); //Set CS high
+    // setStatusLED(rx_data[0], rx_data[1], rx_data[2], 100);
   }
 
 
@@ -456,16 +410,7 @@ void MPU_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
-  //TODO: Disable Charging
-  HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
-
-
-  for(int i = 0; i <= 162; ++i)
-  {
-    if( i != SysTick_IRQn) NVIC_DisableIRQ((IRQn_Type)i); //Disable all interrupts except SysTick
-  }
+  errorHandler();
   while (1)
   {
     // Stay in this loop to indicate an error

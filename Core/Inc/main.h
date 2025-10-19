@@ -31,6 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "utypes.h"
 
 /* USER CODE END Includes */
 
@@ -41,6 +42,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+extern _Objects Obj;
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi6;
 extern I2C_HandleTypeDef hi2c3;
@@ -86,6 +88,10 @@ void Error_Handler(void);
 #define SYNC1_GPIO_Port GPIOC
 #define LED_G_Pin GPIO_PIN_10
 #define LED_G_GPIO_Port GPIOB
+#define LED_B_Pin GPIO_PIN_14
+#define LED_B_GPIO_Port GPIOB
+#define LED_R_Pin GPIO_PIN_15
+#define LED_R_GPIO_Port GPIOB
 #define TOF_INT_Pin GPIO_PIN_6
 #define TOF_INT_GPIO_Port GPIOC
 #define TOF_I2C_RST_Pin GPIO_PIN_7
@@ -116,6 +122,8 @@ void Error_Handler(void);
 #define IMU_MISO_GPIO_Port GPIOB
 #define IMU_MOSI_Pin GPIO_PIN_5
 #define IMU_MOSI_GPIO_Port GPIOB
+#define CHARGER_NCS_Pin GPIO_PIN_6
+#define CHARGER_NCS_GPIO_Port GPIOB
 #define IMU_NRST_Pin GPIO_PIN_7
 #define IMU_NRST_GPIO_Port GPIOB
 #define IMU_WAKE_Pin GPIO_PIN_8

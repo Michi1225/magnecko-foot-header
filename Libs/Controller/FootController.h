@@ -7,6 +7,7 @@
 #include "TMAG5273.h"
 #include "VL53L7CH.h"
 #include "FSM.hpp"
+#include "utils.h"
 extern "C" {
     #include "ecat_slv.h"
     #include "utypes.h"
@@ -113,6 +114,8 @@ public:
     //Controller variables
     bool requested_magnetization = false;   //Requested magnetization state
     bool requested_demagnetization = false; //Requested demagnetization state
+    bool prev_mag = false;
+    bool prev_demag = false;
     bool status_magnetization = false;      //Status of the magnetization
     bool active_magnetization = false;      //A magnetization is active
     bool requested_discharge = false;       //A discharge is requested
