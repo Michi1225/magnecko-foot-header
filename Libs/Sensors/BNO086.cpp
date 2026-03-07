@@ -185,7 +185,6 @@ uint8_t BNO086::update()
         || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
     if(errorcode != 0) return errorcode;
-    //TODO: DMA SPI
 
     switch (report_id)
     {

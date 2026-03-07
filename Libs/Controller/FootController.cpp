@@ -9,21 +9,15 @@ FootController::FootController() : fsm_(),
                                    hall1(TMAG5273::B1),
                                    hall2(TMAG5273::C1),
                                    hall3(TMAG5273::D1),
-                                   tof()
+                                   tof(),
+                                   charger()
 {
 }
 
 void FootController::init()
 {
-    //LED Timer Initialization
-    TIM2->CCR3 = 0; //Status LED Green off
-    TIM12->CCR1 = 0; //Status LED Blue off
-    TIM12->CCR2 = 0; //Status LED Red off
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);   //Start PWM for Status LED Green
-    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);  //Start PWM for Status LED Blue
-    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);  //Start PWM for Status LED Red
-
-    setStatusLEDHex(COLOUR_WHITE); //Indicate initialization start
+    //LED Controller Initialization
+    //TODO: Implement LED Controller over I2C
 
     //FSM initialization
     this->fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -38,13 +32,16 @@ void FootController::init()
 
     fsm_.init(this->fsmActions_);
 
-    //ECAT initialization
     
+    //ECAT initialization
     while(!HAL_GPIO_ReadPin(EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin)){} //Wait for EEPROM to be loaded
     ecat_slv_init(&this->config);
     //TODO: Set Obj. constants
     Obj.EPM_Number = 1; // EPM number, needed for hw interface
     // Obj.Device_Information[6] = 1; // actuator number, needed for hw interface
+
+
+
 
     //Sensor initialization
     //TODO: Go to FMS Fault state if init fails
@@ -58,46 +55,44 @@ void FootController::init()
     if(imu.start() != 0) Error_Handler();
     if(tof.start_ranging() != 0) Error_Handler();
 
-    setStatusLEDHex(COLOUR_GREEN); //Indicate initialization done
+    // Charger Initialization
+    if(charger.wait_ready(1000)) Error_Handler(); //Wait for charger to be ready, if not ready after 1 second, trigger error handler
+
+
+    // Drive Timer Initialization
+    HAL_TIM_OnePulse_Start(&htim2, TIM_CHANNEL_1); //Start One Pulse for DRV1
+    HAL_TIM_OnePulse_Start(&htim5, TIM_CHANNEL_2); //Start One Pulse for DRV2
+
+    //TODO: LED Indication for successful initialization
 }
 
 void FootController::runCommunication()
 {
     ecat_slv();
-
-
-    
+    this->charger.transmit_receive(); //Run Charger Communication Loop
 }
 
 void FootController::magnetize(uint8_t time)
 {
     if(time < 10 ||time > 100) return; 
-    //Set active flag
-    this->active_magnetization = true;
 
-    //Disable Charging while magnetizing
-    //TODO: ???
 
-    //Ensure no shoot through occurs
-    HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
-
-    // Select GPIO output
-    auto gpio_port = DRV_P_GPIO_Port;
-    auto gpio_pin = DRV_P_Pin;
     if(!this->requested_magnetization && this->requested_demagnetization)
     {
-        gpio_port = DRV_M_GPIO_Port;
-        gpio_pin = DRV_M_Pin;
+        // Magnetization was requiested
+        TIM2->CCR1 = 100 * time; // pulse width in us
+        TIM2->CR1 |= TIM_CR1_CEN; // Start Timer
+    }else if(this->requested_magnetization && !this->requested_demagnetization)
+    {
+        // Demagnetization was requested
+        TIM5->CCR2 = 100 * time; // pulse width in us
+        TIM5->CR1 |= TIM_CR1_CEN; // Start Timer
+    } else 
+    {
+        return; //No valid request, do nothing
     }
     //Set Magnetization Status
     this->status_magnetization = this->requested_magnetization;
-    this->charge_done = false; //Reset charge done flag
-
-    //Start Timer
-    TIM1->ARR = time * 100; // time in us
-    if(HAL_TIM_Base_Start_IT(&htim1)!= HAL_OK) return;
-    HAL_GPIO_WritePin(gpio_port, gpio_pin, GPIO_PIN_SET);
 }
 
 void FootController::runControl()
@@ -146,14 +141,14 @@ FSMStatus FootController::FSM_notReadyToSwitchOn(FSMStatus state, uint16_t &stat
 FSMStatus FootController::FSM_switchOnDisabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
-    //TODO: Handle disabling charging
+    this->charger.tx_data.enable = 0; //Disable Charging
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
     return state;
 }
 
 FSMStatus FootController::FSM_readyToSwitchOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    //TODO: Handle enabling charging
+    this->charger.tx_data.enable = 1; //Enable Charging
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
     return state;

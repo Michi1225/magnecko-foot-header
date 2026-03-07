@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
 #include "bdma.h"
 #include "dma.h"
 #include "i2c.h"
@@ -152,7 +151,6 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_BDMA_Init();
-  MX_ADC1_Init();
   MX_SPI1_Init();
   MX_SPI6_Init();
   MX_TIM1_Init();
@@ -161,7 +159,10 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_TIM12_Init();
+  MX_I2C1_Init();
+  MX_I2C5_Init();
+  MX_SPI2_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
   controller.init();
 
@@ -273,17 +274,8 @@ void PeriphCommonClock_Config(void)
 
   /** Initializes the peripherals clock
   */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_SPI1;
-  PeriphClkInitStruct.PLL2.PLL2M = 4;
-  PeriphClkInitStruct.PLL2.PLL2N = 12;
-  PeriphClkInitStruct.PLL2.PLL2P = 2;
-  PeriphClkInitStruct.PLL2.PLL2Q = 2;
-  PeriphClkInitStruct.PLL2.PLL2R = 2;
-  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_3;
-  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
-  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
-  PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL2;
-  PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLL2;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CKPER;
+  PeriphClkInitStruct.CkperClockSelection = RCC_CLKPSOURCE_HSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -293,20 +285,27 @@ void PeriphCommonClock_Config(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+  // Handle IMU Interrupt
+  // When the IMU interrupt pin is triggered, set the msg_ready flag to true to indicate that new IMU data is available and should be read within the next 10ms.
   if(GPIO_Pin == IMU_INT_Pin) {
     controller.imu.msg_ready = true;
   }
+
+  // Handle Button Press and Release
+  // On Button Press, start a timer to measure how long the button is held down. On Button Release, stop the timer.
+  // If the button is held down for more than a certain threshold (e.g., 1 second), trigger a demagnetization event.
   else if(GPIO_Pin == BUTTON_Pin)
   {
-    if(HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_RESET) //Falling edge
+    // Button Pressed (Falling edge)
+    if(HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_RESET)
     {
-      //Handle Button Press
-      TIM6->CNT = 0; //Reset Timer
-      //TODO: Start Charging caps
-      // HAL_TIM_Base_Start_IT(&htim6);
+      
+      TIM6->CNT = 0;
+      HAL_TIM_Base_Start_IT(&htim6);
 
     }
-    else //Rising edge
+    // Button Released (Rising edge)
+    else
     {
       HAL_TIM_Base_Stop_IT(&htim6);
     }
@@ -317,56 +316,34 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+  // Controller and Communication Loop
+  // This loop runs at 1kHz
   if (htim == &htim4)
   {
-    // Update the controller
     controller.runControl();
     controller.runCommunication();
     return;
   }
-  else if (htim == &htim1)
-  {
-    //end switching period
-    HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(DRV_P_GPIO_Port, DRV_P_Pin, GPIO_PIN_RESET);
-    HAL_TIM_Base_Stop_IT(htim);
-    controller.active_magnetization = false; //Reset active magnetization flag
 
-    //Start charging Capacitors
-    //TODO: ...
-  }
 
+  // IMU Update Loop
+  // This loop runs at 400Hz
   else if (htim == &htim3)
   {
-    //BNO update
     controller.imu.update(); //Update IMU data
-
-
-    // Cap Charger readout (RGB Fade Test)
-    // uint8_t tx_data[4] = {0x00, 0x00, 0x00, 0x00};
-    // uint8_t rx_data[4] = {0x00, 0x00, 0x00, 0x00};
-    // HAL_GPIO_WritePin(CHARGER_NCS_GPIO_Port, CHARGER_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    // HAL_SPI_TransmitReceive(&hspi6, tx_data, rx_data, 4, 100);
-    // HAL_GPIO_WritePin(CHARGER_NCS_GPIO_Port, CHARGER_NCS_Pin, GPIO_PIN_SET); //Set CS high
-    // setStatusLED(rx_data[0], rx_data[1], rx_data[2], 100);
   }
 
 
-
+  // Manual Demagnetization control
+  // This interrupt is triggered, if the button is pressed for more than 1 second.
   else if (htim == &htim6)
   {
     HAL_TIM_Base_Stop_IT(htim);
-    //Handle Button Press
-    //Ignore button press if magnetization is active
-    if(controller.active_magnetization) 
-    {
-      return; //Do nothing if magnetization is active
-    }
     controller.requested_demagnetization =   true;
     controller.requested_magnetization   =  false;
     controller.magnetize(MAGNETIZATION_TIME);
-    controller.requested_demagnetization = false; //Reset requested magnetization state
-    controller.requested_magnetization = false; //Reset requested demagnetization state
+    controller.requested_demagnetization = false;
+    controller.requested_magnetization = false;
   }
   
 

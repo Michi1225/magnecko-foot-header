@@ -8,6 +8,7 @@
 #include "VL53L7CH.h"
 #include "FSM.hpp"
 #include "utils.h"
+#include "Charger.h"
 extern "C" {
     #include "ecat_slv.h"
     #include "utypes.h"
@@ -117,9 +118,12 @@ public:
     bool prev_mag = false;
     bool prev_demag = false;
     bool status_magnetization = false;      //Status of the magnetization
-    bool active_magnetization = false;      //A magnetization is active
     bool requested_discharge = false;       //A discharge is requested
-    bool charge_done = false;          //Capacitors are charged
+
+    // Capacitor Charger
+    Charger charger;
+
+
 
     FootController();
 

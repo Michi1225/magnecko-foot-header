@@ -56,6 +56,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Libs/FSM/FSM.cpp
     Libs/Controller/FootController.cpp
     Libs/Controller/utils.cpp
+    Libs/Controller/Charger.cpp
     Drivers/VL53LMZ_ULD_API/Platform/platform.c
     Drivers/VL53LMZ_ULD_API/src/vl53lmz_api.c
     Drivers/VL53LMZ_ULD_API/src/vl53lmz_plugin_infos.c

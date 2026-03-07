@@ -97,7 +97,7 @@
 
 #define LDC_I2C_ADDRESS 0x2B // LDC1614 I2C address
 
-#define LDC_I2C_HANDLE &hi2c3 // I2C handle
+#define LDC_I2C_HANDLE &hi2c5 // I2C handle
 
 
 

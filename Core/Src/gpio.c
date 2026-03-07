@@ -45,43 +45,32 @@ void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(DRV_M_GPIO_Port, DRV_M_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, DRV_P_Pin|TOF_I2C_RST_Pin|DISCHARGE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, DISCHARGE_Pin|TOF_I2C_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, ECAT_NCS_Pin|TOF_LP_Pin|IMU_NCS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CHARGER_NCS_Pin|IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, nRST_ECAT_Pin|CHARGER_NCS_Pin|IMU_NRST_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : NFLT_Pin */
-  GPIO_InitStruct.Pin = NFLT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(NFLT_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(IMU_WAKE_GPIO_Port, IMU_WAKE_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : DRV_M_Pin */
-  GPIO_InitStruct.Pin = DRV_M_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(IMU_BOOTN_GPIO_Port, IMU_BOOTN_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : DISCHARGE_Pin TOF_I2C_RST_Pin */
+  GPIO_InitStruct.Pin = DISCHARGE_Pin|TOF_I2C_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(DRV_M_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : DRV_P_Pin */
-  GPIO_InitStruct.Pin = DRV_P_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(DRV_P_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EEPROM_LOADED_Pin LDC_INT_Pin */
   GPIO_InitStruct.Pin = EEPROM_LOADED_Pin|LDC_INT_Pin;
@@ -108,25 +97,25 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : TOF_I2C_RST_Pin DISCHARGE_Pin */
-  GPIO_InitStruct.Pin = TOF_I2C_RST_Pin|DISCHARGE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : TOF_LP_Pin */
-  GPIO_InitStruct.Pin = TOF_LP_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(TOF_LP_GPIO_Port, &GPIO_InitStruct);
-
   /*Configure GPIO pin : BUTTON_Pin */
   GPIO_InitStruct.Pin = BUTTON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(BUTTON_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : nRST_ECAT_Pin CHARGER_NCS_Pin IMU_BOOTN_Pin IMU_NRST_Pin */
+  GPIO_InitStruct.Pin = nRST_ECAT_Pin|CHARGER_NCS_Pin|IMU_BOOTN_Pin|IMU_NRST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : TOF_LP_Pin IMU_WAKE_Pin */
+  GPIO_InitStruct.Pin = TOF_LP_Pin|IMU_WAKE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : IMU_INT_Pin */
   GPIO_InitStruct.Pin = IMU_INT_Pin;
@@ -134,19 +123,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : CHARGER_NCS_Pin IMU_NRST_Pin IMU_WAKE_Pin IMU_BOOTN_Pin */
-  GPIO_InitStruct.Pin = CHARGER_NCS_Pin|IMU_NRST_Pin|IMU_WAKE_Pin|IMU_BOOTN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
   HAL_NVIC_SetPriority(EXTI2_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 

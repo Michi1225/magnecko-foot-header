@@ -44,9 +44,11 @@ extern "C" {
 /* USER CODE BEGIN EC */
 extern _Objects Obj;
 extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi2;
 extern SPI_HandleTypeDef hspi6;
 extern I2C_HandleTypeDef hi2c3;
 extern TIM_HandleTypeDef htim1;
+extern I2C_HandleTypeDef hi2c1;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -62,14 +64,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define NFLT_Pin GPIO_PIN_0
-#define NFLT_GPIO_Port GPIOH
-#define DRV_M_Pin GPIO_PIN_1
-#define DRV_M_GPIO_Port GPIOH
-#define DRV_P_Pin GPIO_PIN_0
-#define DRV_P_GPIO_Port GPIOC
-#define IMEAS_Pin GPIO_PIN_1
-#define IMEAS_GPIO_Port GPIOA
+#define DISCHARGE_Pin GPIO_PIN_0
+#define DISCHARGE_GPIO_Port GPIOC
+#define DRV1_Pin GPIO_PIN_0
+#define DRV1_GPIO_Port GPIOA
+#define DRV2_Pin GPIO_PIN_1
+#define DRV2_GPIO_Port GPIOA
 #define EEPROM_LOADED_Pin GPIO_PIN_2
 #define EEPROM_LOADED_GPIO_Port GPIOA
 #define ECAT_IRQ_Pin GPIO_PIN_3
@@ -78,39 +78,51 @@ void Error_Handler(void);
 #define ECAT_NCS_GPIO_Port GPIOA
 #define ECAT_SCK_Pin GPIO_PIN_5
 #define ECAT_SCK_GPIO_Port GPIOA
-#define ECAT_MISO_Pin GPIO_PIN_6
-#define ECAT_MISO_GPIO_Port GPIOA
-#define ECAT_MOSI_Pin GPIO_PIN_7
+#define ECAT_MOSI_Pin GPIO_PIN_6
 #define ECAT_MOSI_GPIO_Port GPIOA
+#define ECAT_MISO_Pin GPIO_PIN_7
+#define ECAT_MISO_GPIO_Port GPIOA
 #define SYNC0_Pin GPIO_PIN_4
 #define SYNC0_GPIO_Port GPIOC
 #define SYNC1_Pin GPIO_PIN_5
 #define SYNC1_GPIO_Port GPIOC
-#define LED_G_Pin GPIO_PIN_10
-#define LED_G_GPIO_Port GPIOB
-#define LED_B_Pin GPIO_PIN_14
-#define LED_B_GPIO_Port GPIOB
-#define LED_R_Pin GPIO_PIN_15
-#define LED_R_GPIO_Port GPIOB
+#define BUTTON_Pin GPIO_PIN_0
+#define BUTTON_GPIO_Port GPIOB
+#define BUTTON_EXTI_IRQn EXTI0_IRQn
+#define nRST_ECAT_Pin GPIO_PIN_1
+#define nRST_ECAT_GPIO_Port GPIOB
+#define CHARGER_SCK_Pin GPIO_PIN_10
+#define CHARGER_SCK_GPIO_Port GPIOB
+#define CHARGER_NCS_Pin GPIO_PIN_12
+#define CHARGER_NCS_GPIO_Port GPIOB
+#define CHARGER_MISO_Pin GPIO_PIN_14
+#define CHARGER_MISO_GPIO_Port GPIOB
+#define CHARGER_MOSI_Pin GPIO_PIN_15
+#define CHARGER_MOSI_GPIO_Port GPIOB
 #define TOF_INT_Pin GPIO_PIN_6
 #define TOF_INT_GPIO_Port GPIOC
 #define TOF_I2C_RST_Pin GPIO_PIN_7
 #define TOF_I2C_RST_GPIO_Port GPIOC
+#define SENS_SDA_Pin GPIO_PIN_9
+#define SENS_SDA_GPIO_Port GPIOC
+#define SENS_SCL_Pin GPIO_PIN_8
+#define SENS_SCL_GPIO_Port GPIOA
 #define TOF_LP_Pin GPIO_PIN_9
 #define TOF_LP_GPIO_Port GPIOA
 #define LDC_INT_Pin GPIO_PIN_10
 #define LDC_INT_GPIO_Port GPIOA
+#define IMU_WAKE_Pin GPIO_PIN_12
+#define IMU_WAKE_GPIO_Port GPIOA
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
 #define SWCLK_GPIO_Port GPIOA
 #define IMU_NCS_Pin GPIO_PIN_15
 #define IMU_NCS_GPIO_Port GPIOA
-#define BUTTON_Pin GPIO_PIN_10
-#define BUTTON_GPIO_Port GPIOC
-#define BUTTON_EXTI_IRQn EXTI15_10_IRQn
-#define DISCHARGE_Pin GPIO_PIN_11
-#define DISCHARGE_GPIO_Port GPIOC
+#define SENS_LS_SDA_Pin GPIO_PIN_10
+#define SENS_LS_SDA_GPIO_Port GPIOC
+#define SENS_LS_SCL_Pin GPIO_PIN_11
+#define SENS_LS_SCL_GPIO_Port GPIOC
 #define IMU_SCK_Pin GPIO_PIN_12
 #define IMU_SCK_GPIO_Port GPIOC
 #define IMU_INT_Pin GPIO_PIN_2
@@ -122,14 +134,14 @@ void Error_Handler(void);
 #define IMU_MISO_GPIO_Port GPIOB
 #define IMU_MOSI_Pin GPIO_PIN_5
 #define IMU_MOSI_GPIO_Port GPIOB
-#define CHARGER_NCS_Pin GPIO_PIN_6
-#define CHARGER_NCS_GPIO_Port GPIOB
+#define IMU_BOOTN_Pin GPIO_PIN_6
+#define IMU_BOOTN_GPIO_Port GPIOB
 #define IMU_NRST_Pin GPIO_PIN_7
 #define IMU_NRST_GPIO_Port GPIOB
-#define IMU_WAKE_Pin GPIO_PIN_8
-#define IMU_WAKE_GPIO_Port GPIOB
-#define IMU_BOOTN_Pin GPIO_PIN_9
-#define IMU_BOOTN_GPIO_Port GPIOB
+#define LED_SCL_Pin GPIO_PIN_8
+#define LED_SCL_GPIO_Port GPIOB
+#define LED_SDA_Pin GPIO_PIN_9
+#define LED_SDA_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
