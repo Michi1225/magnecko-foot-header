@@ -3,6 +3,7 @@
 #include "main.h"
 
 #define CHARGER_SPI_HANDLE &hspi2
+#define CHARGER_SECTION_NAME ".RAM_D3"
 
 typedef struct
 {
@@ -31,8 +32,8 @@ class Charger
 {
 private:
 public:
-    ChargerData status;
-    TransmitData tx_data;
+    static ChargerData status;
+    static TransmitData tx_data;
 
     Charger();
 

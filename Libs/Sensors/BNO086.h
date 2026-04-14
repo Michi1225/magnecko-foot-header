@@ -37,6 +37,7 @@
 
 
 #define BNO086_SPI_HANDLE &hspi6
+#define BNO086_SECTION_NAME ".RAM_D3"
 
 #define PACKED __attribute__((packed))
 

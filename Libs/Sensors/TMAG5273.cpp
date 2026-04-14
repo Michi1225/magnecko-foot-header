@@ -1,7 +1,7 @@
 #include "TMAG5273.h"
 
 
-__section(".RAM") uint8_t rxDataHall[6];
+__section(MAG_SECTION_NAME) uint8_t rxDataHall[6];
 
 
 TMAG5273::TMAG5273(device_version version)

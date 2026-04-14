@@ -10,8 +10,8 @@ enum ErrorCode {
 
 void errorHandler()
 {
-    HAL_TIM_OnePulse_Stop(&htim2, TIM_CHANNEL_1); //Stop DRV1
-    HAL_TIM_OnePulse_Stop(&htim5, TIM_CHANNEL_2); //Stop DRV2
+    HAL_TIM_OnePulse_Stop(TIM_DRV1, CHANNEL_DRV1); //Stop DRV1
+    HAL_TIM_OnePulse_Stop(TIM_DRV2, CHANNEL_DRV2); //Stop DRV2
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
     //TODO: Disable Charging
 

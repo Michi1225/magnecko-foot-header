@@ -80,6 +80,7 @@
 #endif
 
 #define SENS_I2C_HANDLE &hi2c3
+#define MAG_SECTION_NAME ".RAM"
 
 
 

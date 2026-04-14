@@ -60,8 +60,8 @@ void FootController::init()
 
 
     // Drive Timer Initialization
-    HAL_TIM_OnePulse_Start(&htim2, TIM_CHANNEL_1); //Start One Pulse for DRV1
-    HAL_TIM_OnePulse_Start(&htim5, TIM_CHANNEL_2); //Start One Pulse for DRV2
+    HAL_TIM_OnePulse_Start(TIM_DRV1, CHANNEL_DRV1); //Start One Pulse for DRV1
+    HAL_TIM_OnePulse_Start(TIM_DRV2, CHANNEL_DRV2); //Start One Pulse for DRV2
 
     //TODO: LED Indication for successful initialization
 }
@@ -102,34 +102,6 @@ void FootController::runControl()
 
 FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
-    //Handle Sensors
-    //IMU
-    // imu.update(); //Update IMU data
-
-
-    //ToF
-    // (void)tof.get_ranging_data();
-    //TODO: Compress Ranging data in a meaningful way
-
-    //LDC & Hall Sensors
-    // if(this->status_magnetization)
-    // {
-    //     //Perform Contact Estimation
-    //     bool contact_0 = hall0.estimate_contact();
-    //     bool contact_1 = hall1.estimate_contact();
-    //     bool contact_2 = hall2.estimate_contact();
-    //     bool contact_3 = hall3.estimate_contact();
-    //     // Contact estimation is a bitmap containing the contact estimation for all four magnets
-    //     this->contact_estimation = contact_0 + (contact_1 << 1) + (contact_2 << 2) + (contact_3 << 3);
-
-    //     //Perform Force Estimation
-    //     this->force_estimation = this->ldc.forceEstimation() * (this->contact_estimation != 0); //Force estimation is only valid, if contact estimation is not 0
-    // } else 
-    // {
-    //     //If the magnet is not active, set contact and force estimation to 0
-    //     this->contact_estimation = 0;
-    //     this->force_estimation = 0;
-    // }
     return state;
 }
 

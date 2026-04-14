@@ -1,16 +1,16 @@
 #include "BNO086.h"
 
-__section(".RAM_D3") __aligned(4) uint8_t shtp_header[4] = {0};
-__section(".RAM_D3") __aligned(4) uint8_t time_stamp[5] = {0};
-__section(".RAM_D3") __aligned(4) uint8_t report_id = 0;
-__section(".RAM_D3") __aligned(4) uint8_t dummy[128] = {0};
+__section(BNO086_SECTION_NAME) __aligned(4) uint8_t shtp_header[4] = {0};
+__section(BNO086_SECTION_NAME) __aligned(4) uint8_t time_stamp[5] = {0};
+__section(BNO086_SECTION_NAME) __aligned(4) uint8_t report_id = 0;
+__section(BNO086_SECTION_NAME) __aligned(4) uint8_t dummy[128] = {0};
 
-VectorData BNO086::gyro_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GYROSCOPE};
-VectorData BNO086::accel_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ACCELEROMETER};
-VectorData BNO086::mag_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_MAGNETOMETER};
-VectorData BNO086::lin_accel_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_LINEAR_ACCELERATION};
-VectorData BNO086::grav_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GRAVITY};
-RotationVectorData BNO086::rot_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ROTATION, BNO086_Q_POINT_ACCURACY_ROTATION};
+VectorData BNO086::gyro_data        __section(BNO086_SECTION_NAME) = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GYROSCOPE};
+VectorData BNO086::accel_data       __section(BNO086_SECTION_NAME) = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ACCELEROMETER};
+VectorData BNO086::mag_data         __section(BNO086_SECTION_NAME) = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_MAGNETOMETER};
+VectorData BNO086::lin_accel_data   __section(BNO086_SECTION_NAME) = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_LINEAR_ACCELERATION};
+VectorData BNO086::grav_data        __section(BNO086_SECTION_NAME) = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GRAVITY};
+RotationVectorData BNO086::rot_data __section(BNO086_SECTION_NAME) = {0, 0, 0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ROTATION, BNO086_Q_POINT_ACCURACY_ROTATION};
 
 
 

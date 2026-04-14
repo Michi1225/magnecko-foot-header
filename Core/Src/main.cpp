@@ -21,7 +21,6 @@
 #include "bdma.h"
 #include "dma.h"
 #include "i2c.h"
-#include "memorymap.h"
 #include "spi.h"
 #include "tim.h"
 #include "gpio.h"
@@ -151,17 +150,17 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_BDMA_Init();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
   MX_SPI1_Init();
+  MX_SPI2_Init();
+  MX_SPI3_Init();
+  MX_SPI4_Init();
   MX_SPI6_Init();
+  MX_TIM3_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
-  MX_I2C3_Init();
-  MX_TIM6_Init();
-  MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_I2C1_Init();
-  MX_I2C5_Init();
-  MX_SPI2_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
   controller.init();
@@ -172,8 +171,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  if(HAL_TIM_Base_Start_IT(&htim4) != HAL_OK) Error_Handler(); //Start Control Timer
-  if(HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) Error_Handler(); //Start BNO Timer
+  if(HAL_TIM_Base_Start_IT(TIM_CONTROL) != HAL_OK) Error_Handler(); //Start Control Timer
+  if(HAL_TIM_Base_Start_IT(TIM_IMU) != HAL_OK) Error_Handler(); //Start BNO Timer
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
   std::deque<float> force_average;
   SWD_Init();
@@ -301,13 +300,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
       
       TIM6->CNT = 0;
-      HAL_TIM_Base_Start_IT(&htim6);
+      HAL_TIM_Base_Start_IT(TIM_BUTTON);
 
     }
     // Button Released (Rising edge)
     else
     {
-      HAL_TIM_Base_Stop_IT(&htim6);
+      HAL_TIM_Base_Stop_IT(TIM_BUTTON);
     }
   }
 }
@@ -318,7 +317,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   // Controller and Communication Loop
   // This loop runs at 1kHz
-  if (htim == &htim4)
+  if (htim == TIM_CONTROL)
   {
     controller.runControl();
     controller.runCommunication();
@@ -328,7 +327,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
   // IMU Update Loop
   // This loop runs at 400Hz
-  else if (htim == &htim3)
+  else if (htim == TIM_IMU)
   {
     controller.imu.update(); //Update IMU data
   }
@@ -336,7 +335,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
   // Manual Demagnetization control
   // This interrupt is triggered, if the button is pressed for more than 1 second.
-  else if (htim == &htim6)
+  else if (htim == TIM_BUTTON)
   {
     HAL_TIM_Base_Stop_IT(htim);
     controller.requested_demagnetization =   true;
@@ -396,8 +395,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

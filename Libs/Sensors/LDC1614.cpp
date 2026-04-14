@@ -1,8 +1,8 @@
 #include "LDC1614.h"
 
-__section(".RAM") uint8_t data_addr = 0x00; // Initialize data address
+__section(LDC_SECTION_NAME) uint8_t data_addr = 0x00; // Initialize data address
 
-__section(".RAM") uint8_t rxData[4]; // Buffer to hold received data
+__section(LDC_SECTION_NAME) uint8_t rxData[4]; // Buffer to hold received data
 
 static uint8_t freq_to_Force(float freq)
 {

@@ -17,6 +17,8 @@ extern "C" {
 
 #define MAGNETIZATION_TIME 50 //3ms
 
+#define ECAT_SPI_HANDLE &hspi1
+
 typedef struct
 {
     int16_t quaternion_i;
@@ -32,7 +34,7 @@ class FootController
 private:
 
     //ECAT variables
-    pin_mapping_typedef pin_mapping = {&hspi1, ECAT_NCS_GPIO_Port, ECAT_NCS_Pin, EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin};
+    pin_mapping_typedef pin_mapping = {ECAT_SPI_HANDLE, ECAT_NCS_GPIO_Port, ECAT_NCS_Pin, EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin};
     esc_cfg_t config =
     {
        /* User input to stack */
