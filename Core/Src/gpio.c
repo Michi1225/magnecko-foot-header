@@ -66,6 +66,9 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GD_nEN_GPIO_Port, GD_nEN_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : nRST_ECAT_Pin */
   GPIO_InitStruct.Pin = nRST_ECAT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -80,11 +83,11 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : EEPROM_LOADED_Pin */
-  GPIO_InitStruct.Pin = EEPROM_LOADED_Pin;
+  /*Configure GPIO pins : EEPROM_LOADED_Pin GD_nFLT_Pin */
+  GPIO_InitStruct.Pin = EEPROM_LOADED_Pin|GD_nFLT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(EEPROM_LOADED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : ECAT_IRQ_Pin TOF_INT_Pin */
   GPIO_InitStruct.Pin = ECAT_IRQ_Pin|TOF_INT_Pin;
@@ -135,11 +138,9 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC13 PC1 PC0 PC2
-                           PC6 PC3 PC7 PC8
-                           PC4 */
+                           PC6 PC3 PC4 */
   GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_1|GPIO_PIN_0|GPIO_PIN_2
-                          |GPIO_PIN_6|GPIO_PIN_3|GPIO_PIN_7|GPIO_PIN_8
-                          |GPIO_PIN_4;
+                          |GPIO_PIN_6|GPIO_PIN_3|GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -156,6 +157,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : GD_nEN_Pin */
+  GPIO_InitStruct.Pin = GD_nEN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GD_nEN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LDC3_NCS_Pin LDC1_NCS_Pin LDC2_NCS_Pin */
   GPIO_InitStruct.Pin = LDC3_NCS_Pin|LDC1_NCS_Pin|LDC2_NCS_Pin;

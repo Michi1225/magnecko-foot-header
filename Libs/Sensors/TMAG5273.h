@@ -74,12 +74,12 @@
 #define DEVICE_VERSION 2 // 1 for TMAG5273x1, 2 for TMAG5273x2
 
 #if (DEVICE_VERSION == 1)
-#define MAG_SENSITIVITY 40 // mT/LSB
+#define MAG_SENSITIVITY 40 // LSB/mT
 #elif (DEVICE_VERSION == 2)
-#define MAG_SENSITIVITY 250.0f // mT/LSB
+#define MAG_SENSITIVITY 250.0f // LSB/mT
 #endif
 
-#define SENS_I2C_HANDLE &hi2c3
+#define SENS_I2C_HANDLE &hi2c2
 #define MAG_SECTION_NAME ".RAM"
 
 

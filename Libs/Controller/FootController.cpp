@@ -1,10 +1,10 @@
 #include "FootController.h"
+#include "main.h"
 
 
 FootController::FootController() : fsm_(),
                                    fsmActions_(),
                                    imu(),
-                                   ldc(),
                                    hall0(TMAG5273::A1),
                                    hall1(TMAG5273::B1),
                                    hall2(TMAG5273::C1),
@@ -47,7 +47,19 @@ void FootController::init()
     //TODO: Go to FMS Fault state if init fails
     if(imu.init() != 0) Error_Handler();
     
-    if(ldc.init() != 0) Error_Handler();
+    for(LDC1101 &ldc : this->ldc)
+    {
+        if(ldc.init() != HAL_OK) Error_Handler();
+    }
+
+    this->active_ldc = &this->ldc[0]; // Pointer to the currently active LDC, used for SPI communication
+    this->ldc[0].next = &this->ldc[1];
+    this->ldc[1].next = &this->ldc[2];
+    this->ldc[2].next = &this->ldc[3];
+    this->ldc[3].next = &this->ldc[0]; // Circular linked list of LDCs for easy iteration
+
+
+
     if(TMAG5273::init() != 0) Error_Handler();
     if(tof.init() != 0) Error_Handler();
     HAL_Delay(10);
@@ -60,10 +72,16 @@ void FootController::init()
 
 
     // Drive Timer Initialization
-    HAL_TIM_OnePulse_Start(TIM_DRV1, CHANNEL_DRV1); //Start One Pulse for DRV1
-    HAL_TIM_OnePulse_Start(TIM_DRV2, CHANNEL_DRV2); //Start One Pulse for DRV2
+    if(HAL_TIM_OnePulse_Start(TIM_DRV1, CHANNEL_DRV1) != HAL_OK) Error_Handler(); //Start One Pulse for DRV1
+    if(HAL_TIM_OnePulse_Start(TIM_DRV2, CHANNEL_DRV2) != HAL_OK) Error_Handler(); //Start One Pulse for DRV2
 
-    //TODO: LED Indication for successful initialization
+    
+    if(HAL_TIM_Base_Start_IT(TIM_CONTROL) != HAL_OK) Error_Handler(); //Start Control Timer
+    if(HAL_TIM_Base_Start_IT(TIM_IMU) != HAL_OK) Error_Handler(); //Start BNO Timer
+
+    HAL_GPIO_WritePin(GD_nEN_GPIO_Port, GD_nEN_Pin, GPIO_PIN_RESET); //Enable Gate Drivers
+
+    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
 }
 
 void FootController::runCommunication()
@@ -80,13 +98,13 @@ void FootController::magnetize(uint8_t time)
     if(!this->requested_magnetization && this->requested_demagnetization)
     {
         // Magnetization was requiested
-        TIM2->CCR1 = 100 * time; // pulse width in us
-        TIM2->CR1 |= TIM_CR1_CEN; // Start Timer
+        TIM_DRV1->Instance->CCR1 = 100 * time; // pulse width in us
+        TIM_DRV1->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
     }else if(this->requested_magnetization && !this->requested_demagnetization)
     {
         // Demagnetization was requested
-        TIM5->CCR2 = 100 * time; // pulse width in us
-        TIM5->CR1 |= TIM_CR1_CEN; // Start Timer
+        TIM_DRV2->Instance->CCR2 = 100 * time; // pulse width in us
+        TIM_DRV2->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
     } else 
     {
         return; //No valid request, do nothing

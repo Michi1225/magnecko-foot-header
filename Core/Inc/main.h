@@ -45,11 +45,18 @@ extern "C" {
 extern _Objects Obj;
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
+extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi4;
 extern SPI_HandleTypeDef hspi6;
-extern I2C_HandleTypeDef hi2c3;
-extern TIM_HandleTypeDef htim1;
+
 extern I2C_HandleTypeDef hi2c1;
-extern I2C_HandleTypeDef hi2c5;
+extern I2C_HandleTypeDef hi2c2;
+
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim5;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -117,6 +124,10 @@ void Error_Handler(void);
 #define DRV1_GPIO_Port GPIOA
 #define CHARGER_NCS_Pin GPIO_PIN_0
 #define CHARGER_NCS_GPIO_Port GPIOA
+#define GD_nFLT_Pin GPIO_PIN_7
+#define GD_nFLT_GPIO_Port GPIOC
+#define GD_nEN_Pin GPIO_PIN_8
+#define GD_nEN_GPIO_Port GPIOC
 #define LDC3_NCS_Pin GPIO_PIN_13
 #define LDC3_NCS_GPIO_Port GPIOD
 #define TOF_MISO_Pin GPIO_PIN_6
@@ -149,12 +160,12 @@ void Error_Handler(void);
 #define LDC_MOSI_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define TIM_CONTROL &htim4
-#define TIM_IMU &htim3
-#define TIM_BUTTON &htim6
-#define TIM_DRV1 &htim2
+#define TIM_CONTROL &htim2
+#define TIM_IMU &htim4
+#define TIM_BUTTON &htim5
+#define TIM_DRV1 (&htim1)
 #define CHANNEL_DRV1 TIM_CHANNEL_1
-#define TIM_DRV2 &htim5
+#define TIM_DRV2 (&htim3)
 #define CHANNEL_DRV2 TIM_CHANNEL_2
 /* USER CODE END Private defines */
 

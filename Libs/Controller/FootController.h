@@ -3,7 +3,7 @@
 #include "main.h"
 #include "tim.h"
 #include "BNO086.h"
-#include "LDC1614.h"
+#include "LDC1101.h"
 #include "TMAG5273.h"
 #include "VL53L7CH.h"
 #include "FSM.hpp"
@@ -103,7 +103,16 @@ public:
     //IMU
     BNO086 imu;
     //LDC
-    LDC1614 ldc;
+    LDC1101 ldc[4] =
+    {
+        LDC1101(LDC0_NCS_GPIO_Port, LDC0_NCS_Pin),
+        LDC1101(LDC1_NCS_GPIO_Port, LDC1_NCS_Pin),
+        LDC1101(LDC2_NCS_GPIO_Port, LDC2_NCS_Pin),
+        LDC1101(LDC3_NCS_GPIO_Port, LDC3_NCS_Pin)
+    };
+
+    LDC1101 *active_ldc; // Pointer to the currently active LDC, used for SPI communication
+
     uint8_t force_estimation = 0;
     //Hall Sensors
     TMAG5273 hall0 = TMAG5273(TMAG5273::A1);
