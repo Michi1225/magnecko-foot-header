@@ -333,6 +333,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     controller.runControl();
     controller.runCommunication();
+    controller.active_ldc->read_data(); // Read data from the currently active LDC
     return;
   }
 
