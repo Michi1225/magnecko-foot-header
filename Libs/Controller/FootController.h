@@ -5,7 +5,7 @@
 #include "BNO086.h"
 #include "LDC1101.h"
 #include "TMAG5273.h"
-#include "VL53L7CH.h"
+#include "TMF8829.h"
 #include "FSM.hpp"
 #include "utils.h"
 #include "Charger.h"
@@ -121,8 +121,8 @@ public:
     TMAG5273 hall3 = TMAG5273(TMAG5273::D1);
     uint8_t contact_estimation = 0;
     //TOF
-    VL53L7CH tof;
-    
+    TMF8829 tof;
+
     //Controller variables
     bool requested_magnetization = false;   //Requested magnetization state
     bool requested_demagnetization = false; //Requested demagnetization state

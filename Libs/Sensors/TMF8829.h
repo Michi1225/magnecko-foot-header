@@ -5,6 +5,7 @@
 #include "stm32h7xx_hal_def.h"
 #include "stm32h7xx_hal_spi.h"
 #include <cstdint>
+#include <cstring>
 
 
 constexpr SPI_HandleTypeDef* TOF_SPI_HANDLE = &hspi1; // SPI handle for TOF communication, adjust if needed
@@ -88,7 +89,7 @@ constexpr uint8_t TMF8829_CFG_INT_ZONE_MASK_3 = 0x63;
 constexpr uint8_t TMF8829_CFG_INT_ZONE_MASK_4 = 0x64;
 constexpr uint8_t TMF8829_CFG_INT_ZONE_MASK_5 = 0x65;
 constexpr uint8_t TMF8829_CFG_INT_ZONE_MASK_6 = 0x66;
-constexpr uint8_t TMF8829_CFG_INT_ZONE_MASK_7 = 0x67
+constexpr uint8_t TMF8829_CFG_INT_ZONE_MASK_7 = 0x67;
 constexpr uint8_t TMF8829_CFG_INT_THRESHOLD_LOW_LSB = 0x68;
 constexpr uint8_t TMF8829_CFG_INT_THRESHOLD_LOW_MSB = 0x69;
 constexpr uint8_t TMF8829_CFG_INT_THRESHOLD_HIGH_LSB = 0x6A;
@@ -119,22 +120,64 @@ constexpr uint8_t TMF8829_CFG_MOTION_ADJACENT_PIXEL = 0xB4;
 constexpr uint8_t TMF8829_CMD_LOAD_CFG_8X8 = 64;
 constexpr uint8_t TMF8829_CMD_LOAD_CFG_8X8_HIGH_ACCURACY = 66;
 
+typedef struct
+{
+    uint8_t fifo_status;
+    uint32_t systick;
+}TMF8829_Preheader_t;
+
+typedef struct
+{
+    uint8_t fp_mode  : 4;
+    uint8_t frame_id : 4;
+    uint8_t format;
+    uint16_t payload;
+    uint32_t frame_number;
+    uint8_t temp1;
+    uint8_t temp2;
+    uint8_t temp3;
+    uint8_t reserved[5];
+}TMF8829_Header_t;
 
 typedef struct
 {
     uint16_t distance;
     uint8_t snr;
-}TMF8829_Pixel_Data_t
+}TMF8829_Pixel_Data_t;
+
+typedef struct 
+{
+    uint32_t t0_integration;
+    uint32_t t1_integration;
+    uint8_t frame_valid                 : 1;
+    uint8_t                             : 2;
+    uint8_t spad_max_power              : 1;
+    uint8_t vcsel_max_power             : 1;
+    uint8_t vcsel_burst_limit_reached   : 1;
+    uint8_t frame_aborted               : 2;
+    uint8_t reserved[3];
+    uint16_t end_of_frame;
+}TMF8829_Footer_t;
+
+typedef struct
+{
+    uint8_t reserved; // For SPI Address Byte
+    TMF8829_Preheader_t preheader;
+    TMF8829_Header_t header;
+    TMF8829_Pixel_Data_t pixel_data[8][8];
+    TMF8829_Footer_t footer;
+}TMF8829_Frame_t;
 
 
 class TMF8829
 {
 public:
-    TMF8829_Pixel_Data_t pixel_data[8][8];
+    TMF8829_Frame_t data_frame;
+    bool data_valid;
 
 
     TMF8829();
     HAL_StatusTypeDef init();
-    void start_ranging();
+    HAL_StatusTypeDef start_ranging();
     void get_ranging_data();
 };

@@ -31,6 +31,7 @@
 #include "utils.h"
 #include <deque>
 #include <stdio.h>
+#include <cstring>
 
 /* USER CODE END Includes */
 
@@ -53,7 +54,8 @@
 
 /* USER CODE BEGIN PV */
 _Objects Obj = {};
-FootController controller = FootController();
+FootController __attribute__((section(".RAM"))) controller = FootController();
+
 std::deque<float> mag_avg0;
 std::deque<float> mag_avg1;
 std::deque<float> mag_avg2;
@@ -178,8 +180,11 @@ int main(void)
   SWD_Init();
   while (1)
   {
-    int error = controller.tof.get_ranging_data();
-    memcpy(Obj.ToF_Data, controller.tof.data, sizeof(controller.tof.data));
+    if(controller.tof.data_valid)
+    {
+      // TODO: correctly interpret data
+      std::memcpy(Obj.ToF_Data, (void *)(&controller.tof.data_frame), sizeof(Obj.ToF_Data));
+    }
 
     // Windowed average of force estimation
     force_average.push_back(
@@ -321,6 +326,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
       HAL_TIM_Base_Stop_IT(TIM_BUTTON);
     }
   }
+
+  // Handle ToF interrupt
+  else if(GPIO_Pin == TOF_INT_Pin)
+  {
+    //TODO: read ToF data
+    controller.tof.get_ranging_data();
+  }
 }
 
 
@@ -371,6 +383,10 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         HAL_GPIO_WritePin(LDC3_NCS_GPIO_Port, LDC3_NCS_Pin, GPIO_PIN_SET);
         controller.active_ldc->data_valid = true; // Set the data_valid flag for the currently active LDC
         controller.active_ldc = controller.active_ldc->next; // Move to the next LDC for the next measurement
+    }
+    else if (hspi == TOF_SPI_HANDLE)
+    {
+        controller.tof.data_valid = true;
     }
 }
 

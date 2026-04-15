@@ -49,7 +49,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Libs/Sensors/BNO086.cpp
     Libs/Sensors/TMAG5273.cpp
-    Libs/Sensors/VL53L7CH.cpp
+    Libs/Sensors/TMF8829.cpp
     Libs/Sensors/LDC1101.cpp
     Libs/FSM/FSM.cpp
     Libs/Controller/FootController.cpp
