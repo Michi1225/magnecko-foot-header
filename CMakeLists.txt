@@ -53,6 +53,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Libs/Sensors/LDC1101.cpp
     Libs/FSM/FSM.cpp
     Libs/Controller/FootController.cpp
+    Libs/Controller/LEDController.cpp
     Libs/Controller/utils.cpp
     Libs/Controller/Charger.cpp
     Drivers/VL53LMZ_ULD_API/Platform/platform.c

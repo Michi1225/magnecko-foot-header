@@ -3,6 +3,7 @@
 #include "main.h"
 #include "tim.h"
 #include "BNO086.h"
+#include "LEDController.h"
 #include "LDC1101.h"
 #include "TMAG5273.h"
 #include "TMF8829.h"
