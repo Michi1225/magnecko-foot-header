@@ -99,6 +99,9 @@ public:
     FSM fsm_;
     FSMActions fsmActions_;
 
+    //LED Controller
+    LEDController ledController;
+
     
     //Sensor variables
     //IMU

@@ -73,6 +73,7 @@ class BNO086
 {
 private:
     std::vector<std::pair<uint8_t, uint32_t>> features;
+    bool initialized;
 
 public:
     BNO086();

@@ -173,9 +173,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  if(HAL_TIM_Base_Start_IT(TIM_CONTROL) != HAL_OK) Error_Handler(); //Start Control Timer
-  if(HAL_TIM_Base_Start_IT(TIM_IMU) != HAL_OK) Error_Handler(); //Start BNO Timer
-  HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
   std::deque<float> force_average;
   SWD_Init();
   while (1)

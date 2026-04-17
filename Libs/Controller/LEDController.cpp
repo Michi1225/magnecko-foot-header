@@ -98,7 +98,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             this->patterns[0].sloper1 = 0x01; // 50ms
             this->patterns[0].sloper2 = 0x01; // 50ms
             this->patterns[0].sloper3 = 0x01; // 50ms --> total pattern: 200ms
-            this->set_engine_pattern(0, 0); //Set Engine0 to Pattern0
+            this->set_engine_pattern(0, 0, 0); //Set Engine0 to Pattern0
             this->disable_engine_pattern(0, 1);
             this->disable_engine_pattern(0, 2);
             this->disable_engine_pattern(0, 3); //Disable all other patterns
@@ -117,7 +117,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             this->patterns[1].sloper1 = 0x01; // 50ms
             this->patterns[1].sloper2 = 0x01; // 50ms
             this->patterns[1].sloper3 = 0x01; // 50ms --> total pattern: 200ms
-            this->set_engine_pattern(1, 1); //Set Engine1 to Pattern1
+            this->set_engine_pattern(1, 0, 1); //Set Engine1 to Pattern1
             this->disable_engine_pattern(1, 0);
             this->disable_engine_pattern(1, 2);
             this->disable_engine_pattern(1, 3); //Disable all other patterns
@@ -280,9 +280,34 @@ void LEDController::set_animation(LED_Animation_t animation)
             this->engines[0].repetitions = 3; //Set Engine0 to repeat infinitely
             this->config.out0_engine_ch = 0; //Set Red to Engine0
             break;
+        case LED_ANIMATION_APPLICATION_RUNNING:
+            // Handle LED_ANIMATION_APPLICATION_RUNNING
+            // Solid Green
+            this->config.out0_en = 0;
+            this->config.out1_en = 1;
+            this->config.out2_en = 0;
 
+            this->patterns[0].pause_t0 = 0; // No Pause
+            this->patterns[0].pause_t1 = 0; // No Pause
+            this->patterns[0].repeat = 0xF; // Infinite
+            this->patterns[0].PWM[0] = 0xFF; // 100%
+            this->patterns[0].PWM[1] = 0xFF; // 100%
+            this->patterns[0].PWM[2] = 0xFF; // 100%
+            this->patterns[0].PWM[3] = 0xFF; // 100%
+            this->patterns[0].PWM[4] = 0xFF; // 100%
+            this->patterns[0].sloper0 = 0x01; // 50ms
+            this->patterns[0].sloper1 = 0x01; // 50ms
+            this->patterns[0].sloper2 = 0x01; // 50ms
+            this->patterns[0].sloper3 = 0x01; // 50ms --> total pattern: 4 * 50ms = 200ms
+            this->set_engine_pattern(0, 0, 0); //Set Engine0 to Pattern0
+
+            this->disable_engine_pattern(0, 1);
+            this->disable_engine_pattern(0, 2);
+            this->disable_engine_pattern(0, 3);
+            this->engines[0].repetitions = 0x3; //Set Engine0 to repeat infinitely
+            this->config.out1_engine_ch = 0; //Set Green to Engine0
+            break;
     }
-
     this->update_config();
 }
 

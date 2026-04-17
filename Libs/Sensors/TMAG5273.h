@@ -88,6 +88,7 @@ class TMAG5273
 {
 private:
     uint8_t device_address;
+    static bool initialized;
     
 public:
     enum device_version

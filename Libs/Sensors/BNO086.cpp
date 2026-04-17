@@ -1,4 +1,5 @@
 #include "BNO086.h"
+#include "stm32h7xx_hal_def.h"
 
 __section(BNO086_SECTION_NAME) __aligned(4) uint8_t shtp_header[4] = {0};
 __section(BNO086_SECTION_NAME) __aligned(4) uint8_t time_stamp[5] = {0};
@@ -38,6 +39,9 @@ BNO086::BNO086()
 
 uint8_t BNO086::init()
 {
+
+    HAL_StatusTypeDef status = HAL_OK;
+
     //Set feature reports to be set up
     this->features.push_back(std::make_pair(BNO086_ID_ROTATION,          BNO086_PERIOD_ROTATION));
     this->features.push_back(std::make_pair(BNO086_ID_GYROSCOPE,            BNO086_PERIOD_GYROSCOPE));
@@ -63,7 +67,7 @@ uint8_t BNO086::init()
     this->msg_ready = false;
     uint8_t advertisement[284] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, advertisement, 284, 10) != HAL_OK) Error_Handler();
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, advertisement, 284, 10) != HAL_OK) status = HAL_ERROR;
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
     
     //read initialize response
@@ -71,7 +75,7 @@ uint8_t BNO086::init()
     this->msg_ready = false;
     uint8_t init[40] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100) != HAL_OK) Error_Handler();
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100) != HAL_OK) status = HAL_ERROR;
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
     //read message from executable
@@ -79,15 +83,18 @@ uint8_t BNO086::init()
     this->msg_ready = false;
     uint8_t exec[10] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 10) != HAL_OK) Error_Handler();
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 10) != HAL_OK) status = HAL_ERROR;
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
-    return 0;
+    if(status == HAL_OK) this->initialized = true;
+
+    return status;
 }
 
 
 uint8_t BNO086::start()
 {
+    if(!this->initialized) return 1; //BNO not initialized
 
     //Wake up BNO
     HAL_GPIO_WritePin(IMU_WAKE_GPIO_Port, IMU_WAKE_Pin, GPIO_PIN_RESET);
@@ -156,6 +163,7 @@ uint8_t BNO086::start()
 
 uint8_t BNO086::update()
 {
+    if(!this->initialized) return 1; //BNO not initialized
     if(!this->msg_ready) return 1; //No new message available
     this->msg_ready = false;
 

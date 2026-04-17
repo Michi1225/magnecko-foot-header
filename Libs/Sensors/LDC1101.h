@@ -44,6 +44,7 @@ class LDC1101 {
 private:
     GPIO_TypeDef* cs_port;
     uint16_t cs_pin;
+    bool initialized = false;
 public:
     struct
     {

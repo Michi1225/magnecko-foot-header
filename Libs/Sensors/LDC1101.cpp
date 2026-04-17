@@ -26,7 +26,11 @@ HAL_StatusTypeDef LDC1101::init()
         HAL_SPI_TransmitReceive(LDC_SPI_HANDLE, (uint8_t *)&config_data, ready,
                                 sizeof(config_data), 10);
         attempts++;
-        if(attempts > 100) return HAL_TIMEOUT;
+        if(attempts > 100) 
+        {
+            this->initialized = false;
+            return HAL_TIMEOUT;
+        }
     } while (ready[1] & 0b1);
 
     // Rp_Set
@@ -114,12 +118,15 @@ HAL_StatusTypeDef LDC1101::init()
 
     // Skipping LHR registers since they are not used in this application
 
+    if(status == HAL_OK) this->initialized = true;
 
     return (HAL_StatusTypeDef)status;
 }
 
 void LDC1101::start_measurement() 
 {
+    if(!this->initialized) return; // Don't start measurement if sensor is not initialized
+
     struct {
         uint8_t addr;
         uint8_t data;
@@ -135,6 +142,9 @@ void LDC1101::start_measurement()
 
 void LDC1101::read_data()
 {
+    if(!this->initialized) return; // Don't read data if sensor is not initialized
+
+
     while(HAL_SPI_GetState(LDC_SPI_HANDLE) != HAL_SPI_STATE_READY);
 
     struct

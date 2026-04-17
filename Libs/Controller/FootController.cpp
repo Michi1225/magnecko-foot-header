@@ -1,4 +1,5 @@
 #include "FootController.h"
+#include "LEDController.h"
 #include "main.h"
 
 
@@ -18,6 +19,7 @@ void FootController::init()
 {
     //LED Controller Initialization
     //TODO: Implement LED Controller over I2C
+    this->ledController.set_animation(LED_ANIMATION_CONFIGURING);
 
     //FSM initialization
     this->fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -38,18 +40,17 @@ void FootController::init()
     ecat_slv_init(&this->config);
     //TODO: Set Obj. constants
     Obj.EPM_Number = 1; // EPM number, needed for hw interface
-    // Obj.Device_Information[6] = 1; // actuator number, needed for hw interface
 
 
 
 
-    //Sensor initialization
-    //TODO: Go to FMS Fault state if init fails
-    if(imu.init() != 0) Error_Handler();
+    //Sensor initialization 
+    //TODO: Send Warnings via EtherCAT for sensor initialization failure, currently indicated via LED animation
+    if(imu.init() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_IMU);
     
     for(LDC1101 &ldc : this->ldc)
     {
-        if(ldc.init() != HAL_OK) Error_Handler();
+        if(ldc.init() != HAL_OK) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_LDC);
     }
 
     this->active_ldc = &this->ldc[0]; // Pointer to the currently active LDC, used for SPI communication
@@ -60,12 +61,16 @@ void FootController::init()
 
 
 
-    if(TMAG5273::init() != 0) Error_Handler();
-    if(tof.init() != 0) Error_Handler();
+    if(TMAG5273::init() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_MAG);
+
+
+    if(tof.init() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF);
+
+
     HAL_Delay(10);
     
-    if(imu.start() != 0) Error_Handler();
-    if(tof.start_ranging() != 0) Error_Handler();
+    if(imu.start() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_IMU);
+    if(tof.start_ranging() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF);
 
     // Charger Initialization
     if(charger.wait_ready(1000)) Error_Handler(); //Wait for charger to be ready, if not ready after 1 second, trigger error handler
@@ -82,6 +87,8 @@ void FootController::init()
     HAL_GPIO_WritePin(GD_nEN_GPIO_Port, GD_nEN_Pin, GPIO_PIN_RESET); //Enable Gate Drivers
 
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
+
+    this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF); //Set LED animation to operational
 }
 
 void FootController::runCommunication()

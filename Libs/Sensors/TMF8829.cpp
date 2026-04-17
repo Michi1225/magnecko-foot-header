@@ -88,13 +88,14 @@ HAL_StatusTypeDef TMF8829::init()
     config_data.data = 0x01; // Default format, Only distance and SNR
     status |= HAL_SPI_Transmit(TOF_SPI_HANDLE, (uint8_t *)(&config_data), sizeof(config_data), 10);
 
-
+    if(status == HAL_OK) this->initialized = true;
 
     return (HAL_StatusTypeDef)status;
 }
 
 HAL_StatusTypeDef TMF8829::start_ranging() 
 {
+    if(!this->initialized) return HAL_ERROR; // Return error if sensor is not initialized
     struct
     {
         uint8_t cmd;
@@ -109,6 +110,7 @@ HAL_StatusTypeDef TMF8829::start_ranging()
 
 void TMF8829::get_ranging_data() 
 {
+    if(!this->initialized) return; // Return if sensor is not initialized
     this->data_valid = false;
     // Clear Interrupt flag
     struct

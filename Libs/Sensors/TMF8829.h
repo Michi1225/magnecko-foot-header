@@ -171,6 +171,8 @@ typedef struct
 
 class TMF8829
 {
+private:
+    bool initialized = false;
 public:
     TMF8829_Frame_t data_frame;
     bool data_valid;

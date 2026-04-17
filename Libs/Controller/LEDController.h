@@ -130,7 +130,8 @@ enum LED_Animation_t
     LED_ANIMATION_SENSOR_INIT_FAILED_IMU,
     LED_ANIMATION_SENSOR_INIT_FAILED_LDC,
     LED_ANIMATION_SENSOR_INIT_FAILED_TOF,
-    LED_ANIMATION_SENSOR_INIT_FAILED_MAG
+    LED_ANIMATION_SENSOR_INIT_FAILED_MAG,
+    LED_ANIMATION_APPLICATION_RUNNING
 };
 
 
@@ -138,9 +139,6 @@ class LEDController
 {
 public:
     LEDController();
-    ~LEDController();
-
-    void init();
 
 
     void set_animation(LED_Animation_t animation);
