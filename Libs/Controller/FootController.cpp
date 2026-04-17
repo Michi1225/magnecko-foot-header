@@ -18,7 +18,7 @@ FootController::FootController() : fsm_(),
 void FootController::init()
 {
     //LED Controller Initialization
-    //TODO: Implement LED Controller over I2C
+    this->ledController.init();
     this->ledController.set_animation(LED_ANIMATION_CONFIGURING);
 
     //FSM initialization
@@ -73,7 +73,7 @@ void FootController::init()
     if(tof.start_ranging() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF);
 
     // Charger Initialization
-    if(charger.wait_ready(1000)) Error_Handler(); //Wait for charger to be ready, if not ready after 1 second, trigger error handler
+    if(charger.wait_ready(1000)) this->ledController.set_animation(LED_ANIMATION_CHARGER_NOT_RESPONDING); //Wait for charger to be ready, if not ready after 1 second, trigger error handler
 
 
     // Drive Timer Initialization

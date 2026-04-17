@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include <cstdint>
 
 
 constexpr I2C_HandleTypeDef *LED_I2C_HANDLE = &hi2c1;
@@ -9,6 +10,11 @@ constexpr uint8_t LED_UPDATE_CMD = 0x0F;
 constexpr uint8_t LED_START_CMD = 0x10;
 constexpr uint8_t LED_STOP_CMD = 0x11;
 constexpr uint8_t LED_PATTERN_REG_START = 0x1C;
+constexpr uint8_t LED_REG_DC = 0x14;
+constexpr uint8_t LED_DC_RED = 0x04; //25%
+constexpr uint8_t LED_DC_GREEN = 0x04; //25%
+constexpr uint8_t LED_DC_BLUE = 0x04; //25%
+
 
 
 typedef struct
@@ -126,12 +132,15 @@ typedef struct
 enum LED_Animation_t
 {
     LED_ANIMATION_OFF,
+    LED_ANIMATION_ALL,
     LED_ANIMATION_CONFIGURING,
     LED_ANIMATION_SENSOR_INIT_FAILED_IMU,
     LED_ANIMATION_SENSOR_INIT_FAILED_LDC,
     LED_ANIMATION_SENSOR_INIT_FAILED_TOF,
     LED_ANIMATION_SENSOR_INIT_FAILED_MAG,
-    LED_ANIMATION_APPLICATION_RUNNING
+    LED_ANIMATION_APPLICATION_RUNNING,
+    LED_ANIMATION_UNCAUGHT_EXCEPTION,
+    LED_ANIMATION_CHARGER_NOT_RESPONDING,
 };
 
 
@@ -142,11 +151,12 @@ public:
 
 
     void set_animation(LED_Animation_t animation);
+    void init();
 
     
     
     
-    private:
+private:
     LED_Controller_Pattern_t patterns[4];
     LED_Controller_Engine_t engines[4];
     

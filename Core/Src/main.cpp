@@ -425,6 +425,7 @@ void MPU_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+  controller.ledController.set_animation(LED_ANIMATION_UNCAUGHT_EXCEPTION); // Set LED animation to indicate an error has occurred
   errorHandler();
   while (1)
   {

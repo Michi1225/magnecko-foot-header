@@ -1,4 +1,5 @@
 #include "Charger.h"
+#include <cstdint>
 
 ChargerData __attribute__((section(CHARGER_SECTION_NAME))) Charger::status;
 TransmitData __attribute__((section(CHARGER_SECTION_NAME))) Charger::tx_data;
@@ -19,7 +20,13 @@ Charger::Charger()
     Charger::tx_data.clear_faults = 0;
 }
 
-bool Charger::wait_ready(uint8_t timeout)
+
+/**
+ * @brief Wait for the charger to be ready.
+ * @param timeout The timeout value in milliseconds.
+ * @return true if the charger is ready within the timeout, false otherwise.
+ */
+bool Charger::wait_ready(uint16_t timeout)
 {
     uint32_t start_time = HAL_GetTick();
     while(HAL_GetTick() - start_time < timeout)
@@ -30,8 +37,14 @@ bool Charger::wait_ready(uint8_t timeout)
     return false;
 }
 
+
+/**
+ * @brief Transmit data to the charger and receive its status. 
+ */
 void Charger::transmit_receive()
 {
     while(HAL_SPI_GetState(CHARGER_SPI_HANDLE) != HAL_SPI_STATE_READY);
     HAL_SPI_TransmitReceive_IT(CHARGER_SPI_HANDLE, (uint8_t *)&Charger::tx_data, (uint8_t *)&Charger::status, sizeof(Charger::status));
+
+    //TODO: Handle Charger status and faults
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include <cstdint>
 
 #define CHARGER_SPI_HANDLE &hspi2
 #define CHARGER_SECTION_NAME ".RAM_D3"
@@ -28,6 +29,9 @@ typedef struct
     uint16_t             :   16;
 }TransmitData;
 
+
+
+
 class Charger
 {
 private:
@@ -37,7 +41,7 @@ public:
 
     Charger();
 
-    bool wait_ready(uint8_t timeout);
+    bool wait_ready(uint16_t timeout);
     void transmit_receive();
 
 };
