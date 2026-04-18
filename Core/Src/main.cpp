@@ -180,7 +180,7 @@ int main(void)
     if(controller.tof.data_valid)
     {
       // TODO: correctly interpret data
-      std::memcpy(Obj.ToF_Data, (void *)(&controller.tof.data_frame), sizeof(Obj.ToF_Data));
+      std::memcpy(Obj.ToF_Data, (void *)(&controller.tof.distances), sizeof(Obj.ToF_Data));
     }
 
     // Windowed average of force estimation
@@ -383,6 +383,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     }
     else if (hspi == TOF_SPI_HANDLE)
     {
+        controller.tof.update_data();
         controller.tof.data_valid = true;
     }
 }
@@ -425,13 +426,12 @@ void MPU_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+  controller.charger.tx_data.enable = 0; //Disable charging
   controller.ledController.set_animation(LED_ANIMATION_UNCAUGHT_EXCEPTION); // Set LED animation to indicate an error has occurred
   errorHandler();
   while (1)
   {
-    // Stay in this loop to indicate an error
-    // You can also add a blinking LED or other error handling here
-    HAL_Delay(200); // Delay to prevent flooding the console
+    
   }
   /* USER CODE END Error_Handler_Debug */
 }

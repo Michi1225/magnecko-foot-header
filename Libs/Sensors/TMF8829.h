@@ -6,6 +6,7 @@
 #include "stm32h7xx_hal_spi.h"
 #include <cstdint>
 #include <cstring>
+#include <cmath>
 
 
 constexpr SPI_HandleTypeDef* TOF_SPI_HANDLE = &hspi1; // SPI handle for TOF communication, adjust if needed
@@ -120,6 +121,9 @@ constexpr uint8_t TMF8829_CFG_MOTION_ADJACENT_PIXEL = 0xB4;
 constexpr uint8_t TMF8829_CMD_LOAD_CFG_8X8 = 64;
 constexpr uint8_t TMF8829_CMD_LOAD_CFG_8X8_HIGH_ACCURACY = 66;
 
+constexpr uint8_t TMF8829_CONF_BREAKPOINT = 40;
+constexpr float   TMF8829_EXP_GROWTH_RATE = 1.053676f;
+
 typedef struct
 {
     uint8_t fifo_status;
@@ -169,17 +173,24 @@ typedef struct
 }TMF8829_Frame_t;
 
 
+
+
 class TMF8829
 {
 private:
+    static float confidence_lookup[256];
     bool initialized = false;
-public:
     TMF8829_Frame_t data_frame;
+public:
     bool data_valid;
+    float distances[8][8];
+    float confidances[8][8];
+
 
 
     TMF8829();
     HAL_StatusTypeDef init();
     HAL_StatusTypeDef start_ranging();
     void get_ranging_data();
+    void update_data();
 };

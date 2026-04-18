@@ -2,6 +2,11 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_def.h"
 #include "stm32h7xx_hal_spi.h"
+#include <cmath>
+#include <stdint.h>
+
+
+float TMF8829::confidence_lookup[256] = {0};
 
 TMF8829::TMF8829()
 {
@@ -12,6 +17,20 @@ TMF8829::TMF8829()
 HAL_StatusTypeDef TMF8829::init()
 {
     int status = HAL_OK;
+
+
+    // Init confidence lookup table
+    int index;
+    for(index = 0; index <= TMF8829_CONF_BREAKPOINT; ++index)
+    {
+        TMF8829::confidence_lookup[index] = index;
+    }
+    for (; index <= 255; ++index)
+    {
+        TMF8829::confidence_lookup[index] = TMF8829_CONF_BREAKPOINT * std::pow(TMF8829_EXP_GROWTH_RATE, (index - TMF8829_CONF_BREAKPOINT));
+    }
+
+
 
     struct
     {
@@ -127,4 +146,18 @@ void TMF8829::get_ranging_data()
 
     txdata.cmd = TMF8829_FIFOSTATUS | 0x80; // Set MSB for read operation
     HAL_SPI_TransmitReceive_IT(TOF_SPI_HANDLE, (uint8_t *)(&txdata), (uint8_t *)(&this->data_frame), sizeof(txdata));
+}
+
+void TMF8829::update_data()
+{
+    const TMF8829_Pixel_Data_t* pixels = &(this->data_frame.pixel_data[0][0]);
+
+    float* dist_ptr = &(this->distances[0][0]);
+    float* conf_ptr = &(this->confidances[0][0]);
+
+    for (int i = 0; i < 64; ++i)
+    {
+        dist_ptr[i] = pixels[i].distance * 0.25f; // divide by 4
+        conf_ptr[i] = (float)TMF8829::confidence_lookup[pixels[i].snr];
+    }
 }

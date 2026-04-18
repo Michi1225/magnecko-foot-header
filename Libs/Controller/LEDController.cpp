@@ -61,7 +61,7 @@ LEDController::LEDController()
     }
 }
 
-void init()
+void LEDController::init()
 {
     // set dot current
     uint8_t txdata[3] = 
