@@ -1,10 +1,28 @@
 #include "BNO086.h"
 #include "cmsis_gcc.h"
+#include "stm32h7xx_hal_spi.h"
 
 __section(".RAM_D3") __aligned(4) uint8_t shtp_header[4] = {0};
 __section(".RAM_D3") __aligned(4) uint8_t time_stamp[5] = {0};
 __section(".RAM_D3") __aligned(4) uint8_t report_id = 0;
 __section(".RAM_D3") __aligned(4) uint8_t dummy[128] = {0};
+__section(".RAM_D3") __aligned(4) struct 
+{
+    uint16_t length = 0;
+    uint8_t channel = 0;
+    uint8_t sequence = 0;
+    uint8_t report_id = 0;
+}header;
+__section(".RAM_D3") __aligned(4) struct 
+{
+    uint16_t length = 0;
+    uint8_t channel = 0;
+    uint8_t sequence = 0;
+    uint8_t timebase_id = 0;
+    uint32_t time_stamp = 0;
+    uint8_t report_id = 0;
+}frame_header;
+
 
 VectorData BNO086::gyro_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GYROSCOPE};
 VectorData BNO086::accel_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ACCELEROMETER};
@@ -13,6 +31,15 @@ VectorData BNO086::lin_accel_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO0
 VectorData BNO086::grav_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GRAVITY};
 RotationVectorData BNO086::rot_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ROTATION, BNO086_Q_POINT_ACCURACY_ROTATION};
 
+
+
+static void read_dummy()
+{
+    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&header, sizeof(header), 10);
+    HAL_SPI_Receive(BNO086_SPI_HANDLE, dummy, header.length - sizeof(header), 10);
+    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET);
+}
 
 
 
@@ -121,6 +148,7 @@ uint8_t BNO086::start()
         txBytes[19] = 0x00;
         txBytes[20] = 0x00;
 
+
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
         errorcode = HAL_SPI_Transmit(BNO086_SPI_HANDLE, txBytes, 21, 1000);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS low
@@ -129,16 +157,16 @@ uint8_t BNO086::start()
 
         //read Get Feature Response
         //this response is sent unsolicited on rate change
-        while(this->msgs_ready == 0);
-        this->msgs_ready = 0;
+        // do
+        // {
+            /* code */
+            while(this->msgs_ready == 0);
+            this->msgs_ready = 0;
+            read_dummy();
+        // } while (header.report_id != 0xFC);
+        // __NOP();
 
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, rxBytes, 2, 1000);
-        uint16_t rxLen = (rxBytes[0] | (static_cast<uint16_t>(rxBytes[1]) << 8)); //Get length of response
-        if(rxLen > 2 && rxLen < 128)errorcode |= HAL_SPI_Receive(BNO086_SPI_HANDLE, &rxBytes[2], rxLen - 2 , 1000);
-        
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS low
-        HAL_Delay(0);
+        HAL_Delay(4);
     }
 
 
@@ -153,6 +181,15 @@ uint8_t BNO086::update()
     while(this->msgs_ready > 0)
     {
         this->msgs_ready--;
+        
+        //read header
+        // HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+        // errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&frame_header, sizeof(frame_header));
+        // while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
+        // || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+        // || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+        // HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
+        // if(errorcode != 0) return errorcode;
         
         //read header
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
@@ -181,7 +218,6 @@ uint8_t BNO086::update()
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
         if(errorcode != 0) return errorcode;
         //TODO: DMA SPI
-        Obj.Magnet_Status = shtp_header[0];
 
         
         switch (report_id)
@@ -247,37 +283,26 @@ uint8_t BNO086::update()
         {
             if(this->accel_data.status >= 2)
             {
-                Obj.IMU_Data.Acc_X = q_to_float(this->accel_data.axis_x, this->accel_data.q_point);
-                Obj.IMU_Data.Acc_Y = q_to_float(this->accel_data.axis_y, this->accel_data.q_point);
-                Obj.IMU_Data.Acc_Z = q_to_float(this->accel_data.axis_z, this->accel_data.q_point);
-            }
-            if(this->lin_accel_data.status >= 2)
-            {
-                Obj.IMU_Data.Acc_X = q_to_float(this->lin_accel_data.axis_x, this->lin_accel_data.q_point);
-                Obj.IMU_Data.Acc_Y = q_to_float(this->lin_accel_data.axis_y, this->lin_accel_data.q_point);
-                Obj.IMU_Data.Acc_Z = q_to_float(this->lin_accel_data.axis_z, this->lin_accel_data.q_point);
+                Obj.IMU_Data.Acc_X = q_to_float(this->accel_data.axis_x, BNO086_Q_POINT_ACCELEROMETER);
+                Obj.IMU_Data.Acc_Y = q_to_float(this->accel_data.axis_y, BNO086_Q_POINT_ACCELEROMETER);
+                Obj.IMU_Data.Acc_Z = q_to_float(this->accel_data.axis_z, BNO086_Q_POINT_ACCELEROMETER);
             }
             if(this->gyro_data.status >= 2)
             {
-                Obj.IMU_Data.Gyro_X = q_to_float(this->gyro_data.axis_x, this->gyro_data.q_point);
-                Obj.IMU_Data.Gyro_Y = q_to_float(this->gyro_data.axis_y, this->gyro_data.q_point);
-                Obj.IMU_Data.Gyro_Z = q_to_float(this->gyro_data.axis_z, this->gyro_data.q_point);
+                Obj.IMU_Data.Gyro_X = q_to_float(this->gyro_data.axis_x, BNO086_Q_POINT_GYROSCOPE);
+                Obj.IMU_Data.Gyro_Y = q_to_float(this->gyro_data.axis_y, BNO086_Q_POINT_GYROSCOPE);
+                Obj.IMU_Data.Gyro_Z = q_to_float(this->gyro_data.axis_z, BNO086_Q_POINT_GYROSCOPE);
             }
             if(this->rot_data.accuracy_estimate == 12868) // Magic Number
             {
-                Obj.IMU_Data.Quat_I = q_to_float(this->rot_data.quaternion_i, this->rot_data.q_point);
-                Obj.IMU_Data.Quat_J = q_to_float(this->rot_data.quaternion_j, this->rot_data.q_point);
-                Obj.IMU_Data.Quat_K = q_to_float(this->rot_data.quaternion_k, this->rot_data.q_point);
-                Obj.IMU_Data.Quat_R = q_to_float(this->rot_data.quaternion_real, this->rot_data.q_point);
+                Obj.IMU_Data.Quat_I = q_to_float(this->rot_data.quaternion_i, BNO086_Q_POINT_ROTATION);
+                Obj.IMU_Data.Quat_J = q_to_float(this->rot_data.quaternion_j, BNO086_Q_POINT_ROTATION);
+                Obj.IMU_Data.Quat_K = q_to_float(this->rot_data.quaternion_k, BNO086_Q_POINT_ROTATION);
+                Obj.IMU_Data.Quat_R = q_to_float(this->rot_data.quaternion_real, BNO086_Q_POINT_ROTATION);
             }
     
         }
         //TODO: Handle errorcode: send warning via EtherCAT??
-    
-        if(report_id > 10)
-        {
-            __NOP();
-        }
 
     }
 
