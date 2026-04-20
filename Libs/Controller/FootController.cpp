@@ -58,7 +58,7 @@ void FootController::init()
     if(imu.start() != 0) Error_Handler();
     if(tof.start_ranging() != 0) Error_Handler();
 
-    setStatusLEDHex(COLOUR_GREEN); //Indicate initialization done
+    setStatusLEDHex(COLOUR_CYAN); //Indicate initialization done
 }
 
 void FootController::runCommunication()
@@ -135,11 +135,15 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     //     this->contact_estimation = 0;
     //     this->force_estimation = 0;
     // }
+
+    fsm_.setControlWord(Obj.Control_Word);
+    Obj.Status_Word = fsm_.getStatusWord();
     return state;
 }
 
 FSMStatus FootController::FSM_notReadyToSwitchOn(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    
     return state;
 }
 
@@ -148,6 +152,7 @@ FSMStatus FootController::FSM_switchOnDisabled(FSMStatus state, uint16_t &status
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
     //TODO: Handle disabling charging
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
+    setStatusLEDHex(COLOUR_CYAN);
     return state;
 }
 
@@ -167,6 +172,19 @@ FSMStatus FootController::FSM_switchedOn(FSMStatus state, uint16_t &status_word,
 
 FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    if(state != FSMStatus::OPERATION_ENABLED) // Just once when entering the state
+    {
+        setStatusLEDHex(COLOUR_GREEN);
+    }
+
+    if(Obj.Magnet_Command == 2){
+        setStatusLEDHex(COLOUR_MAGENTA);
+    }else if(Obj.Magnet_Command == 1){
+        setStatusLEDHex(0xFFFF00);
+    }else{
+        setStatusLEDHex(COLOUR_GREEN);
+    }
+
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
     //Magnetization state
     //Handle Magnetization/Demagnetization requests

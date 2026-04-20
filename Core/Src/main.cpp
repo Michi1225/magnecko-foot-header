@@ -22,7 +22,6 @@
 #include "bdma.h"
 #include "dma.h"
 #include "i2c.h"
-#include "memorymap.h"
 #include "spi.h"
 #include "tim.h"
 #include "gpio.h"
@@ -32,6 +31,7 @@
 #include "FootController.h"
 #include "utils.h"
 #include <deque>
+#include <random>
 #include <stdio.h>
 
 /* USER CODE END Includes */
@@ -103,7 +103,6 @@ void cb_get_inputs()
  */
 void cb_set_outputs()
 {
-  Obj.Status_Word = controller.fsm_.getStatusWord();
 
 
 }
@@ -178,8 +177,8 @@ int main(void)
   SWD_Init();
   while (1)
   {
-    int error = controller.tof.get_ranging_data();
-    std::memcpy(Obj.ToF_Data, controller.tof.data, sizeof(controller.tof.data));
+    // int error = controller.tof.get_ranging_data();
+    // std::memcpy(Obj.ToF_Data, controller.tof.data, sizeof(controller.tof.data));
 
     // Windowed average of force estimation
     force_average.push_back(
@@ -195,7 +194,9 @@ int main(void)
     {
       mag_force_average_sum += val;
     }
-    Obj.Force_Estimate = mag_force_average_sum / force_average.size();
+    
+    Obj.Force_Estimate = (mag_force_average_sum / force_average.size()) * controller.status_magnetization;
+    controller.imu.update(); //Update IMU data
 
     /* USER CODE END WHILE */
 
@@ -294,7 +295,7 @@ void PeriphCommonClock_Config(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if(GPIO_Pin == IMU_INT_Pin) {
-    controller.imu.msg_ready = true;
+    controller.imu.msgs_ready++;
   }
   else if(GPIO_Pin == BUTTON_Pin)
   {
@@ -339,7 +340,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   else if (htim == &htim3)
   {
     //BNO update
-    controller.imu.update(); //Update IMU data
+    // controller.imu.update(); //Update IMU data
+    __NOP();
 
 
     // Cap Charger readout (RGB Fade Test)

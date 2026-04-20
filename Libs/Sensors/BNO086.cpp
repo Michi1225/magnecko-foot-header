@@ -1,4 +1,5 @@
 #include "BNO086.h"
+#include "cmsis_gcc.h"
 
 __section(".RAM_D3") __aligned(4) uint8_t shtp_header[4] = {0};
 __section(".RAM_D3") __aligned(4) uint8_t time_stamp[5] = {0};
@@ -14,36 +15,28 @@ RotationVectorData BNO086::rot_data __section(".RAM_D3") = {0, 0, 0, 0, 0, 0, 0,
 
 
 
+
 BNO086::BNO086()
 {
-    this->msg_ready = false;
+    this->msgs_ready = 0;
     this->seqNum = 0;
     this->features.clear();
-    // this->accel_data = {
-    //     .axis_x = 0,
-    //     .axis_y = 0,
-    //     .axis_z = 0,
-    //     .delay = 0,
-    //     .sequence_number = 0,
-    //     .status = 0,
-    //     .q_point = BNO086_Q_POINT_ACCELEROMETER
-    // };
-    // this->gyro_data = {0, 0, 0, 0, 0, 0, 0};
-    // this->mag_data = {0, 0, 0, 0, 0, 0, 0};
-    // this->lin_accel_data = {0, 0, 0, 0, 0, 0, 0};
-    // this->rot_data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    // this->grav_data = {0, 0, 0, 0, 0, 0, 0};
+    BNO086::gyro_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GYROSCOPE};
+    BNO086::lin_accel_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_LINEAR_ACCELERATION};
+    BNO086::rot_data = {0, 0, 0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ROTATION, BNO086_Q_POINT_ACCURACY_ROTATION};
+    BNO086::accel_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ACCELEROMETER};
+    __NOP();
 }
 
 
 uint8_t BNO086::init()
 {
     //Set feature reports to be set up
+    this->features.push_back(std::make_pair(BNO086_ID_ACCELEROMETER,        BNO086_PERIOD_ACCELEROMETER));
     this->features.push_back(std::make_pair(BNO086_ID_ROTATION,          BNO086_PERIOD_ROTATION));
     this->features.push_back(std::make_pair(BNO086_ID_GYROSCOPE,            BNO086_PERIOD_GYROSCOPE));
-    this->features.push_back(std::make_pair(BNO086_ID_LINEAR_ACCELERATION,  BNO086_PERIOD_LINEAR_ACCELERATION));
+    // this->features.push_back(std::make_pair(BNO086_ID_LINEAR_ACCELERATION,  BNO086_PERIOD_LINEAR_ACCELERATION));
     // this->features.push_back(std::make_pair(BNO086_ID_GRAVITY,              BNO086_PERIOD_GRAVITY));
-    // this->features.push_back(std::make_pair(BNO086_ID_ACCELEROMETER,        BNO086_PERIOD_ACCELEROMETER));
     // this->features.push_back(std::make_pair(BNO086_ID_MAGNETOMETER,         BNO086_PERIOD_MAGNETOMETER));
 
 
@@ -59,24 +52,24 @@ uint8_t BNO086::init()
 
 
     //Read advertisemsent
-    while(!this->msg_ready);
-    this->msg_ready = false;
+    while(this->msgs_ready == 0);
+    this->msgs_ready = 0;
     uint8_t advertisement[284] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
     if(HAL_SPI_Receive(BNO086_SPI_HANDLE, advertisement, 284, 10) != HAL_OK) Error_Handler();
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
     
     //read initialize response
-    while(!this->msg_ready);
-    this->msg_ready = false;
+    while(this->msgs_ready == 0);
+    this->msgs_ready = 0;
     uint8_t init[40] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
     if(HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100) != HAL_OK) Error_Handler();
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
 
     //read message from executable
-    while(!this->msg_ready);
-    this->msg_ready = false;
+    while(this->msgs_ready == 0);
+    this->msgs_ready = 0;
     uint8_t exec[10] = {0};
     HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
     if(HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 10) != HAL_OK) Error_Handler();
@@ -91,8 +84,8 @@ uint8_t BNO086::start()
 
     //Wake up BNO
     HAL_GPIO_WritePin(IMU_WAKE_GPIO_Port, IMU_WAKE_Pin, GPIO_PIN_RESET);
-    while(!this->msg_ready);
-    this->msg_ready = false;
+    while(this->msgs_ready == 0);
+    this->msgs_ready = 0;
     HAL_GPIO_WritePin(IMU_WAKE_GPIO_Port, IMU_WAKE_Pin, GPIO_PIN_SET);
 
     uint8_t errorcode = 0;
@@ -136,8 +129,8 @@ uint8_t BNO086::start()
 
         //read Get Feature Response
         //this response is sent unsolicited on rate change
-        while(!this->msg_ready);
-        this->msg_ready = false;
+        while(this->msgs_ready == 0);
+        this->msgs_ready = 0;
 
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
         errorcode = HAL_SPI_Receive(BNO086_SPI_HANDLE, rxBytes, 2, 1000);
@@ -145,7 +138,7 @@ uint8_t BNO086::start()
         if(rxLen > 2 && rxLen < 128)errorcode |= HAL_SPI_Receive(BNO086_SPI_HANDLE, &rxBytes[2], rxLen - 2 , 1000);
         
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS low
-        HAL_Delay(4);
+        HAL_Delay(0);
     }
 
 
@@ -156,111 +149,137 @@ uint8_t BNO086::start()
 
 uint8_t BNO086::update()
 {
-    if(!this->msg_ready) return 1; //No new message available
-    this->msg_ready = false;
-
-    //read header
-    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    uint8_t errorcode = HAL_SPI_TransmitReceive_DMA(BNO086_SPI_HANDLE, dummy, shtp_header, 1);
-    while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
-    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-    if(errorcode != 0) return errorcode;
-
-    //read time stamp
-    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    errorcode = HAL_SPI_TransmitReceive_DMA(BNO086_SPI_HANDLE, dummy, time_stamp, 5);
-    while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
-    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-    if(errorcode != 0) return errorcode;
-
-    //read report ID
-    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-    errorcode = HAL_SPI_TransmitReceive_DMA(BNO086_SPI_HANDLE, dummy, &report_id, 1);
-    while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
-    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-    if(errorcode != 0) return errorcode;
-    //TODO: DMA SPI
-
-    switch (report_id)
+    uint8_t errorcode = 0;
+    while(this->msgs_ready > 0)
     {
-    case BNO086_ID_ACCELEROMETER:
-        //NOTE: This might introduce a hard fault, because of the packed struct.
-        //      If this is the case, every variable has to be copied seperately
-
+        this->msgs_ready--;
+        
+        //read header
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->accel_data, 9);
+        errorcode = HAL_SPI_TransmitReceive_DMA(BNO086_SPI_HANDLE, dummy, shtp_header, 4);
         while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-        break;
-    case BNO086_ID_GYROSCOPE:
+        if(errorcode != 0) return errorcode;
+        
+        //read time stamp
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->gyro_data, 9);
+        errorcode = HAL_SPI_TransmitReceive_DMA(BNO086_SPI_HANDLE, dummy, time_stamp, 5);
         while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
         HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-        break;
-    case BNO086_ID_MAGNETOMETER:
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->mag_data, 9);
-        while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-        break;
-    case BNO086_ID_LINEAR_ACCELERATION:
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->lin_accel_data, 9);
-        while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-        break;
-    case BNO086_ID_ROTATION:
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->rot_data, 13);
-        while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-        break;
-    case BNO086_ID_GRAVITY:
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
-        errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->grav_data, 9);
-        while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
-            || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
-        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
-        break;
-    default:
-        break;
-    }
-
-    // Update IMU Data Object
-    if(errorcode == 0)
-    {
-        Obj.IMU_Data.Acc_X = q_to_float(this->lin_accel_data.axis_x, this->lin_accel_data.q_point);
-        Obj.IMU_Data.Acc_Y = q_to_float(this->lin_accel_data.axis_y, this->lin_accel_data.q_point);
-        Obj.IMU_Data.Acc_Z = q_to_float(this->lin_accel_data.axis_z, this->lin_accel_data.q_point);
+        if(errorcode != 0) return errorcode;
     
-        Obj.IMU_Data.Gyro_X = q_to_float(this->gyro_data.axis_x, this->gyro_data.q_point);
-        Obj.IMU_Data.Gyro_Y = q_to_float(this->gyro_data.axis_y, this->gyro_data.q_point);
-        Obj.IMU_Data.Gyro_Z = q_to_float(this->gyro_data.axis_z, this->gyro_data.q_point);
+        //read report ID
+        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+        errorcode = HAL_SPI_TransmitReceive_DMA(BNO086_SPI_HANDLE, dummy, &report_id, 1);
+        while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
+        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+        || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+        HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
+        if(errorcode != 0) return errorcode;
+        //TODO: DMA SPI
+        Obj.Magnet_Status = shtp_header[0];
+
+        
+        switch (report_id)
+        {
+        case BNO086_ID_ACCELEROMETER:
+            //NOTE: This might introduce a hard fault, because of the packed struct.
+            //      If this is the case, every variable has to be copied seperately
     
-        Obj.IMU_Data.Quat_I = q_to_float(this->rot_data.quaternion_i, this->rot_data.q_point);
-        Obj.IMU_Data.Quat_J = q_to_float(this->rot_data.quaternion_j, this->rot_data.q_point);
-        Obj.IMU_Data.Quat_K = q_to_float(this->rot_data.quaternion_k, this->rot_data.q_point);
-        Obj.IMU_Data.Quat_R = q_to_float(this->rot_data.quaternion_real, this->rot_data.q_point);
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+            errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->accel_data, 9);
+            while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
+            break;
+        case BNO086_ID_GYROSCOPE:
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+            errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->gyro_data, 9);
+            while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
+            break;
+        case BNO086_ID_MAGNETOMETER:
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+            errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->mag_data, 9);
+            while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
+            break;
+        case BNO086_ID_LINEAR_ACCELERATION:
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+            errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->lin_accel_data, 9);
+            while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
+            break;
+        case BNO086_ID_ROTATION:
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+            errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->rot_data, 13);
+            while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
+            break;
+        case BNO086_ID_GRAVITY:
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET); //Set CS low
+            errorcode = HAL_SPI_Receive_DMA(BNO086_SPI_HANDLE, (uint8_t *)&this->grav_data, 9);
+            while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY 
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmarx)) != HAL_DMA_STATE_READY
+                || HAL_DMA_GetState(((BNO086_SPI_HANDLE)->hdmatx)) != HAL_DMA_STATE_READY);
+            HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET); //Set CS high
+            break;
+        default:
+            return 0;
+            break;
+        }
+    
+        // Update IMU Data Object
+        if(errorcode == 0)
+        {
+            if(this->accel_data.status >= 2)
+            {
+                Obj.IMU_Data.Acc_X = q_to_float(this->accel_data.axis_x, this->accel_data.q_point);
+                Obj.IMU_Data.Acc_Y = q_to_float(this->accel_data.axis_y, this->accel_data.q_point);
+                Obj.IMU_Data.Acc_Z = q_to_float(this->accel_data.axis_z, this->accel_data.q_point);
+            }
+            if(this->lin_accel_data.status >= 2)
+            {
+                Obj.IMU_Data.Acc_X = q_to_float(this->lin_accel_data.axis_x, this->lin_accel_data.q_point);
+                Obj.IMU_Data.Acc_Y = q_to_float(this->lin_accel_data.axis_y, this->lin_accel_data.q_point);
+                Obj.IMU_Data.Acc_Z = q_to_float(this->lin_accel_data.axis_z, this->lin_accel_data.q_point);
+            }
+            if(this->gyro_data.status >= 2)
+            {
+                Obj.IMU_Data.Gyro_X = q_to_float(this->gyro_data.axis_x, this->gyro_data.q_point);
+                Obj.IMU_Data.Gyro_Y = q_to_float(this->gyro_data.axis_y, this->gyro_data.q_point);
+                Obj.IMU_Data.Gyro_Z = q_to_float(this->gyro_data.axis_z, this->gyro_data.q_point);
+            }
+            if(this->rot_data.accuracy_estimate == 12868) // Magic Number
+            {
+                Obj.IMU_Data.Quat_I = q_to_float(this->rot_data.quaternion_i, this->rot_data.q_point);
+                Obj.IMU_Data.Quat_J = q_to_float(this->rot_data.quaternion_j, this->rot_data.q_point);
+                Obj.IMU_Data.Quat_K = q_to_float(this->rot_data.quaternion_k, this->rot_data.q_point);
+                Obj.IMU_Data.Quat_R = q_to_float(this->rot_data.quaternion_real, this->rot_data.q_point);
+            }
+    
+        }
+        //TODO: Handle errorcode: send warning via EtherCAT??
+    
+        if(report_id > 10)
+        {
+            __NOP();
+        }
+
     }
-    //TODO: Handle errorcode: send warning via EtherCAT??
 
 
     return errorcode;
