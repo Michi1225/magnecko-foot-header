@@ -101,7 +101,7 @@ public:
     BNO086 imu;
     //LDC
     LDC1614 ldc;
-    uint8_t force_estimation = 0;
+    float force_estimation;
     //Hall Sensors
     TMAG5273 hall0 = TMAG5273(TMAG5273::A1);
     TMAG5273 hall1 = TMAG5273(TMAG5273::B1);

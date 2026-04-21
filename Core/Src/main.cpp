@@ -177,8 +177,7 @@ int main(void)
   SWD_Init();
   while (1)
   {
-    // int error = controller.tof.get_ranging_data();
-    // std::memcpy(Obj.ToF_Data, controller.tof.data, sizeof(controller.tof.data));
+    int error = controller.tof.get_ranging_data();
 
     // Windowed average of force estimation
     force_average.push_back(
@@ -194,8 +193,8 @@ int main(void)
     {
       mag_force_average_sum += val;
     }
+    controller.force_estimation = (mag_force_average_sum / force_average.size()) * controller.status_magnetization;
     
-    Obj.Force_Estimate = (mag_force_average_sum / force_average.size()) * controller.status_magnetization;
     controller.imu.update(); //Update IMU data
 
     /* USER CODE END WHILE */

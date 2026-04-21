@@ -58,6 +58,8 @@ void FootController::init()
     if(imu.start() != 0) Error_Handler();
     if(tof.start_ranging() != 0) Error_Handler();
 
+    this->force_estimation = 0;
+
     setStatusLEDHex(COLOUR_CYAN); //Indicate initialization done
 }
 
@@ -109,32 +111,26 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
 {
     //Handle Sensors
     //IMU
-    // imu.update(); //Update IMU data
+    Obj.IMU_Data.Acc_X = this->imu.output_lin_accel[0];
+    Obj.IMU_Data.Acc_Y = this->imu.output_lin_accel[1];
+    Obj.IMU_Data.Acc_Z = this->imu.output_lin_accel[2];
+
+    Obj.IMU_Data.Gyro_X = this->imu.output_gyro[0];
+    Obj.IMU_Data.Gyro_Y = this->imu.output_gyro[1];
+    Obj.IMU_Data.Gyro_Z = this->imu.output_gyro[2];
+
+    Obj.IMU_Data.Quat_I = this->imu.output_quat[0];
+    Obj.IMU_Data.Quat_J = this->imu.output_quat[1];
+    Obj.IMU_Data.Quat_K = this->imu.output_quat[2];
+    Obj.IMU_Data.Quat_R = this->imu.output_quat[3];
+
+
+    Obj.Force_Estimate = this->force_estimation;
 
 
     //ToF
-    // (void)tof.get_ranging_data();
-    //TODO: Compress Ranging data in a meaningful way
-
-    //LDC & Hall Sensors
-    // if(this->status_magnetization)
-    // {
-    //     //Perform Contact Estimation
-    //     bool contact_0 = hall0.estimate_contact();
-    //     bool contact_1 = hall1.estimate_contact();
-    //     bool contact_2 = hall2.estimate_contact();
-    //     bool contact_3 = hall3.estimate_contact();
-    //     // Contact estimation is a bitmap containing the contact estimation for all four magnets
-    //     this->contact_estimation = contact_0 + (contact_1 << 1) + (contact_2 << 2) + (contact_3 << 3);
-
-    //     //Perform Force Estimation
-    //     this->force_estimation = this->ldc.forceEstimation() * (this->contact_estimation != 0); //Force estimation is only valid, if contact estimation is not 0
-    // } else 
-    // {
-    //     //If the magnet is not active, set contact and force estimation to 0
-    //     this->contact_estimation = 0;
-    //     this->force_estimation = 0;
-    // }
+    
+    std::memcpy(Obj.ToF_Data, this->tof.data, sizeof(this->tof.data));
 
     fsm_.setControlWord(Obj.Control_Word);
     Obj.Status_Word = fsm_.getStatusWord();
