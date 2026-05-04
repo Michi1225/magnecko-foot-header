@@ -117,8 +117,7 @@ int VL53L7CH::get_ranging_data()
         for(int j = 0; j < 4; j++)
         {
             //outlier rejection
-            if(this->results.distance_mm[i * 4 + j] > this->data[i][j] + OUTLIER_THRESHOLD 
-                || this->results.distance_mm[i * 4 + j] < this->data[i][j] - OUTLIER_THRESHOLD)
+            if((this->results.target_status[i * 4 + j] != 5) && (this->results.target_status[i * 4 + j] != 9))
             {
                 continue; // reject outlier
             }
