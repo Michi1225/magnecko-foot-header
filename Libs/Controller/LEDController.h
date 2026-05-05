@@ -1,5 +1,6 @@
 #pragma once
 
+#include "i2c.h"
 #include "main.h"
 #include <cstdint>
 
@@ -11,13 +12,13 @@ constexpr uint8_t LED_START_CMD = 0x10;
 constexpr uint8_t LED_STOP_CMD = 0x11;
 constexpr uint8_t LED_PATTERN_REG_START = 0x1C;
 constexpr uint8_t LED_REG_DC = 0x14;
-constexpr uint8_t LED_DC_RED = 0x04; //25%
+constexpr uint8_t LED_DC_RED = 0x05; //25%
 constexpr uint8_t LED_DC_GREEN = 0x04; //25%
-constexpr uint8_t LED_DC_BLUE = 0x04; //25%
+constexpr uint8_t LED_DC_BLUE = 0x06; //25%
 
 
 
-typedef struct
+typedef struct __attribute((packed))
 {
     uint8_t enable : 1;
     uint8_t instablink_dis : 1;
@@ -53,7 +54,7 @@ typedef struct
 }LED_Controller_Config_t;
 
 
-typedef struct
+typedef struct __attribute((packed))
 {
     uint8_t pause_t1    : 4;
     uint8_t pause_t0    : 4;
@@ -67,14 +68,14 @@ typedef struct
 
 }LED_Controller_Pattern_t;
 
-typedef struct
+typedef struct __attribute((packed))
 {
     uint8_t repetitions;
     LED_Controller_Pattern_t *patterns[4];
 
 }LED_Controller_Engine_t;
 
-typedef struct
+typedef struct __attribute((packed))
 {
     uint8_t engine0_order0 : 2;
     uint8_t engine0_order1 : 2;
@@ -121,7 +122,7 @@ typedef struct
 
 }LED_Controller_Engine_Config_t;
 
-typedef struct
+typedef struct __attribute((packed))
 {
     uint8_t enabled : 1;
     uint8_t engine_index : 2;

@@ -157,7 +157,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             this->patterns[1].sloper2 = 0x01; // 50ms
             this->patterns[1].sloper3 = 0x01; // 50ms --> total pattern: 200ms
             this->set_engine_pattern(1, 0, 1); //Set Engine1 to Pattern1
-            this->disable_engine_pattern(1, 0);
+            this->disable_engine_pattern(1, 1);
             this->disable_engine_pattern(1, 2);
             this->disable_engine_pattern(1, 3); //Disable all other patterns
             this->config.out2_engine_ch = 1; //Set Blue to Engine1
@@ -173,7 +173,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             // two quick blinks
             this->patterns[0].pause_t0 = 0; //No Pause
             this->patterns[0].pause_t1 = 0x0; //No Pause
-            this->patterns[0].repeat = 0x1; //Repeat once
+            this->patterns[0].repeat = 0x2; //Repeat once
             this->patterns[0].PWM[0] = 0x00;
             this->patterns[0].PWM[1] = 0xFF; // 100%
             this->patterns[0].PWM[2] = 0xFF; // 100%
@@ -188,7 +188,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             // one blink after 1s
             this->patterns[1].pause_t0 = 0xA; // 500ms
             this->patterns[1].pause_t1 = 0x9; // 450ms
-            this->patterns[1].repeat = 0x0; // No repeat
+            this->patterns[1].repeat = 0x1; // No repeat
             this->patterns[1].PWM[0] = 0x00;
             this->patterns[1].PWM[1] = 0xFF; // 100%
             this->patterns[1].PWM[2] = 0xFF; // 100%
@@ -214,9 +214,9 @@ void LEDController::set_animation(LED_Animation_t animation)
             this->config.out2_en = 0;
 
             // two quick blinks with 1s period
-            this->patterns[0].pause_t0 = 0x0A; // 500ms
-            this->patterns[0].pause_t1 = 0x0B; // 1000ms
-            this->patterns[0].repeat = 0x1; // Repeat once
+            this->patterns[0].pause_t0 = 0x05; // 250ms
+            this->patterns[0].pause_t1 = 0x05; // 250ms
+            this->patterns[0].repeat = 0x2; // Repeat once
             this->patterns[0].PWM[0] = 0x00;
             this->patterns[0].PWM[1] = 0xFF; // 100%
             this->patterns[0].PWM[2] = 0xFF; // 100%
@@ -225,7 +225,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             this->patterns[0].sloper0 = 0x01; // 50ms
             this->patterns[0].sloper1 = 0x01; // 50ms
             this->patterns[0].sloper2 = 0x01; // 50ms
-            this->patterns[0].sloper3 = 0x02; // 100ms --> total pattern: 2 * 250ms + 1500ms = 2s
+            this->patterns[0].sloper3 = 0x02; // 100ms --> total pattern: 2 * 250ms + 500ms = 1s
             this->set_engine_pattern(0, 0, 0); //Set Engine0 to Pattern0
 
             this->disable_engine_pattern(0, 1);
@@ -237,7 +237,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             break;
         case LED_ANIMATION_SENSOR_INIT_FAILED_TOF:
             // Handle LED_ANIMATION_SENSOR_INIT_FAILED_TOF
-            // 2 quick red blinks (4Hz), followed by another two quick red blinks (after 1s) --> 1s period
+            // 2 quick red blinks (4Hz), followed by another three quick red blinks (after 1s) --> 1s period
             this->config.out0_en = 1;
             this->config.out1_en = 0;
             this->config.out2_en = 0;
@@ -245,7 +245,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             // two quick blinks with 1s period
             this->patterns[0].pause_t0 = 0x00; // No Pause
             this->patterns[0].pause_t1 = 0x0A; // 500ms
-            this->patterns[0].repeat = 0x1; // Repeat once
+            this->patterns[0].repeat = 0x2; // Repeat once
             this->patterns[0].PWM[0] = 0x00;
             this->patterns[0].PWM[1] = 0xFF; // 100%
             this->patterns[0].PWM[2] = 0xFF; // 100%
@@ -260,7 +260,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             // three quick blinks
             this->patterns[1].pause_t0 = 0x00; // No Pause
             this->patterns[1].pause_t1 = 0x05; // 250ms
-            this->patterns[1].repeat = 0x00; // No Repeat
+            this->patterns[1].repeat = 0x03; // No Repeat
             this->patterns[1].PWM[0] = 0x00;
             this->patterns[1].PWM[1] = 0xFF; // 100%
             this->patterns[1].PWM[2] = 0xFF; // 100%
@@ -287,7 +287,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             // two quick blinks with 1s period
             this->patterns[0].pause_t0 = 0x00; // No Pause
             this->patterns[0].pause_t1 = 0x0A; // 500ms
-            this->patterns[0].repeat = 0x1; // Repeat once
+            this->patterns[0].repeat = 0x2; // Repeat once
             this->patterns[0].PWM[0] = 0x00;
             this->patterns[0].PWM[1] = 0xFF; // 100%
             this->patterns[0].PWM[2] = 0xFF; // 100%
@@ -302,7 +302,7 @@ void LEDController::set_animation(LED_Animation_t animation)
             // one long blink
             this->patterns[1].pause_t0 = 0x00; // No Pause
             this->patterns[1].pause_t1 = 0x00; // 250ms
-            this->patterns[1].repeat = 0x00; // No Repeat
+            this->patterns[1].repeat = 0x01; // No Repeat
             this->patterns[1].PWM[0] = 0x00;
             this->patterns[1].PWM[1] = 0xFF; // 100%
             this->patterns[1].PWM[2] = 0xFF; // 100%
@@ -578,6 +578,9 @@ void LEDController::update_config()
 
     // Write Pattern Configuration
     HAL_I2C_Mem_Write(LED_I2C_HANDLE, LED_I2C_ADDRESS << 1, LED_PATTERN_REG_START, I2C_MEMADD_SIZE_8BIT, (uint8_t*)&this->patterns, sizeof(this->patterns), 10);
+
+    uint8_t update = 0x55;
+    HAL_I2C_Mem_Write(LED_I2C_HANDLE, LED_I2C_ADDRESS << 1, LED_UPDATE_CMD, I2C_MEMADD_SIZE_8BIT, (uint8_t*)&update, sizeof(update), 10);
 
     // Start Engines
     this->start();
