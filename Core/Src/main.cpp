@@ -383,7 +383,6 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     }
     else if (hspi == TOF_SPI_HANDLE)
     {
-        controller.tof.update_data();
         controller.tof.data_valid = true;
     }
 }

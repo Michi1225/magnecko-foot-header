@@ -2,8 +2,6 @@
 
 
 #include "main.h"
-#include "stm32h7xx_hal_def.h"
-#include "stm32h7xx_hal_spi.h"
 #include <cstdint>
 #include <cstring>
 #include <cmath>
@@ -119,18 +117,48 @@ constexpr uint8_t TMF8829_CFG_MOTION_RELEASE_SNR = 0xB3;
 constexpr uint8_t TMF8829_CFG_MOTION_ADJACENT_PIXEL = 0xB4;
 
 constexpr uint8_t TMF8829_CMD_LOAD_CFG_8X8 = 64;
+constexpr uint8_t TMF8829_CMD_LOAD_CFG_8X8_LONG_RANGE = 65;
 constexpr uint8_t TMF8829_CMD_LOAD_CFG_8X8_HIGH_ACCURACY = 66;
 
-constexpr uint8_t TMF8829_CONF_BREAKPOINT = 40;
-constexpr float   TMF8829_EXP_GROWTH_RATE = 1.053676f;
+constexpr uint8_t TMF8829_CMD_MEASURE = 0x10;
+constexpr uint8_t TMF8829_CMD_WRITE_PAGE_AND_MEASURE = 20;
+constexpr uint8_t TMF8829_CMD_WRITE_PAGE = 21;
 
-typedef struct
+constexpr size_t BOOTLOADER_MAX_PAYLOAD = 500;
+constexpr size_t SPI_MAX_PAYLOAD = 1024;
+constexpr uint8_t BOOT_CMD_START_RAM_APP = 0x16;
+constexpr uint8_t BOOT_CMD_SET_RAM_ADDR = 0x43;
+constexpr uint8_t TMF8829_COM_BL_CMD_STAT_FIFO_BOTH = 0x45;
+constexpr uint8_t BOOT_APP_ID_APPLICATION = 0x01;
+constexpr uint8_t ENABLE_POWERUP_SELECT_RAM = 0x20;
+constexpr uint8_t ENABLE_POWERUP_SELECT_MASK = 0x30;
+
+enum class TMF8829_Status: uint8_t
+{
+    STAT_OK,
+    STAT_ACCEPTED,
+    STAT_ERR_CONFIG,
+    STAT_ERR_APPLICATION,
+    STAT_ERR_CONFIG_RESULT_SIZE,
+    STAT_ERR_CONFIG_VCSEL,
+    STAT_ERR_WAKEUP_TIMED,
+    STAT_ERR_RESET_UNEXPECTED,
+    STAT_ERR_UNKNOWN_CMD,
+    STAT_ERR_UNKNOWN_CID,
+    STAT_ERR_STOP_0,
+    STAT_ERR_STOP_1,
+    STAT_ERR_STOP_2,
+    STAT_ERR_STOP_3,
+    STAT_ERR_OSC_TUNE
+};
+
+typedef struct __attribute(( packed ))
 {
     uint8_t fifo_status;
     uint32_t systick;
 }TMF8829_Preheader_t;
 
-typedef struct
+typedef struct __attribute(( packed ))
 {
     uint8_t fp_mode  : 4;
     uint8_t frame_id : 4;
@@ -143,13 +171,13 @@ typedef struct
     uint8_t reserved[5];
 }TMF8829_Header_t;
 
-typedef struct
+typedef struct __attribute(( packed ))
 {
     uint16_t distance;
     uint8_t snr;
 }TMF8829_Pixel_Data_t;
 
-typedef struct 
+typedef struct __attribute(( packed ))
 {
     uint32_t t0_integration;
     uint32_t t1_integration;
@@ -159,13 +187,13 @@ typedef struct
     uint8_t vcsel_max_power             : 1;
     uint8_t vcsel_burst_limit_reached   : 1;
     uint8_t frame_aborted               : 2;
-    uint8_t reserved[3];
+    uint8_t reserved;
     uint16_t end_of_frame;
 }TMF8829_Footer_t;
 
-typedef struct
+typedef struct __attribute(( packed ))
 {
-    uint8_t reserved; // For SPI Address Byte
+    uint8_t reserved[3];
     TMF8829_Preheader_t preheader;
     TMF8829_Header_t header;
     TMF8829_Pixel_Data_t pixel_data[8][8];
@@ -178,13 +206,14 @@ typedef struct
 class TMF8829
 {
 private:
-    static float confidence_lookup[256];
     bool initialized = false;
-    TMF8829_Frame_t data_frame;
-public:
+    
+    HAL_StatusTypeDef ram_patch_download();
+    public:
     bool data_valid;
     float distances[8][8];
     float confidances[8][8];
+    TMF8829_Frame_t data_frame;
 
 
 
