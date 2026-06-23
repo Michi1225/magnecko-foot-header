@@ -16,6 +16,8 @@ extern "C" {
 
 #define MAGNETIZATION_TIME 50 //3ms
 
+#define EPM_NUMBER 3
+
 typedef struct
 {
     int16_t quaternion_i;

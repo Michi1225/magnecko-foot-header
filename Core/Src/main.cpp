@@ -179,6 +179,11 @@ int main(void)
   {
     int error = controller.tof.get_ranging_data();
 
+    controller.hall0.read_magnitude();
+    controller.hall1.read_magnitude();
+    controller.hall2.read_magnitude();
+    controller.hall3.read_magnitude();
+
     // Windowed average of force estimation
     force_average.push_back(
       TMAG5273::force_estimation(
@@ -195,7 +200,7 @@ int main(void)
     }
     controller.force_estimation = (mag_force_average_sum / force_average.size()) * controller.status_magnetization;
     
-    controller.imu.update(); //Update IMU data
+    // controller.imu.update(); //Update IMU data
 
     /* USER CODE END WHILE */
 

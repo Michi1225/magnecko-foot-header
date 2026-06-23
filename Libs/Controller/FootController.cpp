@@ -43,19 +43,19 @@ void FootController::init()
     while(!HAL_GPIO_ReadPin(EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin)){} //Wait for EEPROM to be loaded
     ecat_slv_init(&this->config);
     //TODO: Set Obj. constants
-    Obj.EPM_Number = 1; // EPM number, needed for hw interface
+    Obj.EPM_Number = EPM_NUMBER; // EPM number, needed for hw interface
     // Obj.Device_Information[6] = 1; // actuator number, needed for hw interface
 
     //Sensor initialization
     //TODO: Go to FMS Fault state if init fails
-    if(imu.init() != 0) Error_Handler();
+    // if(imu.init() != 0) Error_Handler();
     
     if(ldc.init() != 0) Error_Handler();
     if(TMAG5273::init() != 0) Error_Handler();
     if(tof.init() != 0) Error_Handler();
     HAL_Delay(10);
     
-    if(imu.start() != 0) Error_Handler();
+    // if(imu.start() != 0) Error_Handler();
     if(tof.start_ranging() != 0) Error_Handler();
 
     this->force_estimation = 0;
@@ -126,6 +126,7 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
 
 
     Obj.Force_Estimate = this->force_estimation;
+    Obj.Magnet_Status = this->status_magnetization;
 
 
     //ToF
