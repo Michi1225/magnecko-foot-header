@@ -57,6 +57,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Libs/Controller/utils.cpp
     Libs/Controller/Charger.cpp
     Libs/Sensors/tmf8829_image.c
+    Libs/Sensors/thermistor.c
+    Libs/Controller/eeprom.cpp
     # Add user sources here
 )
 

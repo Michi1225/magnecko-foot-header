@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
+#include "i2c.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -51,12 +52,15 @@ extern SPI_HandleTypeDef hspi6;
 
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c2;
+extern I2C_HandleTypeDef hi2c4;
 
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
+
+extern ADC_HandleTypeDef hadc1;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -78,8 +82,8 @@ void Error_Handler(void);
 #define ECAT_MISO_GPIO_Port GPIOE
 #define ECAT_SCK_Pin GPIO_PIN_2
 #define ECAT_SCK_GPIO_Port GPIOE
-#define nRST_ECAT_Pin GPIO_PIN_8
-#define nRST_ECAT_GPIO_Port GPIOB
+#define EEPROM_SCL_Pin GPIO_PIN_8
+#define EEPROM_SCL_GPIO_Port GPIOB
 #define CHARGER_MOSI_Pin GPIO_PIN_5
 #define CHARGER_MOSI_GPIO_Port GPIOB
 #define IMU_MOSI_Pin GPIO_PIN_6
@@ -98,6 +102,8 @@ void Error_Handler(void);
 #define SYNC0_GPIO_Port GPIOE
 #define SYNC1_Pin GPIO_PIN_0
 #define SYNC1_GPIO_Port GPIOE
+#define EEPROM_SDA_Pin GPIO_PIN_7
+#define EEPROM_SDA_GPIO_Port GPIOB
 #define IMU_WAKE_Pin GPIO_PIN_4
 #define IMU_WAKE_GPIO_Port GPIOD
 #define IMU_INT_Pin GPIO_PIN_1
@@ -108,6 +114,8 @@ void Error_Handler(void);
 #define IMU_SCK_GPIO_Port GPIOC
 #define ECAT_NCS_Pin GPIO_PIN_4
 #define ECAT_NCS_GPIO_Port GPIOE
+#define nRST_ECAT_Pin GPIO_PIN_1
+#define nRST_ECAT_GPIO_Port GPIOE
 #define CHARGER_MISO_Pin GPIO_PIN_4
 #define CHARGER_MISO_GPIO_Port GPIOB
 #define IMU_NCS_Pin GPIO_PIN_15
@@ -134,6 +142,7 @@ void Error_Handler(void);
 #define TOF_MISO_GPIO_Port GPIOA
 #define TOF_INT_Pin GPIO_PIN_5
 #define TOF_INT_GPIO_Port GPIOC
+#define TOF_INT_EXTI_IRQn EXTI9_5_IRQn
 #define BUTTON_Pin GPIO_PIN_2
 #define BUTTON_GPIO_Port GPIOB
 #define HALL_SDA_Pin GPIO_PIN_11
@@ -150,6 +159,8 @@ void Error_Handler(void);
 #define TOF_SCK_GPIO_Port GPIOA
 #define TOF_MOSI_Pin GPIO_PIN_7
 #define TOF_MOSI_GPIO_Port GPIOA
+#define MAG_STAT_Pin GPIO_PIN_0
+#define MAG_STAT_GPIO_Port GPIOB
 #define HALL_SCL_Pin GPIO_PIN_10
 #define HALL_SCL_GPIO_Port GPIOB
 #define LDC0_NCS_Pin GPIO_PIN_12

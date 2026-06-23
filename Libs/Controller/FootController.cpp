@@ -34,6 +34,12 @@ void FootController::init()
 
     fsm_.init(this->fsmActions_);
 
+    // Read force estimation parameters from EEPROM
+    #ifdef EEPROM_WRITE
+    this->write_force_estimation_params_to_eeprom();
+    #endif
+    this->read_force_estimation_params_from_eeprom();
+
     
     //ECAT initialization
     while(!HAL_GPIO_ReadPin(EEPROM_LOADED_GPIO_Port, EEPROM_LOADED_Pin)){} //Wait for EEPROM to be loaded
@@ -71,6 +77,7 @@ void FootController::init()
     
     if(imu.start() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_IMU);
     if(tof.start_ranging() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF);
+
 
     // Charger Initialization
     if(charger.wait_ready(1000)) this->ledController.set_animation(LED_ANIMATION_CHARGER_NOT_RESPONDING); //Wait for charger to be ready, if not ready after 1 second, trigger error handler
@@ -127,6 +134,31 @@ void FootController::runControl()
 
 FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    //Handle Sensors
+    //IMU
+    // Obj.IMU_Data.Acc_X = this->imu.output_lin_accel[0];
+    // Obj.IMU_Data.Acc_Y = this->imu.output_lin_accel[1];
+    // Obj.IMU_Data.Acc_Z = this->imu.output_lin_accel[2];
+
+    // Obj.IMU_Data.Gyro_X = this->imu.output_gyro[0];
+    // Obj.IMU_Data.Gyro_Y = this->imu.output_gyro[1];
+    // Obj.IMU_Data.Gyro_Z = this->imu.output_gyro[2];
+
+    // Obj.IMU_Data.Quat_I = this->imu.output_quat[0];
+    // Obj.IMU_Data.Quat_J = this->imu.output_quat[1];
+    // Obj.IMU_Data.Quat_K = this->imu.output_quat[2];
+    // Obj.IMU_Data.Quat_R = this->imu.output_quat[3];
+
+
+    // TODO: Force estimation
+
+
+    //ToF
+    
+    // std::memcpy(Obj.ToF_Data, this->tof.data, sizeof(this->tof.data));
+
+    fsm_.setControlWord(Obj.Control_Word);
+    Obj.Status_Word = fsm_.getStatusWord();
     return state;
 }
 
@@ -193,5 +225,26 @@ FSMStatus FootController::FSM_faultReactionActive(FSMStatus state, uint16_t &sta
 FSMStatus FootController::FSM_fault(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
     return state;
+}
+
+float FootController::force_estimation()
+{
+
+}
+
+void FootController::read_force_estimation_params_from_eeprom()
+{
+    // Read the force estimation parameters from the EEPROM
+    uint8_t data[N_PARAMETERS * sizeof(float)];
+    EEPROM_Read(0, 0, data, sizeof(data));
+    std::memcpy(this->force_estimation_params, data, sizeof(this->force_estimation_params));
+}
+
+void FootController::write_force_estimation_params_to_eeprom()
+{
+    // Write the force estimation parameters to the EEPROM
+    #ifdef EEPROM_WRITE
+    EEPROM_Write(0, 0, eeprom_img, sizeof(eeprom_img));
+    #endif
 }
 

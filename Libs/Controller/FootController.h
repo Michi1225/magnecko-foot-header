@@ -10,6 +10,7 @@
 #include "FSM.hpp"
 #include "utils.h"
 #include "Charger.h"
+#include "eeprom.h"
 extern "C" {
     #include "ecat_slv.h"
     #include "utypes.h"
@@ -19,6 +20,8 @@ extern "C" {
 #define MAGNETIZATION_TIME 50 //3ms
 
 #define ECAT_SPI_HANDLE &hspi1
+
+#define N_PARAMETERS 10
 
 typedef struct
 {
@@ -90,6 +93,22 @@ private:
                                       PREOP->SAFEOP will fail.*/
     };
 
+    float force_estimation_params[N_PARAMETERS];
+
+
+    /**
+     * @brief Read the force estimation parameters from the EEPROM.
+     *        This function should be called during initialization to load the parameters
+     *        used for force estimation.
+     */
+    void read_force_estimation_params_from_eeprom();
+
+    /**
+     * @brief Write the force estimation parameters to the EEPROM.
+     *        This function can be used to update the parameters used for force estimation.
+     */
+    void write_force_estimation_params_to_eeprom();
+
 
 
 
@@ -117,7 +136,6 @@ public:
 
     LDC1101 *active_ldc; // Pointer to the currently active LDC, used for SPI communication
 
-    uint8_t force_estimation = 0;
     //Hall Sensors
     TMAG5273 hall0 = TMAG5273(TMAG5273::A1);
     TMAG5273 hall1 = TMAG5273(TMAG5273::B1);
@@ -162,6 +180,15 @@ public:
      * @param time Time in 100us to magnetize the magnet.
      */
     void magnetize(uint8_t time);
+
+    /**
+     * @brief Estimate the current holding Force.
+     *        Currently, this function uses the TMAG5273 Hall sensors to estimate the force.
+     *        The force estimation is based on the magnetic field strength measured by the Hall sensors and currently neglects the influence of the LDC sensors.
+     *        The force estimation is found empirically and should be calibrated for each individual foot.
+     * @return The estimated force.
+     */
+    float force_estimation();
 
     //FSM actions
     FSMStatus FSM_bg(FSMStatus state, uint16_t& status_word, int8_t& mode);
