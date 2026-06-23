@@ -30,7 +30,6 @@
 /* USER CODE BEGIN Includes */
 #include "FootController.h"
 #include "utils.h"
-#include <deque>
 #include <stdio.h>
 #include <cstring>
 
@@ -56,11 +55,6 @@
 /* USER CODE BEGIN PV */
 _Objects Obj = {};
 FootController __attribute__((section(".RAM"))) controller = FootController();
-
-std::deque<float> mag_avg0;
-std::deque<float> mag_avg1;
-std::deque<float> mag_avg2;
-std::deque<float> mag_avg3;
 
 /* USER CODE END PV */
 
@@ -176,44 +170,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  std::deque<float> force_average;
   SWD_Init();
   while (1)
   {
-    if(controller.tof.data_valid)
-    {
-      // TODO: correctly interpret data
-      std::memcpy(Obj.ToF_Data, (void *)(&controller.tof.distances), sizeof(Obj.ToF_Data));
-    }
-
-    // Windowed average of force estimation
-    force_average.push_back(
-      TMAG5273::force_estimation(
-        controller.hall0.b_mag,
-        controller.hall1.b_mag,
-        controller.hall2.b_mag,
-        controller.hall3.b_mag)
-    );
-    if(force_average.size() > 20) force_average.pop_front();
-    float mag_force_average_sum = 0.0f;
-    for(auto &val : force_average)
-    {
-      mag_force_average_sum += val;
-    }
-    Obj.Force_Estimate = mag_force_average_sum / force_average.size();
-
-
-    //Handle LDC
-    for(LDC1101 &ldc : controller.ldc)
-    {
-      if(ldc.data_valid)
-      {
-        // TODO: Process LDC data and store in Obj if needed
-        uint16_t rp_data = ldc.rx_data.rp_data;
-        uint16_t l_data = ldc.rx_data.l_data;
-      }
-    }
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -387,6 +346,14 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     else if (hspi == TOF_SPI_HANDLE)
     {
         controller.tof.data_valid = true;
+    }
+    else if (hspi == CHARGER_SPI_HANDLE)
+    {
+        // Charger SPI transfer complete
+        // Handle Charger status and faults here if needed
+        controller.controller_error_word.charger_oc_fault = controller.charger.status.OC_fault;
+        controller.controller_error_word.charger_ov_fault = controller.charger.status.OV_fault;
+        controller.controller_error_word.charger_wd_fault = controller.charger.status.WD_fault;
     }
 }
 

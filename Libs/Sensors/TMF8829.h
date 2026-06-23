@@ -211,8 +211,6 @@ private:
     HAL_StatusTypeDef ram_patch_download();
     public:
     bool data_valid;
-    float distances[8][8];
-    float confidances[8][8];
     TMF8829_Frame_t data_frame;
 
 

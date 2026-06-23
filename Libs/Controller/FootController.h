@@ -11,26 +11,22 @@
 #include "utils.h"
 #include "Charger.h"
 #include "eeprom.h"
+#include <deque>
 extern "C" {
     #include "ecat_slv.h"
     #include "utypes.h"
     #include "soes_pin_mapping_def.h"
  }
 
-#define MAGNETIZATION_TIME 50 //3ms
+#define MAGNETIZATION_TIME 5000 //5ms
 
 #define ECAT_SPI_HANDLE &hspi1
 
 #define N_PARAMETERS 10
 
-typedef struct
-{
-    int16_t quaternion_i;
-    int16_t quaternion_j;
-    int16_t quaternion_k;
-    int16_t quaternion_real;
-} RotationData;
+#define FORCE_ESTIMATE_WINDOW_SIZE 20
 
+#define EPM_NUMBER 1 // EPM number, needed for hw interface
 
 
 class FootController
@@ -118,6 +114,20 @@ public:
     FSM fsm_;
     FSMActions fsmActions_;
 
+    struct
+    {
+        uint8_t imu_init_failed : 1; // IMU initialization failed
+        uint8_t ldc_init_failed : 1; // LDC initialization failed
+        uint8_t hall_init_failed : 1; // Hall sensor initialization failed
+        uint8_t tof_init_failed : 1; // ToF initialization failed
+        uint8_t charger_init_failed : 1; // Charger initialization failed
+        uint8_t charger_oc_fault : 1; // Charger overcurrent fault
+        uint8_t charger_ov_fault : 1; // Charger overvoltage fault
+        uint8_t charger_wd_fault : 1; // Charger watchdog fault
+        uint8_t eeprom_params_invalid : 1; // EEPROM parameters are invalid
+        uint8_t timer_init_failed : 1; // Timer initialization failed
+    }controller_error_word;
+
     //LED Controller
     LEDController ledController;
 
@@ -142,6 +152,9 @@ public:
     TMAG5273 hall2 = TMAG5273(TMAG5273::C1);
     TMAG5273 hall3 = TMAG5273(TMAG5273::D1);
     uint8_t contact_estimation = 0;
+    std::deque<float> force_average;
+
+
     //TOF
     TMF8829 tof;
 
