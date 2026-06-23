@@ -304,7 +304,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   // Handle IMU Interrupt
   // When the IMU interrupt pin is triggered, set the msg_ready flag to true to indicate that new IMU data is available and should be read within the next 10ms.
   if(GPIO_Pin == IMU_INT_Pin) {
-    controller.imu.msg_ready = true;
+    controller.imu.msgs_ready++;
   }
 
   // Handle Button Press and Release

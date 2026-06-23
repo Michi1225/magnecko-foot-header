@@ -35,10 +35,17 @@
 #define BNO086_Q_POINT_GRAVITY 8
 
 
+#define ENABLE_GRAVITY 0
+#define ENABLE_ACCEL 0
+#define ENABLE_LIN_ACCEL 1
+#define ENABLE_GYRO 1
+#define ENABLE_ROT 1
+#define ENABLE_MAG 0
 
-#define BNO086_SPI_HANDLE &hspi6
-#define BNO086_SECTION_NAME ".RAM_D3"
 
+
+#define BNO086_SPI_HANDLE &hspi3
+#define BNO086_SECTION_NAME ".RAM"
 #define PACKED __attribute__((packed))
 
 typedef struct PACKED
@@ -74,6 +81,13 @@ class BNO086
 private:
     std::vector<std::pair<uint8_t, uint32_t>> features;
     bool initialized;
+    
+    static VectorData gyro_data;
+    static VectorData accel_data;
+    static VectorData mag_data;
+    static VectorData lin_accel_data;
+    static VectorData grav_data;
+    static RotationVectorData rot_data;
 
 public:
     BNO086();
@@ -96,15 +110,13 @@ public:
      * @retval  HAL Status Code. 0 if all SPI Receive were successful
      */
     uint8_t update();
-    
-    static VectorData gyro_data;
-    static VectorData accel_data;
-    static VectorData mag_data;
-    static VectorData lin_accel_data;
-    static VectorData grav_data;
-    static RotationVectorData rot_data;
     uint8_t seqNum = 0;
-    bool msg_ready = false;
+    uint8_t msgs_ready = 0;
+
+    float output_gyro[3];
+    float output_accel[3];
+    float output_lin_accel[3];
+    float output_quat[4];
 
 };
 
