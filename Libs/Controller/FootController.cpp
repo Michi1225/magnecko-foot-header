@@ -20,6 +20,7 @@ void FootController::init()
     //LED Controller Initialization
     this->ledController.init();
     this->ledController.set_animation(LED_ANIMATION_CONFIGURING);
+    uint8_t errorcode = 0;
 
     //FSM initialization
     this->fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -54,13 +55,19 @@ void FootController::init()
     //TODO: Send Warnings via EtherCAT for sensor initialization failure, currently indicated via LED animation
     if(imu.init() != 0) 
     {
-
+        this->controller_error_word.imu_init_failed = 1;
         this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_IMU);
+        errorcode |= 1;
     }
     
     for(LDC1101 &ldc : this->ldc)
     {
-        if(ldc.init() != HAL_OK) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_LDC);
+        if(ldc.init() != HAL_OK) 
+        {
+            this->controller_error_word.ldc_init_failed = 1;
+            this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_LDC);
+            errorcode |= 1;
+        }
     }
 
     this->active_ldc = &this->ldc[0]; // Pointer to the currently active LDC, used for SPI communication
@@ -71,37 +78,65 @@ void FootController::init()
 
 
 
-    if(TMAG5273::init() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_MAG);
+    if(TMAG5273::init() != 0) 
+    {
+        this->controller_error_word.hall_init_failed = 1;
+        this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_MAG);
+        errorcode |= 1;
+    }
 
-
-    if(tof.init() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF);
+    if(tof.init() != 0) 
+    {
+        this->controller_error_word.tof_init_failed = 1;
+        this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF);
+        errorcode |= 1;
+    }
 
 
     HAL_Delay(10);
     
-    if(imu.start() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_IMU);
-    if(tof.start_ranging() != 0) this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF);
+    if(imu.start() != 0) 
+    {
+        this->controller_error_word.imu_init_failed = 1;
+        this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_IMU);
+        errorcode |= 1;
+    }
+
+    if(tof.start_ranging() != 0) 
+    {
+        this->controller_error_word.tof_init_failed = 1;
+        this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF);
+        errorcode |= 1;
+    }
 
 
     // Charger Initialization
-    if(charger.wait_ready(1000)) this->ledController.set_animation(LED_ANIMATION_CHARGER_NOT_RESPONDING); //Wait for charger to be ready, if not ready after 1 second, trigger error handler
+    if(charger.wait_ready(1000)) 
+    {
+        this->controller_error_word.charger_init_failed = 1;
+        this->ledController.set_animation(LED_ANIMATION_CHARGER_NOT_RESPONDING); //Wait for charger to be ready, if not ready after 1 second, trigger error handler
+        errorcode |= 1;
+    }
 
 
     // Drive Timer Initialization
-    uint8_t errorcode = 0;
-    errorcode |= HAL_TIM_OnePulse_Start(TIM_DRV1, CHANNEL_DRV1); //Start One Pulse for DRV1
-    errorcode |= HAL_TIM_OnePulse_Start(TIM_DRV2, CHANNEL_DRV2); //Start One Pulse for DRV2
+    uint8_t tim_error = 0;
+    tim_error |= HAL_TIM_OnePulse_Start(TIM_DRV1, CHANNEL_DRV1); //Start One Pulse for DRV1
+    tim_error |= HAL_TIM_OnePulse_Start(TIM_DRV2, CHANNEL_DRV2); //Start One Pulse for DRV2
 
     
-    errorcode |= HAL_TIM_Base_Start_IT(TIM_CONTROL); //Start Control Timer
-    errorcode |= HAL_TIM_Base_Start_IT(TIM_IMU); //Start BNO Timer
+    tim_error |= HAL_TIM_Base_Start_IT(TIM_CONTROL); //Start Control Timer
+    tim_error |= HAL_TIM_Base_Start_IT(TIM_IMU); //Start BNO Timer
 
-    if(errorcode != HAL_OK) this->controller_error_word.timer_init_failed = 1; //Set timer init failed flag if any of the timers failed to start
+    if(tim_error != HAL_OK) this->controller_error_word.timer_init_failed = 1; //Set timer init failed flag if any of the timers failed to start
+
+    errorcode |= tim_error;
 
     HAL_GPIO_WritePin(GD_nEN_GPIO_Port, GD_nEN_Pin, GPIO_PIN_RESET); //Enable Gate Drivers
 
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
 
+    if(errorcode == 0) this->ledController.set_animation(LED_ANIMATION_CYAN);
     this->ledController.set_animation(LED_ANIMATION_SENSOR_INIT_FAILED_TOF); //Set LED animation to operational
 }
 
@@ -121,11 +156,13 @@ void FootController::magnetize(uint8_t time)
         // Magnetization was requiested
         TIM_DRV1->Instance->CCR1 = time; // pulse width in us
         TIM_DRV1->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
+        HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_SET); //Set Magnetization Status to 1
     }else if(this->requested_magnetization && !this->requested_demagnetization)
     {
         // Demagnetization was requested
         TIM_DRV2->Instance->CCR2 = time; // pulse width in us
         TIM_DRV2->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
+        HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_RESET); //Set Magnetization Status to 0
     } else 
     {
         return; //No valid request, do nothing
@@ -218,6 +255,7 @@ FSMStatus FootController::FSM_switchOnDisabled(FSMStatus state, uint16_t &status
 {
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
     this->charger.tx_data.enable = 0; //Disable Charging
+    this->ledController.set_animation(LED_ANIMATION_CYAN);
     status_word = status_word & ~FSMStatusWord::ROTOR_ALIGNING_STATUS;
     return state;
 }
@@ -238,6 +276,12 @@ FSMStatus FootController::FSM_switchedOn(FSMStatus state, uint16_t &status_word,
 
 FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status_word, int8_t &mode)
 {
+    if(state != FSMStatus::OPERATION_ENABLED) // Just once when entering the state
+    {
+       this->ledController.set_animation(LED_ANIMATION_APPLICATION_RUNNING);
+    }
+
+
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
     //Magnetization state
     //Handle Magnetization/Demagnetization requests
