@@ -700,7 +700,7 @@ const _objd SDO1000[] =
 };
 const _objd SDO1008[] =
 {
-  {0x00, DTYPE_VISIBLE_STRING, 160, ATYPE_RO, acName1008, 0, "SOES Sensor Slave"},
+  {0x00, DTYPE_VISIBLE_STRING, 160, ATYPE_RO, acName1008, 0, "Magnecko EPM Controller"},
 };
 const _objd SDO1009[] =
 {
@@ -936,19 +936,19 @@ const _objd SDO1C00[] =
 };
 const _objd SDO1C12[] =
 {
-  {0x00, DTYPE_UNSIGNED8,  8, ATYPE_RWpre, acName1C12_00, 1, &SM1C12.maxsub},
-  {0x01, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C12_01, 0x1600, &SM1C12.value[0]},
+  {0x00, DTYPE_UNSIGNED8,  8, ATYPE_RO, acName1C12_00, 1, &SM1C12.maxsub},
+  {0x01, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C12_01, 0x1600, &SM1C12.value[0]},
 };
 const _objd SDO1C13[] =
 {
-  {0x00, DTYPE_UNSIGNED8,  8, ATYPE_RWpre, acName1C13_00, 7, &SM1C13.maxsub},
-  {0x01, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_01, 0x1A00, &SM1C13.value[0]},
-  {0x02, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_02, 0x1A01, &SM1C13.value[1]},
-  {0x03, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_03, 0x1A02, &SM1C13.value[2]},
-  {0x04, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_04, 0x1A03, &SM1C13.value[3]},
-  {0x05, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_05, 0x1A04, &SM1C13.value[4]},
-  {0x06, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_06, 0x1A05, &SM1C13.value[5]},
-  {0x07, DTYPE_UNSIGNED16, 16, ATYPE_RWpre, acName1C13_07, 0x1A06, &SM1C13.value[6]},
+  {0x00, DTYPE_UNSIGNED8,  8, ATYPE_RO, acName1C13_00, 7, &SM1C13.maxsub},
+  {0x01, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C13_01, 0x1A00, &SM1C13.value[0]},
+  {0x02, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C13_02, 0x1A01, &SM1C13.value[1]},
+  {0x03, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C13_03, 0x1A02, &SM1C13.value[2]},
+  {0x04, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C13_04, 0x1A03, &SM1C13.value[3]},
+  {0x05, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C13_05, 0x1A04, &SM1C13.value[4]},
+  {0x06, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C13_06, 0x1A05, &SM1C13.value[5]},
+  {0x07, DTYPE_UNSIGNED16, 16, ATYPE_RO, acName1C13_07, 0x1A06, &SM1C13.value[6]},
 };
 
 const _objd SDO2000[] =
