@@ -43,7 +43,7 @@ bool Charger::wait_ready(uint16_t timeout)
  */
 void Charger::transmit_receive()
 {
-    while(HAL_SPI_GetState(CHARGER_SPI_HANDLE) != HAL_SPI_STATE_READY);
+    if(HAL_SPI_GetState(CHARGER_SPI_HANDLE) != HAL_SPI_STATE_READY) return;
     HAL_SPI_TransmitReceive_IT(CHARGER_SPI_HANDLE, (uint8_t *)&Charger::tx_data, (uint8_t *)&Charger::status, sizeof(Charger::status));
 
     //TODO: Handle Charger status and faults
