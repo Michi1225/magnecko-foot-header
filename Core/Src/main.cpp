@@ -161,6 +161,7 @@ int main(void)
   MX_TIM5_Init();
   MX_ADC1_Init();
   MX_I2C4_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   controller.init();
 
@@ -327,6 +328,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     controller.magnetize(MAGNETIZATION_TIME);
     controller.requested_demagnetization = false;
     controller.requested_magnetization = false;
+  }
+
+  // Dead Time Timer
+  // This interrupt is triggered, if the dead time after a magnetization or demagnetization
+  else if(htim == DEAD_TIME_TIMER)
+  {
+    HAL_TIM_Base_Stop_IT(htim);
+    controller.dead_time_active = false; //Reset Dead Time Active
   }
   
 

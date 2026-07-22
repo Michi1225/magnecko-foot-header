@@ -1,6 +1,7 @@
 #include "FootController.h"
 #include "LEDController.h"
 #include "main.h"
+#include "stm32h7xx_hal_tim.h"
 
 
 FootController::FootController() : fsm_(),
@@ -146,9 +147,9 @@ void FootController::runCommunication()
     this->charger.transmit_receive(); //Run Charger Communication Loop
 }
 
-void FootController::magnetize(uint8_t time)
+void FootController::magnetize(uint16_t time)
 {
-    if(time < 1000 ||time > 10000) return; 
+    if(time < 1000 ||time > 10000 || this->dead_time_active) return; 
 
 
     if(!this->requested_magnetization && this->requested_demagnetization)
@@ -169,6 +170,8 @@ void FootController::magnetize(uint8_t time)
     }
     //Set Magnetization Status
     this->status_magnetization = this->requested_magnetization;
+    this->dead_time_active = true; //Set Dead Time Active
+    HAL_TIM_Base_Start_IT(DEAD_TIME_TIMER); //Start Dead Time Timer
 }
 
 void FootController::runControl()

@@ -19,8 +19,11 @@ extern "C" {
  }
 
 #define MAGNETIZATION_TIME 5000 //5ms
+#define DEAD_TIME 10000 //100ms
 
 #define ECAT_SPI_HANDLE &hspi1
+
+#define DEAD_TIME_TIMER &htim6
 
 #define N_PARAMETERS 10
 
@@ -165,6 +168,8 @@ public:
     bool prev_demag = false;
     bool status_magnetization = false;      //Status of the magnetization
     bool requested_discharge = false;       //A discharge is requested
+    bool dead_time_active = false;          //Dead time is active, no magnetization or demagnetization is allowed
+
 
     // Capacitor Charger
     Charger charger;
@@ -190,9 +195,9 @@ public:
 
     /**
      * @brief Magnetize or demagnetize the Magnet according to the requested state.
-     * @param time Time in 100us to magnetize the magnet.
+     * @param time Time in 1us to magnetize the magnet.
      */
-    void magnetize(uint8_t time);
+    void magnetize(uint16_t time);
 
     /**
      * @brief Estimate the current holding Force.
