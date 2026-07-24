@@ -105,12 +105,15 @@ float TMAG5273::read_magnitude()
 
     int16_t raw_value_x = (static_cast<int16_t>(rxDataHall[0]) << 8) | static_cast<int16_t>(rxDataHall[1]);
     this->bx = static_cast<float>(raw_value_x) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    this->raw_bx = raw_value_x;
 
     int16_t raw_value_y = (static_cast<int16_t>(rxDataHall[2]) << 8) | static_cast<int16_t>(rxDataHall[3]);
     this->by = static_cast<float>(raw_value_y) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    this->raw_by = raw_value_y;
 
     int16_t raw_value_z = (static_cast<int16_t>(rxDataHall[4]) << 8) | static_cast<int16_t>(rxDataHall[5]);
     this->bz = static_cast<float>(raw_value_z) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    this->raw_bz = raw_value_z;
     
     float magnitude = sqrt(this->bx * this->bx + this->by * this->by + this->bz * this->bz);
     this->b_mag = magnitude;

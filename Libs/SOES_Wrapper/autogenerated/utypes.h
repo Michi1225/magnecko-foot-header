@@ -41,9 +41,9 @@ typedef struct
    uint16_t LDC_Frequency[4];
    uint16_t LDC_RP[4];
 
-   uint16_t HALL_Mag_X[4];
-   uint16_t HALL_Mag_Y[4];
-   uint16_t HALL_Mag_Z[4];
+   int16_t HALL_Mag_X[4];
+   int16_t HALL_Mag_Y[4];
+   int16_t HALL_Mag_Z[4];
 
    uint16_t Capacitor_Voltage;
 
