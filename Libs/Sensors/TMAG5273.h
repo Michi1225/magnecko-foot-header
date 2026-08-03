@@ -100,6 +100,7 @@ public:
     };
 
     float bx,by,bz, b_mag;
+    int16_t raw_bx, raw_by, raw_bz;
 
     /**
      * @brief TMAG5273 constructor
