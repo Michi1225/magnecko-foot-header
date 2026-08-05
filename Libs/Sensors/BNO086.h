@@ -94,8 +94,10 @@ public:
 
     /**
      * @brief   Initialize BNO with the correct settings and define the Feature reports. 
+     * @param[in]   timeout: Timeout for the initialization in ms
+     * @retval  HAL Status Code. 0 if all transmissions were successful
      */
-    uint8_t init();
+    uint8_t init(uint16_t timeout = 1000);
 
     /**
      * @brief   Start feature reports, as defined in init()
@@ -113,10 +115,10 @@ public:
     uint8_t seqNum = 0;
     uint8_t msgs_ready = 0;
 
-    float output_gyro[3];
-    float output_accel[3];
-    float output_lin_accel[3];
-    float output_quat[4];
+    int16_t output_gyro[3];
+    int16_t output_accel[3];
+    int16_t output_lin_accel[3];
+    int16_t output_quat[4];
 
 };
 

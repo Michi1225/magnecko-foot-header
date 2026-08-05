@@ -376,10 +376,10 @@ void LEDController::set_animation(LED_Animation_t animation)
             break;
         case LED_ANIMATION_CYAN:
             // Handle LED_ANIMATION_APPLICATION_RUNNING
-            // Solid Green
+            // Solid Green, Solid Blue
             this->config.out0_en = 0;
             this->config.out1_en = 1;
-            this->config.out2_en = 0;
+            this->config.out2_en = 1;
 
             this->patterns[0].pause_t0 = 0; // No Pause
             this->patterns[0].pause_t1 = 0; // No Pause

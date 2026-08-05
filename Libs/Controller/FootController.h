@@ -16,12 +16,13 @@ extern "C" {
     #include "ecat_slv.h"
     #include "utypes.h"
     #include "soes_pin_mapping_def.h"
+    #include "thermistor.h"
  }
 
 #define MAGNETIZATION_TIME 5000 //5ms
 #define DEAD_TIME 10000 //100ms
 
-#define ECAT_SPI_HANDLE &hspi1
+#define ECAT_SPI_HANDLE &hspi4
 
 #define DEAD_TIME_TIMER &htim6
 
@@ -129,6 +130,10 @@ public:
         uint8_t charger_wd_fault : 1; // Charger watchdog fault
         uint8_t eeprom_params_invalid : 1; // EEPROM parameters are invalid
         uint8_t timer_init_failed : 1; // Timer initialization failed
+        uint8_t temperature_sensors_not_connected : 1; // Temperature sensors not connected
+        uint8_t over_temperature_fault : 1; // Over temperature fault
+        uint8_t gate_drive_fault : 1; // Gate drive fault
+        uint8_t invalid_input_command : 1; // Invalid input command received via EtherCAT
     }controller_error_word;
 
     //LED Controller

@@ -56,6 +56,9 @@
 _Objects Obj = {};
 FootController __attribute__((section(".RAM"))) controller = FootController();
 
+uint32_t counter1 = 0;
+uint32_t counter2 = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -162,11 +165,14 @@ int main(void)
   MX_ADC1_Init();
   MX_I2C4_Init();
   MX_TIM6_Init();
+  MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
+  ITM->PORT[0].u32 = 0; // Send counter value to ITM for debugging
+  ITM->PORT[1].u32 = 0; // Send counter value to ITM for debugging
   controller.init();
-
-
-
+  
+  
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -174,6 +180,10 @@ int main(void)
   SWD_Init();
   while (1)
   {
+    controller.hall3.read_magnitude();
+    controller.hall2.read_magnitude();
+    controller.hall1.read_magnitude();
+    controller.hall0.read_magnitude();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -291,10 +301,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   else if(GPIO_Pin == TOF_INT_Pin)
   {
     //TODO: read ToF data
-    controller.tof.get_ranging_data();
+    controller.tof.clear_interrupt();
   }
 }
-
 
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -306,6 +315,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     controller.runControl();
     controller.runCommunication();
     controller.active_ldc->read_data(); // Read data from the currently active LDC
+
     return;
   }
 
@@ -354,7 +364,10 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     }
     else if (hspi == TOF_SPI_HANDLE)
     {
-        controller.tof.data_valid = true;
+        if(!controller.tof.interrupt_clear_pending) // Interrupt came from ToF message
+        {
+            controller.tof.data_valid = true;
+        }
     }
     else if (hspi == CHARGER_SPI_HANDLE)
     {
@@ -364,6 +377,21 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         controller.controller_error_word.charger_ov_fault = controller.charger.status.OV_fault;
         controller.controller_error_word.charger_wd_fault = controller.charger.status.WD_fault;
     }
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == TOF_SPI_HANDLE)
+  {
+      if(controller.tof.interrupt_clear_pending) // Interrupt came from INT CLEAR message
+      {
+          controller.tof.interrupt_clear_pending = false;
+          controller.tof.get_ranging_data();
+      }else // Interrupt came from Ranging Data message, this interrupt should not happen
+      {
+          controller.tof.data_valid = false;
+      }
+  }
 }
 
 /* USER CODE END 4 */
@@ -404,9 +432,15 @@ void MPU_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  controller.charger.tx_data.enable = 0; //Disable charging
+  HAL_TIM_OnePulse_Stop(TIM_DRV1, CHANNEL_DRV1); //Stop DRV1
+  HAL_TIM_OnePulse_Stop(TIM_DRV2, CHANNEL_DRV2); //Stop DRV2
+  HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
+
   controller.ledController.set_animation(LED_ANIMATION_UNCAUGHT_EXCEPTION); // Set LED animation to indicate an error has occurred
-  errorHandler();
+  controller.charger.tx_data.enable = 0; //Disable charging
+  controller.charger.transmit_receive();
+  for(int i = 0; i < 1000000; i++) __NOP(); //Wait for charger to disable
+  __disable_irq(); //Disable all interrupts
   while (1)
   {
     

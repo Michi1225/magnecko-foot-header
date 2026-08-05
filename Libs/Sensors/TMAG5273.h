@@ -139,6 +139,12 @@ public:
     float read_magnitude();
 
     /**
+     * @brief read all three axes B-Field values in a blocking manner
+     * @return B-Field Magnitude in mT
+     */
+    float read_magnitude_blocking();
+
+    /**
      * @brief read the temperature value
      * @return temperature value in degree Celsius
      */

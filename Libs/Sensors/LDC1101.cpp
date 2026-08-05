@@ -145,12 +145,12 @@ void LDC1101::read_data()
     if(!this->initialized) return; // Don't read data if sensor is not initialized
 
 
-    while(HAL_SPI_GetState(LDC_SPI_HANDLE) != HAL_SPI_STATE_READY);
+    if(HAL_SPI_GetState(LDC_SPI_HANDLE) != HAL_SPI_STATE_READY) return;
 
-    struct
+    struct __attribute__((packed))
     {
         uint8_t addr;
-        uint8_t data[4];
+        uint8_t data[4] = {0};
     } tx_data;
     tx_data.addr = LDC1101_ADDR_RP_DATA_LSB | 0x80; // Read command
     

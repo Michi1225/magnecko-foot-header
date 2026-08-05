@@ -10,12 +10,6 @@ enum ErrorCode {
 
 void errorHandler()
 {
-    HAL_TIM_OnePulse_Stop(TIM_DRV1, CHANNEL_DRV1); //Stop DRV1
-    HAL_TIM_OnePulse_Stop(TIM_DRV2, CHANNEL_DRV2); //Stop DRV2
-    HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_RESET); //Discharge Caps
-    //TODO: Disable Charging
-
-    //TODO: Send error message to LED controller
   
     __disable_irq();
 }
@@ -75,6 +69,11 @@ void errorHandler()
     
     // Force AF0 for GPIOB pin 3
     *(__IO uint32_t*)(0x58020420) &= 0xFFFF0FFF;
+
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // Enable trace in core debug
+    DWT->LAR = 0xC5ACCE55; // Unlock DWT
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk; // Enable cycle
+
     }
 #endif
 

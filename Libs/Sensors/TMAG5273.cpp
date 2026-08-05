@@ -95,7 +95,6 @@ float TMAG5273::read_Bz()
 float TMAG5273::read_magnitude()
 {
     if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
-
     HAL_I2C_Mem_Read_DMA(SENS_I2C_HANDLE, (this->device_address << 1), X_MSB_RESULT_ADDR, I2C_MEMADD_SIZE_8BIT, rxDataHall, 6);
     while(HAL_I2C_GetState(SENS_I2C_HANDLE) != HAL_I2C_STATE_READY)
     {
@@ -118,6 +117,30 @@ float TMAG5273::read_magnitude()
     float magnitude = sqrt(this->bx * this->bx + this->by * this->by + this->bz * this->bz);
     this->b_mag = magnitude;
     return magnitude;
+}
+
+float TMAG5273::read_magnitude_blocking()
+{
+    if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
+    HAL_I2C_Mem_Read(SENS_I2C_HANDLE, (this->device_address << 1), X_MSB_RESULT_ADDR, I2C_MEMADD_SIZE_8BIT, rxDataHall, 6, 100);
+
+
+
+    int16_t raw_value_x = (static_cast<int16_t>(rxDataHall[0]) << 8) | static_cast<int16_t>(rxDataHall[1]);
+    this->bx = static_cast<float>(raw_value_x) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    this->raw_bx = raw_value_x;
+
+    int16_t raw_value_y = (static_cast<int16_t>(rxDataHall[2]) << 8) | static_cast<int16_t>(rxDataHall[3]);
+    this->by = static_cast<float>(raw_value_y) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    this->raw_by = raw_value_y;
+
+    int16_t raw_value_z = (static_cast<int16_t>(rxDataHall[4]) << 8) | static_cast<int16_t>(rxDataHall[5]);
+    this->bz = static_cast<float>(raw_value_z) / 65536.0f * 2.0f * MAG_SENSITIVITY;
+    this->raw_bz = raw_value_z;
+    
+    float magnitude = sqrt(this->bx * this->bx + this->by * this->by + this->bz * this->bz);
+    this->b_mag = magnitude;
+    return magnitude;    
 }
 
 float TMAG5273::read_T()

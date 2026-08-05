@@ -2,6 +2,7 @@
 #include "cmsis_gcc.h"
 #include "stm32h7xx_hal_spi.h"
 #include <cstdint>
+#include <cstring>
 
 
 __section(BNO086_SECTION_NAME) __aligned(4) 
@@ -11,7 +12,7 @@ struct
     uint8_t time_stamp[5];
     uint8_t report_id;
 } bno_header;
-__section(BNO086_SECTION_NAME) __aligned(4) struct 
+__section(BNO086_SECTION_NAME) __aligned(4) PACKED struct 
 {
     uint16_t length = 0;
     uint8_t channel = 0;
@@ -19,6 +20,12 @@ __section(BNO086_SECTION_NAME) __aligned(4) struct
     uint8_t report_id = 0;
 }shtp_header;
 __section(BNO086_SECTION_NAME) __aligned(4) uint8_t dummy[128] = {0};
+
+__section(BNO086_SECTION_NAME) __aligned(4) uint8_t advertisement[284] = {0};
+
+__section(BNO086_SECTION_NAME) __aligned(4) uint8_t init_msg[40] = {0};
+
+__section(BNO086_SECTION_NAME) __aligned(4) uint8_t exec[10] = {0};
 
 VectorData BNO086::gyro_data        __section(BNO086_SECTION_NAME) = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GYROSCOPE};
 VectorData BNO086::accel_data       __section(BNO086_SECTION_NAME) = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ACCELEROMETER};
@@ -30,10 +37,9 @@ RotationVectorData BNO086::rot_data __section(BNO086_SECTION_NAME) = {0, 0, 0, 0
 
 static void read_dummy()
 {
-    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Receive(BNO086_SPI_HANDLE, (uint8_t *)&shtp_header, sizeof(shtp_header), 10);
+    //TODO: Validate header.
     if((shtp_header.length & 0x7FFF) > 10) HAL_SPI_Receive(BNO086_SPI_HANDLE, dummy, (shtp_header.length & 0x7FFF) - sizeof(shtp_header), 10);
-    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET);
 }
 
 
@@ -42,6 +48,7 @@ BNO086::BNO086()
     this->msgs_ready = 0;
     this->seqNum = 0;
     this->features.clear();
+    this->initialized = false;
     BNO086::gyro_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_GYROSCOPE};
     BNO086::lin_accel_data = {0, 0, 0, 0, 0, 0, BNO086_Q_POINT_LINEAR_ACCELERATION};
     BNO086::rot_data = {0, 0, 0, 0, 0, 0, 0, 0, BNO086_Q_POINT_ROTATION, BNO086_Q_POINT_ACCURACY_ROTATION};
@@ -50,7 +57,7 @@ BNO086::BNO086()
 }
 
 
-uint8_t BNO086::init()
+uint8_t BNO086::init(uint16_t timeout)
 {
 
     HAL_StatusTypeDef status = HAL_OK;
@@ -76,33 +83,45 @@ uint8_t BNO086::init()
 #endif
 
 
+
     //Reset BNO
     // HAL_NVIC_DisableIRQ(EXTI2_IRQn); //Disable HINT_N interrupt
     HAL_GPIO_WritePin(IMU_NRST_GPIO_Port, IMU_NRST_Pin, GPIO_PIN_RESET);
     HAL_Delay(0);
     HAL_GPIO_WritePin(IMU_NRST_GPIO_Port, IMU_NRST_Pin, GPIO_PIN_SET);
 
+
     //After reset, we have to wait for BNO to assert HINT_N
     // while(HAL_GPIO_ReadPin(IMU_INT_GPIO_Port, IMU_INT_Pin) == GPIO_PIN_RESET);
     // HAL_NVIC_EnableIRQ(EXTI2_IRQn); //Enable HINT_N interrupt
 
 
+    uint32_t start_time = HAL_GetTick();
     //Read advertisemsent
     while(this->msgs_ready == 0);
+    do
+    {
+        if((HAL_GetTick() - start_time) > timeout) return HAL_TIMEOUT;
+    } while(this->msgs_ready == 0);
+
+
     this->msgs_ready = 0;
-    uint8_t advertisement[284] = {0};
     if(HAL_SPI_Receive(BNO086_SPI_HANDLE, advertisement, 284, 10) != HAL_OK) status = HAL_ERROR;
     
     //read initialize response
-    while(this->msgs_ready == 0);
+    do
+    {
+        if((HAL_GetTick() - start_time) > timeout) return HAL_TIMEOUT;
+    } while(this->msgs_ready == 0);
     this->msgs_ready = 0;
-    uint8_t init[40] = {0};
-    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, init, 20, 100) != HAL_OK) status = HAL_ERROR;
+    if(HAL_SPI_Receive(BNO086_SPI_HANDLE, init_msg, 20, 100) != HAL_OK) status = HAL_ERROR;
 
     //read message from executable
-    while(this->msgs_ready == 0);
+    do
+    {
+        if((HAL_GetTick() - start_time) > timeout) return HAL_TIMEOUT;
+    } while(this->msgs_ready == 0);
     this->msgs_ready = 0;
-    uint8_t exec[10] = {0};
     if(HAL_SPI_Receive(BNO086_SPI_HANDLE, exec, 5, 10) != HAL_OK) status = HAL_ERROR;
 
     if(status == HAL_OK) this->initialized = true;
@@ -155,7 +174,7 @@ uint8_t BNO086::start()
         txBytes[20] = 0x00;
 
 
-        errorcode = HAL_SPI_Transmit(BNO086_SPI_HANDLE, txBytes, 21, 1000);
+        errorcode = HAL_SPI_TransmitReceive(BNO086_SPI_HANDLE, txBytes, rxBytes, 21, 1000);
         if(errorcode != HAL_OK) return errorcode;
         this->seqNum = (this->seqNum + 1) % 256;
 
@@ -181,12 +200,14 @@ uint8_t BNO086::start()
 uint8_t BNO086::update()
 {
     if(!this->initialized) return 1; //BNO not initialized
+    return 0; //TODO: Implement update function
     uint8_t errorcode = 0;
     while(this->msgs_ready > 0)
     {
         this->msgs_ready--;
         
         //read header
+        memset(dummy, 0, 10);
     uint8_t errorcode = HAL_SPI_TransmitReceive_IT(BNO086_SPI_HANDLE, dummy, (uint8_t *)&bno_header, sizeof(bno_header));
     while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY);
 
@@ -213,6 +234,7 @@ uint8_t BNO086::update()
         errorcode |= HAL_SPI_Receive_IT(BNO086_SPI_HANDLE, (uint8_t *)&this->grav_data, 9);
             break;
         default:
+            read_dummy();
             errorcode = 1;
             break;
         }
@@ -220,37 +242,36 @@ uint8_t BNO086::update()
     // Wait for SPI Transaction to complete
     while(HAL_SPI_GetState(BNO086_SPI_HANDLE) != HAL_SPI_STATE_READY);
     
-        // Update IMU Data Object
-        if(errorcode == 0)
+    // Update IMU Data Object
+    if(errorcode == 0)
+    {
+        if(this->accel_data.status >= 2)
         {
-            if(this->accel_data.status >= 2)
-            {
-                this->output_accel[0] = q_to_float(this->accel_data.axis_x, BNO086_Q_POINT_ACCELEROMETER);
-                this->output_accel[1] = q_to_float(this->accel_data.axis_y, BNO086_Q_POINT_ACCELEROMETER);
-                this->output_accel[2] = q_to_float(this->accel_data.axis_z, BNO086_Q_POINT_ACCELEROMETER);
-            }
-            if(this->gyro_data.status >= 2)
-            {
-                this->output_gyro[0] = q_to_float(this->gyro_data.axis_x, BNO086_Q_POINT_GYROSCOPE);
-                this->output_gyro[1] = q_to_float(this->gyro_data.axis_y, BNO086_Q_POINT_GYROSCOPE);
-                this->output_gyro[2] = q_to_float(this->gyro_data.axis_z, BNO086_Q_POINT_GYROSCOPE);
-            }
-            if(this->rot_data.accuracy_estimate == 12868) // Magic Number
-            {
-                this->output_quat[0] = q_to_float(this->rot_data.quaternion_i, BNO086_Q_POINT_ROTATION);
-                this->output_quat[1] = q_to_float(this->rot_data.quaternion_j, BNO086_Q_POINT_ROTATION);
-                this->output_quat[2] = q_to_float(this->rot_data.quaternion_k, BNO086_Q_POINT_ROTATION);
-                this->output_quat[3] = q_to_float(this->rot_data.quaternion_real, BNO086_Q_POINT_ROTATION);
-            }
-            if(this->lin_accel_data.status >= 2)
-            {
-                this->output_lin_accel[0] = q_to_float(this->lin_accel_data.axis_x, BNO086_Q_POINT_LINEAR_ACCELERATION);
-                this->output_lin_accel[1] = q_to_float(this->lin_accel_data.axis_y, BNO086_Q_POINT_LINEAR_ACCELERATION);
-                this->output_lin_accel[2] = q_to_float(this->lin_accel_data.axis_z, BNO086_Q_POINT_LINEAR_ACCELERATION);
-
-            }
-    
+            this->output_accel[0] = this->accel_data.axis_x;
+            this->output_accel[1] = this->accel_data.axis_y;
+            this->output_accel[2] = this->accel_data.axis_z;
         }
+        if(this->gyro_data.status >= 2)
+        {
+            this->output_gyro[0] = this->gyro_data.axis_x;
+            this->output_gyro[1] = this->gyro_data.axis_y;
+            this->output_gyro[2] = this->gyro_data.axis_z;
+        }
+        if(this->rot_data.accuracy_estimate == 12868) // Magic Number
+        {
+            this->output_quat[0] = this->rot_data.quaternion_i;
+            this->output_quat[1] = this->rot_data.quaternion_j;
+            this->output_quat[2] = this->rot_data.quaternion_k;
+            this->output_quat[3] = this->rot_data.quaternion_real;
+        }
+        if(this->lin_accel_data.status >= 2)
+        {
+            this->output_lin_accel[0] = this->lin_accel_data.axis_x;
+            this->output_lin_accel[1] = this->lin_accel_data.axis_y;
+            this->output_lin_accel[2] = this->lin_accel_data.axis_z;
+        }
+
+    }
         //TODO: Handle errorcode: send warning via EtherCAT??
 
     }

@@ -18,6 +18,8 @@ Charger::Charger()
 
     Charger::tx_data.enable = 0;
     Charger::tx_data.clear_faults = 0;
+
+    this->initialized = false;
 }
 
 
@@ -32,7 +34,11 @@ bool Charger::wait_ready(uint16_t timeout)
     while(HAL_GetTick() - start_time < timeout)
     {
         this->transmit_receive();
-        if(Charger::status.ready) return true;
+        if(Charger::status.ready) 
+        {
+            this->initialized = true;
+            return true;
+        }
     }
     return false;
 }
@@ -43,8 +49,8 @@ bool Charger::wait_ready(uint16_t timeout)
  */
 void Charger::transmit_receive()
 {
+    if(!this->initialized) return; // Return if charger is not initialized
     if(HAL_SPI_GetState(CHARGER_SPI_HANDLE) != HAL_SPI_STATE_READY) return;
     HAL_SPI_TransmitReceive_IT(CHARGER_SPI_HANDLE, (uint8_t *)&Charger::tx_data, (uint8_t *)&Charger::status, sizeof(Charger::status));
 
-    //TODO: Handle Charger status and faults
 }

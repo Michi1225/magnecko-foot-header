@@ -30,6 +30,22 @@ static HAL_StatusTypeDef spiWriteReg(uint8_t registerAddress, const uint8_t* pay
     return status;
 }
 
+static HAL_StatusTypeDef spiWriteRegDMA(uint8_t registerAddress, const uint8_t* payload, size_t payloadLen)
+{
+    if (payloadLen > SPI_MAX_PAYLOAD) return HAL_ERROR;
+
+    uint8_t txBuf[2 + SPI_MAX_PAYLOAD] = {0};
+    txBuf[0] = 0x02;
+    txBuf[1] = registerAddress;
+    if (payloadLen)
+    {
+        std::memcpy(&txBuf[2], payload, payloadLen);
+    }
+
+    HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(TOF_SPI_HANDLE, txBuf, 2 + payloadLen);
+    return status;
+}
+
 /**
  * @brief Read the specified register of the TMF8829 via SPI
  * @param registerAddress The address of the register to read
@@ -63,12 +79,12 @@ static HAL_StatusTypeDef spiReadReg(uint8_t registerAddress, uint8_t* outData, s
  */
 static HAL_StatusTypeDef spiReadResult(TMF8829 *sensor)
 {
-    uint8_t tx_data[sizeof(TMF8829_Frame_t) + 3] = {0};
+    uint8_t tx_data[sizeof(TMF8829_Frame_t)] = {0};
     tx_data[0] = 0x03; // Read command
     tx_data[1] = TMF8829_FIFOSTATUS;
 
-    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive_IT(TOF_SPI_HANDLE, tx_data, reinterpret_cast<uint8_t*>(&(sensor->data_frame)), sizeof(TMF8829_Frame_t) + 3);
-
+    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive_IT(TOF_SPI_HANDLE, tx_data, reinterpret_cast<uint8_t*>(&(sensor->data_frame)), sizeof(TMF8829_Frame_t));
+    ITM->PORT[1].u16 = sensor->data_frame.pixel_data[0][0].distance; // Send counter value to ITM for debugging
     return status;
 }
 
@@ -210,10 +226,11 @@ HAL_StatusTypeDef TMF8829::ram_patch_download()
 
 TMF8829::TMF8829() {
   this->data_valid = false;
+  this->interrupt_clear_pending = false;
   std::memset(&this->data_frame, 0, sizeof(this->data_frame));
 }
 
-HAL_StatusTypeDef TMF8829::init()
+HAL_StatusTypeDef TMF8829::init(uint16_t timeout)
 {
     int status = HAL_OK;
 
@@ -226,11 +243,15 @@ HAL_StatusTypeDef TMF8829::init()
 
     HAL_Delay(2);
 
+    uint16_t elapsed_time = 3;
+
     //Check if device has booted
     do
     {
         status |= spiReadReg(TMF8829_ENABLE, &readValue, 1);
-        HAL_Delay(10);
+        HAL_Delay(9);
+        elapsed_time += 10;
+        if(elapsed_time > timeout) return HAL_ERROR;
     } while (!(readValue & 0x80));
     
     // Disable I2C interface
@@ -256,7 +277,9 @@ HAL_StatusTypeDef TMF8829::init()
     do
     {
         status |= spiReadReg(TMF8829_CMD_STAT, &cmdStatus, 1);
-        HAL_Delay(10);
+        HAL_Delay(9);
+        elapsed_time += 10;
+        if(elapsed_time > timeout) return HAL_ERROR;
     } while ((cmdStatus & 0x0F) != 0x00); // Wait for configuration to be loaded
 
     // Set Ranging Period to 16ms
@@ -304,21 +327,24 @@ HAL_StatusTypeDef TMF8829::start_ranging()
         return status;
     }
 
-    HAL_Delay(0);
-
-    return checkRegister(TMF8829_CMD_STAT, 0x00, 10); // Wait for measurement to start (STAT_OK)
+    return checkRegister(TMF8829_CMD_STAT, (uint8_t)TMF8829_Status::STAT_ACCEPTED, 100);
 }
 
 void TMF8829::get_ranging_data() 
 {
     if(!this->initialized) return; // Return if sensor is not initialized
-    
-    uint8_t clearInt = 0x0F;
-    spiWriteReg(TMF8829_INT_STATUS, &clearInt, 1);
-    
+
     this->data_valid = false;
 
     spiReadResult(this);
 }
 
+void TMF8829::clear_interrupt() 
+{
+    if(!this->initialized) return; // Return if sensor is not initialized
+    
+    uint8_t clearInt = 0x0F;
+    uint8_t status = spiWriteRegDMA(TMF8829_INT_STATUS, &clearInt, 1);
+    if(status == HAL_OK) this->interrupt_clear_pending = true;    
 
+}

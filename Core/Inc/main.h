@@ -108,6 +108,7 @@ void Error_Handler(void);
 #define IMU_WAKE_GPIO_Port GPIOD
 #define IMU_INT_Pin GPIO_PIN_1
 #define IMU_INT_GPIO_Port GPIOD
+#define IMU_INT_EXTI_IRQn EXTI1_IRQn
 #define IMU_MISO_Pin GPIO_PIN_11
 #define IMU_MISO_GPIO_Port GPIOC
 #define IMU_SCK_Pin GPIO_PIN_10
@@ -145,6 +146,7 @@ void Error_Handler(void);
 #define TOF_INT_EXTI_IRQn EXTI9_5_IRQn
 #define BUTTON_Pin GPIO_PIN_2
 #define BUTTON_GPIO_Port GPIOB
+#define BUTTON_EXTI_IRQn EXTI2_IRQn
 #define HALL_SDA_Pin GPIO_PIN_11
 #define HALL_SDA_GPIO_Port GPIOB
 #define LDC_SCK_Pin GPIO_PIN_13

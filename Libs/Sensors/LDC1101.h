@@ -46,7 +46,7 @@ private:
     uint16_t cs_pin;
     bool initialized = false;
 public:
-    struct
+    struct __attribute__((packed))
     {
         uint8_t addr;
         uint16_t rp_data;
