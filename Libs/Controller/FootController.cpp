@@ -124,7 +124,7 @@ void FootController::init()
 
 
     // Charger Initialization
-    if(charger.wait_ready(1000)) 
+    if(!charger.wait_ready(1000)) 
     {
         this->controller_error_word.charger_init_failed = 1;
     }
@@ -199,6 +199,8 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     // Controller Status
     fsm_.setControlWord(Obj.Control_Word);
 
+    uint8_t warning_active = false;
+
     // Handle Faults and Warnings
     // Sensor Initialization Failures
     Obj.Error_Code = 0; // Reset Error Code
@@ -206,18 +208,22 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     {
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::SENSOR_INIT_FAILED_IMU);
         status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
     }if(this->controller_error_word.ldc_init_failed)
     {
         Obj.Error_Code |= static_cast<uint16_t>(ErrorCodes::SENSOR_INIT_FAILED_LDC);
         status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
     }if(this->controller_error_word.hall_init_failed)
     {
         Obj.Error_Code |= static_cast<uint16_t>(ErrorCodes::SENSOR_INIT_FAILED_HALL);
         status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
     }if(this->controller_error_word.tof_init_failed)
     {
         Obj.Error_Code |= static_cast<uint16_t>(ErrorCodes::SENSOR_INIT_FAILED_TOF);
         status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
     }
 
     // // EEPROM Parameters Invalid
@@ -225,26 +231,34 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     {
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::EEPROM_PARAMS_INVALID);
         status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
     }
 
     // Charger Faults
+    if(this->controller_error_word.charger_init_failed)
+    {
+        Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_NOT_RESPONDING);
+        status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
+    }else
+    {
     if(this->controller_error_word.charger_oc_fault)
     {
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_OVER_CURRENT_FAULT);
         status_word |= FSMStatusWord::WARNING_STATUS;
+            warning_active = true;
     }if(this->controller_error_word.charger_ov_fault)
     {
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_OVER_VOLTAGE_FAULT);
         status_word |= FSMStatusWord::WARNING_STATUS;
+            warning_active = true;
     }
     if(this->controller_error_word.charger_wd_fault)
     {
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_WATCHDOG_FAULT);
         status_word |= FSMStatusWord::WARNING_STATUS;
-    }if(this->controller_error_word.charger_init_failed)
-    {
-        Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_NOT_RESPONDING);
-        status_word |= FSMStatusWord::WARNING_STATUS;
+            warning_active = true;
+        }
     }
 
     // Invalid Input Command
@@ -252,6 +266,7 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     {
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::INVALID_INPUT_COMMAND);
         status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
     }
 
     // Gate Drive Fault
@@ -261,6 +276,7 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
         this->controller_error_word.gate_drive_fault = 1;
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::GATE_DRIVE_FAULT);
         status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
     }
 
 
@@ -274,12 +290,15 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
         this->controller_error_word.temperature_sensors_not_connected = 1;
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::TEMPERATURE_SENSORS_NOT_CONNECTED);
         status_word |= FSMStatusWord::WARNING_STATUS;
+        warning_active = true;
+
     }else if (temperature >= 80.0f) // Over temperature fault, trigger warning
     {
         this->controller_error_word.over_temperature_fault = 1;
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::OVER_TEMPERATURE);
         status_word |= FSMStatusWord::FAULT_STATUS;
         this->fsm_.triggerFaultReaction(ErrorCodes::OVER_TEMPERATURE);
+        warning_active = true;
     }
     else Obj.Temperature = 100 * temperature;
 
@@ -288,7 +307,10 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     {
         status_word |= FSMStatusWord::FAULT_STATUS;
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::TIMER_INIT_FAILED);
+        warning_active = true;
     }
+
+    if(!warning_active) status_word &= ~FSMStatusWord::WARNING_STATUS; // Clear warning status if no warnings are active
 
 
     //Handle Sensors

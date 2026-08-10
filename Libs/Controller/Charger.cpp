@@ -33,7 +33,7 @@ bool Charger::wait_ready(uint16_t timeout)
     uint32_t start_time = HAL_GetTick();
     while(HAL_GetTick() - start_time < timeout)
     {
-        this->transmit_receive();
+        this->transmit_receive_init();
         if(Charger::status.ready) 
         {
             this->initialized = true;
@@ -53,4 +53,11 @@ void Charger::transmit_receive()
     if(HAL_SPI_GetState(CHARGER_SPI_HANDLE) != HAL_SPI_STATE_READY) return;
     HAL_SPI_TransmitReceive_IT(CHARGER_SPI_HANDLE, (uint8_t *)&Charger::tx_data, (uint8_t *)&Charger::status, sizeof(Charger::status));
 
+}
+
+void Charger::transmit_receive_init()
+{
+
+    if(HAL_SPI_GetState(CHARGER_SPI_HANDLE) != HAL_SPI_STATE_READY) return;
+    HAL_SPI_TransmitReceive_IT(CHARGER_SPI_HANDLE, (uint8_t *)&Charger::tx_data, (uint8_t *)&Charger::status, sizeof(Charger::status));
 }
