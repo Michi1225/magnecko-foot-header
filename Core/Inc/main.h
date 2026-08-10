@@ -178,8 +178,8 @@ void Error_Handler(void);
 #define TIM_BUTTON &htim5
 #define TIM_DRV1 (&htim1)
 #define CHANNEL_DRV1 TIM_CHANNEL_1
-#define TIM_DRV2 (&htim3)
-#define CHANNEL_DRV2 TIM_CHANNEL_2
+#define TIM_DRV2 (&htim8)
+#define CHANNEL_DRV2 TIM_CHANNEL_4
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

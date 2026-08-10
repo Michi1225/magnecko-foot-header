@@ -164,16 +164,19 @@ void FootController::magnetize(uint16_t time)
     if(time < 1000 ||time > 10000 || this->dead_time_active || this->controller_error_word.over_temperature_fault) return; 
 
 
-    if(!this->requested_magnetization && this->requested_demagnetization)
+    if(this->requested_magnetization && !this->requested_demagnetization)
     {
         // Magnetization was requiested
-        TIM_DRV1->Instance->CCR1 = time; // pulse width in us
+        TIM_DRV1->Instance->CCR1 = 20000 - time; // pulse width in us
         TIM_DRV1->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
         HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_SET); //Set Magnetization Status to 1
-    }else if(this->requested_magnetization && !this->requested_demagnetization)
+    }else if(!this->requested_magnetization && this->requested_demagnetization)
     {
         // Demagnetization was requested
-        TIM_DRV2->Instance->CCR2 = time; // pulse width in us
+        TIM_DRV2->Instance->CCR4 = 20000 - time; // pulse width in us
+        //This is needed, since OPM only supports CH1 and CH2...
+        TIM8->CCER |= TIM_CCER_CC4E;
+        TIM8->BDTR |= TIM_BDTR_MOE;
         TIM_DRV2->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
         HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_RESET); //Set Magnetization Status to 0
     } else 
