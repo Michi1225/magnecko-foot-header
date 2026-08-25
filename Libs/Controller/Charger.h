@@ -18,6 +18,7 @@ typedef struct PACKED
     uint16_t vin_10mV;
     uint16_t vout_10mV;
     uint16_t imeas_mA;
+    //TODO: Add CRC
 }ChargerData;
 
 typedef struct PACKED

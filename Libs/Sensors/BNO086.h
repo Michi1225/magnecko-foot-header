@@ -48,6 +48,24 @@
 #define BNO086_SECTION_NAME ".RAM"
 #define PACKED __attribute__((packed))
 
+struct __section(BNO086_SECTION_NAME) PACKED BNOHeader
+{
+    uint8_t shtp_header[4];
+    uint8_t time_stamp[5];
+    uint8_t report_id;
+};
+
+struct __section(BNO086_SECTION_NAME) PACKED SHTPHeader
+{
+    uint16_t length;
+    uint8_t channel;
+    uint8_t sequence;
+    uint8_t report_id;
+};
+
+extern BNOHeader bno_header;
+extern SHTPHeader shtp_header;
+
 typedef struct PACKED
 {
     int8_t sequence_number;
@@ -101,9 +119,10 @@ public:
 
     /**
      * @brief   Start feature reports, as defined in init()
+     * @param[in]   timeout: Timeout for the start command in ms
      * @retval  HAL Status Code. 0 if all transmissions were successful
      */
-    uint8_t start();
+    uint8_t start(uint16_t timeout);
 
     /**
      * @brief   Updates the sensor values from the SPI interface. 
@@ -112,6 +131,12 @@ public:
      * @retval  HAL Status Code. 0 if all SPI Receive were successful
      */
     uint8_t update();
+
+
+    uint8_t read_report(uint8_t report_id);
+
+    uint8_t update_outputs();
+
     uint8_t seqNum = 0;
     uint8_t msgs_ready = 0;
 

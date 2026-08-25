@@ -24,7 +24,7 @@ extern "C" {
 
 #define ECAT_SPI_HANDLE &hspi4
 
-#define DEAD_TIME_TIMER &htim6
+#define DEAD_TIME_TIMER (&htim6)
 
 #define N_PARAMETERS 10
 

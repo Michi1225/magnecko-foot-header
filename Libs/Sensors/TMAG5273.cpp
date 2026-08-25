@@ -48,14 +48,14 @@ uint8_t TMAG5273::init()
         I2C_ADDRESS_VAL
     };
     uint8_t general_call_write = 0x00;
-    uint8_t error_code = HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, general_call_write, data, 0x0E, 100);
+    uint8_t error_code = HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, general_call_write, data, 0x0E, 1000);
     if(error_code == HAL_OK) TMAG5273::initialized = true;
     return error_code;
 }
 
 float TMAG5273::read_Bx()
 {
-    if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
+    if(TMAG5273::initialized == false) return 0.0f; // Return 0 if sensor is not initialized
     uint8_t txData[1] = {X_MSB_RESULT_ADDR}; // Read operation
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 2, 100) != HAL_OK) Error_Handler();
@@ -68,7 +68,7 @@ float TMAG5273::read_Bx()
 
 float TMAG5273::read_By()
 {
-    if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
+    if(TMAG5273::initialized == false) return 0.0f; // Return 0 if sensor is not initialized
     uint8_t txData[1] = {Y_MSB_RESULT_ADDR};
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 2, 100) != HAL_OK) Error_Handler();
@@ -82,7 +82,7 @@ float TMAG5273::read_By()
 
 float TMAG5273::read_Bz()
 {
-    if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
+    if(TMAG5273::initialized == false) return 0.0f; // Return 0 if sensor is not initialized
     uint8_t txData[1] = {Z_MSB_RESULT_ADDR};
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 2, 100) != HAL_OK) Error_Handler();
@@ -94,7 +94,17 @@ float TMAG5273::read_Bz()
 
 float TMAG5273::read_magnitude()
 {
-    if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
+    if(TMAG5273::initialized == false) 
+    {
+        this->bx = 0.0f;
+        this->by = 0.0f;
+        this->bz = 0.0f;
+        this->b_mag = 0.0f;
+        this->raw_bx = 0;
+        this->raw_by = 0;
+        this->raw_bz = 0;
+        return 0.0f; // Return 0 if sensor is not initialized
+    }
     HAL_I2C_Mem_Read_DMA(SENS_I2C_HANDLE, (this->device_address << 1), X_MSB_RESULT_ADDR, I2C_MEMADD_SIZE_8BIT, rxDataHall, 6);
     while(HAL_I2C_GetState(SENS_I2C_HANDLE) != HAL_I2C_STATE_READY)
     {
@@ -121,7 +131,7 @@ float TMAG5273::read_magnitude()
 
 float TMAG5273::read_magnitude_blocking()
 {
-    if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
+    if(TMAG5273::initialized == false) return 0.0f; // Return 0 if sensor is not initialized
     HAL_I2C_Mem_Read(SENS_I2C_HANDLE, (this->device_address << 1), X_MSB_RESULT_ADDR, I2C_MEMADD_SIZE_8BIT, rxDataHall, 6, 100);
 
 
@@ -145,7 +155,7 @@ float TMAG5273::read_magnitude_blocking()
 
 float TMAG5273::read_T()
 {
-    if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
+    if(TMAG5273::initialized == false) return 0.0f; // Return 0 if sensor is not initialized
     uint8_t txData[1] = {T_MSB_RESULT_ADDR};
     if(HAL_I2C_Master_Transmit(SENS_I2C_HANDLE, (this->device_address << 1), txData, 1, 100) != HAL_OK) Error_Handler();
     if(HAL_I2C_Master_Receive(SENS_I2C_HANDLE, (this->device_address << 1) | 0x01, rxDataHall, 2, 100) != HAL_OK) Error_Handler();
@@ -158,7 +168,7 @@ float TMAG5273::read_T()
 
 bool TMAG5273::estimate_contact()
 {
-    if(!TMAG5273::initialized) return false; // Return false if sensor is not initialized
+    if(TMAG5273::initialized == false) return false; // Return false if sensor is not initialized
     float b_mag = this->read_magnitude();
     float b_mag_threshold = 0.5f; // Threshold for contact estimation
     return b_mag < b_mag_threshold;
@@ -166,7 +176,7 @@ bool TMAG5273::estimate_contact()
 
 float TMAG5273::force_estimation(float b_mag_0, float b_mag_1, float b_mag_2, float b_mag_3)
 {
-    if(!TMAG5273::initialized) return 0.0f; // Return 0 if sensor is not initialized
+    if(TMAG5273::initialized == false) return 0.0f; // Return 0 if sensor is not initialized
     // Average B-field
     const float B = 0.25f * (b_mag_0 + b_mag_1 + b_mag_2 + b_mag_3);
 

@@ -23,6 +23,7 @@
 #include "dma.h"
 #include "i2c.h"
 #include "spi.h"
+#include "stm32h7xx_hal_spi.h"
 #include "tim.h"
 #include "gpio.h"
 
@@ -55,9 +56,6 @@
 /* USER CODE BEGIN PV */
 _Objects Obj = {};
 FootController __attribute__((section(".RAM"))) controller = FootController();
-
-uint32_t counter1 = 0;
-uint32_t counter2 = 0;
 
 /* USER CODE END PV */
 
@@ -167,9 +165,8 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
-  ITM->PORT[0].u32 = 0; // Send counter value to ITM for debugging
-  ITM->PORT[1].u32 = 0; // Send counter value to ITM for debugging
   controller.init();
+
   
   
   
@@ -269,12 +266,16 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+uint32_t counter = 0;
+uint32_t counter1 = 0;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   // Handle IMU Interrupt
   // When the IMU interrupt pin is triggered, set the msg_ready flag to true to indicate that new IMU data is available and should be read within the next 10ms.
   if(GPIO_Pin == IMU_INT_Pin) {
     controller.imu.msgs_ready++;
+
+    ITM->PORT[0].u32 = ++counter1;
   }
 
   // Handle Button Press and Release
@@ -377,6 +378,24 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         controller.controller_error_word.charger_ov_fault = controller.charger.status.OV_fault;
         controller.controller_error_word.charger_wd_fault = controller.charger.status.WD_fault;
     }
+    else if (hspi == BNO086_SPI_HANDLE)
+    {
+        // IMU SPI transfer complete
+        // Handle IMU data here if needed
+        uint16_t report_id = bno_header.report_id;
+
+        controller.imu.read_report(report_id); // Read the report data from the IMU
+    }
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if(hspi == BNO086_SPI_HANDLE)
+  {
+    HAL_GPIO_WritePin(IMU_NCS_GPIO_Port, IMU_NCS_Pin, GPIO_PIN_SET);
+
+    controller.imu.update_outputs(); // Update the IMU output data after receiving the report
+  }
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)

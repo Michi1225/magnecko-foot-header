@@ -26,6 +26,12 @@ void FootController::init()
     this->ledController.set_animation(LED_ANIMATION_CONFIGURING);
     uint8_t errorcode = 0;
 
+    HAL_Delay(100);
+
+    HAL_GPIO_WritePin(GD_nEN_GPIO_Port, GD_nEN_Pin, GPIO_PIN_RESET); //Enable Gate Drivers
+
+    HAL_Delay(100);
+
     this->controller_error_word.imu_init_failed = 0;
     this->controller_error_word.ldc_init_failed = 0;
     this->controller_error_word.hall_init_failed = 0;
@@ -110,9 +116,10 @@ void FootController::init()
     }
 
 
+
     HAL_Delay(10);
     
-    if(imu.start() != 0) 
+    if(imu.start(1000) != 0) 
     {
         this->controller_error_word.imu_init_failed = 1;
     }
@@ -122,7 +129,6 @@ void FootController::init()
         this->controller_error_word.tof_init_failed = 1;
     }
 
-
     // Charger Initialization
     if(!charger.wait_ready(1000)) 
     {
@@ -130,20 +136,22 @@ void FootController::init()
     }
 
 
+
     // Drive Timer Initialization
     uint8_t tim_error = 0;
     tim_error |= HAL_TIM_OnePulse_Start(TIM_DRV1, CHANNEL_DRV1); //Start One Pulse for DRV1
     tim_error |= HAL_TIM_OnePulse_Start(TIM_DRV2, CHANNEL_DRV2); //Start One Pulse for DRV2
 
-    tim_error |= HAL_TIM_Base_Start(&htim8); // Timer used forr funciton execution time measurement
+
     tim_error |= HAL_TIM_Base_Start_IT(TIM_CONTROL); //Start Control Timer
     tim_error |= HAL_TIM_Base_Start_IT(TIM_IMU); //Start BNO Timer
 
+    tim_error |= HAL_TIM_Base_Start_IT(TIM_BUTTON); //Start Button Timer
+    tim_error |= HAL_TIM_Base_Start_IT(DEAD_TIME_TIMER); //Start Dead Time Timer
+    DEAD_TIME_TIMER->Instance->ARR = DEAD_TIME; //Set Dead Time Duration
+
     if(tim_error != HAL_OK) this->controller_error_word.timer_init_failed = 1; //Set timer init failed flag if any of the timers failed to start
 
-    // HAL_Delay(5000);
-
-    // HAL_GPIO_WritePin(GD_nEN_GPIO_Port, GD_nEN_Pin, GPIO_PIN_RESET); //Enable Gate Drivers
 
     HAL_GPIO_WritePin(DISCHARGE_GPIO_Port, DISCHARGE_Pin, GPIO_PIN_SET);
 
@@ -242,21 +250,21 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
         warning_active = true;
     }else
     {
-    if(this->controller_error_word.charger_oc_fault)
-    {
-        Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_OVER_CURRENT_FAULT);
-        status_word |= FSMStatusWord::WARNING_STATUS;
+        if(this->controller_error_word.charger_oc_fault)
+        {
+            Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_OVER_CURRENT_FAULT);
+            status_word |= FSMStatusWord::WARNING_STATUS;
             warning_active = true;
-    }if(this->controller_error_word.charger_ov_fault)
-    {
-        Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_OVER_VOLTAGE_FAULT);
-        status_word |= FSMStatusWord::WARNING_STATUS;
+        }if(this->controller_error_word.charger_ov_fault)
+        {
+            Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_OVER_VOLTAGE_FAULT);
+            status_word |= FSMStatusWord::WARNING_STATUS;
             warning_active = true;
-    }
-    if(this->controller_error_word.charger_wd_fault)
-    {
-        Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_WATCHDOG_FAULT);
-        status_word |= FSMStatusWord::WARNING_STATUS;
+        }
+        if(this->controller_error_word.charger_wd_fault)
+        {
+            Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::CHARGER_WATCHDOG_FAULT);
+            status_word |= FSMStatusWord::WARNING_STATUS;
             warning_active = true;
         }
     }
