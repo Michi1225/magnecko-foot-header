@@ -153,7 +153,6 @@ void FootController::init()
     tim_error |= HAL_TIM_Base_Start_IT(TIM_CONTROL); //Start Control Timer
     tim_error |= HAL_TIM_Base_Start_IT(TIM_IMU); //Start BNO Timer
 
-    tim_error |= HAL_TIM_Base_Start_IT(DEAD_TIME_TIMER); //Start Dead Time Timer
     DEAD_TIME_TIMER->Instance->ARR = DEAD_TIME; //Set Dead Time Duration
 
     if(tim_error != HAL_OK) this->controller_error_word.timer_init_failed = 1; //Set timer init failed flag if any of the timers failed to start
@@ -181,17 +180,17 @@ void FootController::magnetize(uint16_t time)
     if(this->requested_magnetization && !this->requested_demagnetization)
     {
         // Magnetization was requiested
-        TIM_DRV1->Instance->CCR1 = 20000 - time; // pulse width in us
-        TIM_DRV1->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
-        HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_SET); //Set Magnetization Status to 1
-    }else if(!this->requested_magnetization && this->requested_demagnetization)
-    {
-        // Demagnetization was requested
         TIM_DRV2->Instance->CCR4 = 20000 - time; // pulse width in us
         //This is needed, since OPM only supports CH1 and CH2...
         TIM8->CCER |= TIM_CCER_CC4E;
         TIM8->BDTR |= TIM_BDTR_MOE;
         TIM_DRV2->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
+        HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_SET); //Set Magnetization Status to 1
+    }else if(!this->requested_magnetization && this->requested_demagnetization)
+    {
+        // Demagnetization was requested
+        TIM_DRV1->Instance->CCR1 = 20000 - time; // pulse width in us
+        TIM_DRV1->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
         HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_RESET); //Set Magnetization Status to 0
     } else 
     {
@@ -200,6 +199,7 @@ void FootController::magnetize(uint16_t time)
     //Set Magnetization Status
     this->status_magnetization = this->requested_magnetization;
     this->dead_time_active = true; //Set Dead Time Active
+    DEAD_TIME_TIMER->Instance->CNT = 0; //Reset Dead Time Timer
     HAL_TIM_Base_Start_IT(DEAD_TIME_TIMER); //Start Dead Time Timer
 }
 
@@ -430,6 +430,8 @@ FSMStatus FootController::FSM_operationEnabled(FSMStatus state, uint16_t &status
     if(state != FSMStatus::OPERATION_ENABLED) // Just once when entering the state
     {
        this->ledController.set_animation(LED_ANIMATION_APPLICATION_RUNNING);
+       this->requested_demagnetization = false; //Reset requested demagnetization state
+       this->requested_magnetization = false; //Reset requested magnetization state
     }
 
 
