@@ -26,6 +26,11 @@ void FootController::init()
     this->ledController.set_animation(LED_ANIMATION_CONFIGURING);
     uint8_t errorcode = 0;
 
+    uint8_t tim_error = 0;
+    tim_error |= HAL_TIM_OnePulse_Start(TIM_DRV1, CHANNEL_DRV1); //Start One Pulse for DRV1
+    tim_error |= HAL_TIM_OnePulse_Start(TIM_DRV2, CHANNEL_DRV2); //Start One Pulse for DRV2
+
+
     HAL_Delay(100);
 
     HAL_GPIO_WritePin(GD_nEN_GPIO_Port, GD_nEN_Pin, GPIO_PIN_RESET); //Enable Gate Drivers
@@ -46,6 +51,13 @@ void FootController::init()
     this->controller_error_word.over_temperature_fault = 0;
     this->controller_error_word.gate_drive_fault = 0;
     this->controller_error_word.invalid_input_command = 0;
+
+    this->requested_magnetization = false;
+    this->requested_demagnetization = false;
+    this->prev_demag = false;
+    this->prev_mag = false;
+
+    Obj.Magnet_Command = 0;
 
     //FSM initialization
     this->fsmActions_.background_ = std::bind(&FootController::FSM_bg, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -138,15 +150,9 @@ void FootController::init()
 
 
     // Drive Timer Initialization
-    uint8_t tim_error = 0;
-    tim_error |= HAL_TIM_OnePulse_Start(TIM_DRV1, CHANNEL_DRV1); //Start One Pulse for DRV1
-    tim_error |= HAL_TIM_OnePulse_Start(TIM_DRV2, CHANNEL_DRV2); //Start One Pulse for DRV2
-
-
     tim_error |= HAL_TIM_Base_Start_IT(TIM_CONTROL); //Start Control Timer
     tim_error |= HAL_TIM_Base_Start_IT(TIM_IMU); //Start BNO Timer
 
-    tim_error |= HAL_TIM_Base_Start_IT(TIM_BUTTON); //Start Button Timer
     tim_error |= HAL_TIM_Base_Start_IT(DEAD_TIME_TIMER); //Start Dead Time Timer
     DEAD_TIME_TIMER->Instance->ARR = DEAD_TIME; //Set Dead Time Duration
 
@@ -289,7 +295,7 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
 
 
     // Temperature Sensors
-    Thermistor_TypeDef_t thermistor_type = NTC10K_3977K; // Use the NTC10K_3977K thermistor for temperature measurement
+    Thermistor_TypeDef_t thermistor_type = PT1000; // Use the NTC10K_3977K thermistor for temperature measurement
     float temperature = get_temperature(thermistor_type);
     if((temperature >= 240.0f && (thermistor_type == PT1000)) || 
        (temperature <= -40.0f && (thermistor_type == NTC10K_3977K)))

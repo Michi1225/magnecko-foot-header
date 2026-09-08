@@ -5,7 +5,7 @@
 
 uint32_t __section(".RAM") raw_adc_val = 0;
 
-float temperature_lookup[][4095] =
+float temperature_lookup[][4096] =
 {
     // PT1000 Lookup Table
     {

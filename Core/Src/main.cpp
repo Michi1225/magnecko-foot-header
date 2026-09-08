@@ -23,7 +23,7 @@
 #include "dma.h"
 #include "i2c.h"
 #include "spi.h"
-#include "stm32h7xx_hal_spi.h"
+#include "stm32h725xx.h"
 #include "tim.h"
 #include "gpio.h"
 
@@ -287,7 +287,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     if(HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_RESET)
     {
       
-      TIM6->CNT = 0;
+      (TIM_BUTTON)->Instance->CNT = 0;
       HAL_TIM_Base_Start_IT(TIM_BUTTON);
 
     }

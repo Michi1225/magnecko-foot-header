@@ -6,8 +6,8 @@
 #include <cstring>
 
 
-BNOHeader bno_header{};
-SHTPHeader shtp_header{};
+BNOHeader bno_header = {0, 0, 0};
+SHTPHeader shtp_header = {0, 0, 0, 0};
 
 
 __section(BNO086_SECTION_NAME) __aligned(4) uint8_t dummy[128] = {0};
@@ -59,6 +59,11 @@ uint8_t BNO086::init(uint16_t timeout)
 {
 
     HAL_StatusTypeDef status = HAL_OK;
+
+    // If this object is re-used across a reboot-like re-init, the feature list
+    // must be reset. Otherwise repeated calls append to the same vector and grow
+    // it without bound on the heap.
+    this->features.clear();
 
     //Set feature reports to be set up
 #if ENABLE_ACCEL
