@@ -20,10 +20,10 @@
 #include "main.h"
 #include "adc.h"
 #include "bdma.h"
+#include "crc.h"
 #include "dma.h"
 #include "i2c.h"
 #include "spi.h"
-#include "stm32h725xx.h"
 #include "tim.h"
 #include "gpio.h"
 
@@ -164,6 +164,7 @@ int main(void)
   MX_I2C4_Init();
   MX_TIM6_Init();
   MX_TIM8_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   controller.init();
 
@@ -374,6 +375,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     {
         // Charger SPI transfer complete
         // Handle Charger status and faults here if needed
+        controller.charger.rx_data_validate();
         controller.controller_error_word.charger_oc_fault = controller.charger.status.OC_fault;
         controller.controller_error_word.charger_ov_fault = controller.charger.status.OV_fault;
         controller.controller_error_word.charger_wd_fault = controller.charger.status.WD_fault;

@@ -18,7 +18,7 @@ typedef struct PACKED
     uint16_t vin_10mV;
     uint16_t vout_10mV;
     uint16_t imeas_mA;
-    //TODO: Add CRC
+    uint32_t crc;
 }ChargerData;
 
 typedef struct PACKED
@@ -27,6 +27,7 @@ typedef struct PACKED
     uint8_t clear_faults :   1;
     uint8_t              :   6;
     uint16_t reserved[3];
+    uint32_t crc;
 }TransmitData;
 
 
@@ -39,11 +40,13 @@ public:
     static ChargerData status;
     static TransmitData tx_data;
     bool initialized;
+    bool data_valid;
 
     Charger();
 
     bool wait_ready(uint16_t timeout);
     void transmit_receive();
     void transmit_receive_init();
+    bool rx_data_validate();
 
 };
