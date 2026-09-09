@@ -141,11 +141,13 @@ void FootController::init()
         this->controller_error_word.tof_init_failed = 1;
     }
 
+#ifndef USE_BATTERIES
     // Charger Initialization
     if(!charger.wait_ready(1000)) 
     {
         this->controller_error_word.charger_init_failed = 1;
     }
+#endif
 
 
 
