@@ -17,6 +17,39 @@ FootController::FootController() : fsm_(),
                                    tof(),
                                    charger()
 {
+    this->controller_error_word = {
+        .imu_init_failed = 0,
+        .ldc_init_failed = 0,
+        .hall_init_failed = 0,
+        .tof_init_failed = 0,
+        .charger_init_failed = 0,
+        .charger_oc_fault = 0,
+        .charger_ov_fault = 0,
+        .charger_wd_fault = 0,
+        .eeprom_params_invalid = 0,
+        .timer_init_failed = 0,
+        .temperature_sensors_not_connected = 0,
+        .over_temperature_fault = 0,
+        .gate_drive_fault = 0,
+        .invalid_input_command = 0,
+    };
+
+    this->ldc[0] = LDC1101(LDC0_NCS_GPIO_Port, LDC0_NCS_Pin);
+    this->ldc[1] = LDC1101(LDC1_NCS_GPIO_Port, LDC1_NCS_Pin);
+    this->ldc[2] = LDC1101(LDC2_NCS_GPIO_Port, LDC2_NCS_Pin);
+    this->ldc[3] = LDC1101(LDC3_NCS_GPIO_Port, LDC3_NCS_Pin);
+    
+    
+    this->ldc[0].next = &this->ldc[1];
+    this->ldc[1].next = &this->ldc[2];
+    this->ldc[2].next = &this->ldc[3];
+    this->ldc[3].next = &this->ldc[0];
+
+    this->requested_magnetization = false;
+    this->requested_demagnetization = false;
+    this->prev_demag = false;
+    this->prev_mag = false;
+
 }
 
 void FootController::init()
