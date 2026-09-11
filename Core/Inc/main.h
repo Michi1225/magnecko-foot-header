@@ -61,6 +61,8 @@ extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim6;
 
 extern ADC_HandleTypeDef hadc1;
+
+extern CRC_HandleTypeDef hcrc;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

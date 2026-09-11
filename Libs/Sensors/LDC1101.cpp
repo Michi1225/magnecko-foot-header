@@ -108,7 +108,13 @@ HAL_StatusTypeDef LDC1101::init()
     // SKIP Use default values
 
     // D_CONFIG
-    // SKIP Use default values
+    config_data.addr = LDC1101_ADDR_D_CONF;
+    config_data.data |= (0b1 << 0); // DOK_REPORT Disabled
+
+    HAL_GPIO_WritePin(this->cs_port, this->cs_pin, GPIO_PIN_RESET);
+    status |= HAL_SPI_Transmit(LDC_SPI_HANDLE, (uint8_t *)&config_data, sizeof(config_data), 10);
+    HAL_GPIO_WritePin(this->cs_port, this->cs_pin, GPIO_PIN_SET);
+    config_data.data = 0x00; // Default value
 
     // L_THRESH_HI_LSB
     // SKIP

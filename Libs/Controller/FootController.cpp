@@ -70,26 +70,6 @@ void FootController::init()
 
     HAL_Delay(100);
 
-    this->controller_error_word.imu_init_failed = 0;
-    this->controller_error_word.ldc_init_failed = 0;
-    this->controller_error_word.hall_init_failed = 0;
-    this->controller_error_word.tof_init_failed = 0;
-    this->controller_error_word.charger_init_failed = 0;
-    this->controller_error_word.charger_oc_fault = 0;
-    this->controller_error_word.charger_ov_fault = 0;
-    this->controller_error_word.charger_wd_fault = 0;
-    this->controller_error_word.eeprom_params_invalid = 0;
-    this->controller_error_word.timer_init_failed = 0;
-    this->controller_error_word.temperature_sensors_not_connected = 0;
-    this->controller_error_word.over_temperature_fault = 0;
-    this->controller_error_word.gate_drive_fault = 0;
-    this->controller_error_word.invalid_input_command = 0;
-
-    this->requested_magnetization = false;
-    this->requested_demagnetization = false;
-    this->prev_demag = false;
-    this->prev_mag = false;
-
     Obj.Magnet_Command = 0;
 
     //FSM initialization
@@ -155,7 +135,7 @@ void FootController::init()
         this->controller_error_word.hall_init_failed = 1;
     }
 
-    if(tof.init(1000) != 0) 
+    if(tof.init(100) != 0) 
     {
         this->controller_error_word.tof_init_failed = 1;
     }
@@ -175,7 +155,7 @@ void FootController::init()
     }
 
     // Charger Initialization
-    if(!charger.wait_ready(1000)) 
+    if(!charger.wait_ready(100)) 
     {
         this->controller_error_word.charger_init_failed = 1;
     }
@@ -218,10 +198,12 @@ void FootController::magnetize(uint16_t time)
         TIM8->CCER |= TIM_CCER_CC4E;
         TIM8->BDTR |= TIM_BDTR_MOE;
         TIM_DRV2->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
+        this->status_magnetization = true;
         HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_SET); //Set Magnetization Status to 1
     }else if(!this->requested_magnetization && this->requested_demagnetization)
     {
         // Demagnetization was requested
+        this->status_magnetization = false;
         TIM_DRV1->Instance->CCR1 = 20000 - time; // pulse width in us
         TIM_DRV1->Instance->CR1 |= TIM_CR1_CEN; // Start Timer
         HAL_GPIO_WritePin(MAG_STAT_GPIO_Port, MAG_STAT_Pin, GPIO_PIN_RESET); //Set Magnetization Status to 0
@@ -230,7 +212,6 @@ void FootController::magnetize(uint16_t time)
         return; //No valid request, do nothing
     }
     //Set Magnetization Status
-    this->status_magnetization = this->requested_magnetization;
     this->dead_time_active = true; //Set Dead Time Active
     DEAD_TIME_TIMER->Instance->CNT = 0; //Reset Dead Time Timer
     HAL_TIM_Base_Start_IT(DEAD_TIME_TIMER); //Start Dead Time Timer
@@ -317,13 +298,17 @@ FSMStatus FootController::FSM_bg(FSMStatus state, uint16_t &status_word, int8_t 
     }
 
     // Gate Drive Fault
-    if((HAL_GPIO_ReadPin(GD_nFLT_GPIO_Port, GD_nFLT_Pin) == GPIO_PIN_RESET) &&
-       (HAL_GPIO_ReadPin(GD_nEN_GPIO_Port, GD_nEN_Pin) == GPIO_PIN_RESET))
+    bool gate_drive_fault = (HAL_GPIO_ReadPin(GD_nFLT_GPIO_Port, GD_nFLT_Pin) == GPIO_PIN_RESET) &&
+                            (HAL_GPIO_ReadPin(GD_nEN_GPIO_Port, GD_nEN_Pin) == GPIO_PIN_RESET);
+    if(gate_drive_fault)
     {
         this->controller_error_word.gate_drive_fault = 1;
         Obj.Error_Code = static_cast<uint16_t>(ErrorCodes::GATE_DRIVE_FAULT);
         status_word |= FSMStatusWord::WARNING_STATUS;
         warning_active = true;
+    }else
+    {
+        this->controller_error_word.gate_drive_fault = 0;
     }
 
 
@@ -516,7 +501,7 @@ float FootController::force_estimation()
         this->hall1.b_mag,
         this->hall2.b_mag,
         this->hall3.b_mag
-    );
+    ) * this->status_magnetization;
 }
 
 void FootController::read_force_estimation_params_from_eeprom()
