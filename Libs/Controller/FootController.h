@@ -32,6 +32,8 @@ extern "C" {
 
 #define EPM_NUMBER 1 // EPM number, needed for hw interface
 
+#define USE_BATTERIES
+
 
 class FootController
 {
